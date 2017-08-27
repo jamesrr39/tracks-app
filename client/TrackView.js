@@ -4,6 +4,27 @@ define([
   "openlayers"
 ], function(Handlebars, $, OpenLayers) {
 
+  var lapsTemplate = Handlebars.compile([
+    "<table class='table'>",
+      "<thead>",
+        "<tr>",
+          "<th>Time (s)</th>",
+          "<th>Distance (m)</th>",
+          "<th>Total Distance Covered (m)</th>",
+        "</tr>",
+      "</thead>",
+        "<tbody>",
+        "{{#laps}}",
+          "<tr>",
+          "<td>{{timeTakenStr}}</td>",
+          "<td>{{distanceInLapMetres}}</td>",
+          "<td>{{cumulativeDistanceMetres}}</td>",
+          "</tr>",
+        "{{/laps}}",
+      "</tbody>",
+    "</table>"
+  ].join(""));
+
   var trackTemplate = Handlebars.compile([
     "<div>",
       "<h2>{{startDateStr}} ({{durationStr}})</h2>",
@@ -11,26 +32,7 @@ define([
       "<p>Recorded with {{deviceStr}}</p>",
       "<p>{{distanceKm}} Km</p>",
       "<div style='width: 100%; height:600px;' class='map-container'></div>",
-/*
-      "<table class='table'>",
-        "<thead>",
-          "<tr>",
-            "<th>Total Elapsed Time (s)</th>",
-            "<th>Total Timer Time (s)</th>",
-            "<th>Total Distance (m)</th>",
-          "</tr>",
-        "</thead>",
-          "<tbody>",
-          "{{#records}}",
-            "<tr>",
-            "<td>{{Total_elapsed_time}}</td>",
-            "<td>{{Total_timer_time}}</td>",
-            "<td>{{Total_distance}}</td>",
-            "</tr>",
-          "{{/records}}",
-        "</tbody>",
-      "</table>",
-      */
+      "<div class='laps-container'>Loading laps...</div>",
     "</div>"
   ].join(""));
 
@@ -47,6 +49,49 @@ define([
       s = durationHours + "h " + s;
     }
     return s;
+  }
+
+  function createMap(container, track) {
+    var waypoints = new OpenLayers.layer.Vector({
+      source: new OpenLayers.source.Vector({
+        features: track.records.map(function(record) {
+          var coords = OpenLayers.proj.transform([
+            record.posLong,
+            record.posLat
+          ], "EPSG:4326", "EPSG:3857")
+
+          var feature = new OpenLayers.Feature({
+            geometry: new OpenLayers.geom.Point(coords),
+            name: record.distance
+          });
+
+          return feature;
+        })
+      })
+    });
+
+    var map = new OpenLayers.Map({
+      layers: [
+        new OpenLayers.layer.Tile({
+          source: new OpenLayers.source.OSM()
+        }),
+        waypoints
+      ],
+      /*controls: OpenLayers.control.defaults({
+        attributionOptions: {
+          collapsible: false
+        }
+      }),*/
+      target: container,
+      //renderer: "canvas",
+      view: new OpenLayers.View({
+        center: OpenLayers.proj.fromLonLat([
+          (track.activityBounds.longMin + track.activityBounds.longMax) / 2,
+          (track.activityBounds.latMin + track.activityBounds.latMax) / 2,
+        ]),
+        resolution: 20
+      })
+    });
   }
 
   return function(trackName) {
@@ -67,48 +112,22 @@ define([
             distanceKm: track.summary.totalDistance / 1000
           }));
 
-          var $mapContainer = $element.find(".map-container");
+          // load laps
+          $.ajax("/api/fit/" + encodeURIComponent(trackName) + "/laps").then(function(laps) {
+            $element.find(".laps-container").html(lapsTemplate({
+              laps: laps.map(function(lap) {
+                lap.timeTakenStr = formatDuration((new Date(lap.endTimestamp).getTime() - new Date(lap.startTimestamp).getTime()) / 1000)
 
-          var waypoints = new OpenLayers.layer.Vector({
-            source: new OpenLayers.source.Vector({
-              features: track.records.map(function(record) {
-                var coords = OpenLayers.proj.transform([
-                  record.posLong,
-                  record.posLat
-                ], "EPSG:4326", "EPSG:3857")
-
-                var feature = new OpenLayers.Feature({
-                  geometry: new OpenLayers.geom.Point(coords),
-                  name: record.distance
-                });
-
-                return feature;
+                return lap;
               })
-            })
+            }));
+          }).fail(function() {
+            throw new Error("failed to build the laps listing")
           });
 
-          var map = new OpenLayers.Map({
-            layers: [
-              new OpenLayers.layer.Tile({
-                source: new OpenLayers.source.OSM()
-              }),
-              waypoints
-            ],
-            /*controls: OpenLayers.control.defaults({
-              attributionOptions: {
-                collapsible: false
-              }
-            }),*/
-            target: $mapContainer.get(0),
-            //renderer: "canvas",
-            view: new OpenLayers.View({
-              center: OpenLayers.proj.fromLonLat([
-                (track.activityBounds.longMin + track.activityBounds.longMax) / 2,
-                (track.activityBounds.latMin + track.activityBounds.latMax) / 2,
-              ]),
-              resolution: 20
-            })
-          });
+
+          createMap($element.find(".map-container").get(0), track);
+
         }).fail(function(){
           throw new Error("error"); // todo handle
         })

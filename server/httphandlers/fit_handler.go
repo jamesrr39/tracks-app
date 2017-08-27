@@ -2,8 +2,10 @@ package httphandlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jamesrr39/go-tracks-app/server/dal"
@@ -21,7 +23,8 @@ func NewFitHandler(dal *dal.FitDAL) *FitHandler {
 	router := mux.NewRouter()
 	handler := &FitHandler{dal: dal, router: router}
 	router.HandleFunc("/", handler.handleGetAll).Methods("GET")
-	router.PathPrefix("/{fitFileName}").HandlerFunc(handler.handleGet).Methods("GET")
+	router.HandleFunc("/{fitFileName}", handler.handleGet).Methods("GET")
+	router.HandleFunc("/{fitFileName}/laps", handler.handleGetLaps).Methods("GET")
 	return handler
 }
 
@@ -57,7 +60,36 @@ func (h *FitHandler) handleGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+}
 
+func (h *FitHandler) handleGetLaps(w http.ResponseWriter, r *http.Request) {
+	var incrementMetres float64 = 1000
+	var err error
+
+	vars := mux.Vars(r)
+	fileName := vars["fitFileName"]
+	incrementMetresStr := r.URL.Query().Get("lapLength")
+	if incrementMetresStr != "" {
+		incrementMetres, err = strconv.ParseFloat(incrementMetresStr, 64)
+		if nil != err {
+			http.Error(w, fmt.Sprintf("couldn't convert lapLength '%s' to a number. Error: %s", incrementMetresStr, err), 400)
+			return
+		}
+	}
+
+	fitFile, err := h.dal.Get(fileName)
+	if nil != err {
+		http.Error(w, err.Error(), 500) // todo better response codes
+		return
+	}
+
+	laps := fitFile.GetLaps(incrementMetres)
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(laps)
+	if nil != err {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 }
 
 func (h *FitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

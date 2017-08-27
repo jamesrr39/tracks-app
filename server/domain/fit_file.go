@@ -48,7 +48,9 @@ func NewFitFile(name string, hash Hash, reader io.Reader) (*FitFile, error) {
 			continue
 		}
 
-		if math.IsNaN(float64(activityRecord.Distance)) {
+		distanceScaled := activityRecord.GetDistanceScaled()
+
+		if math.IsNaN(distanceScaled) {
 			continue
 		}
 
@@ -74,9 +76,45 @@ func NewFitFile(name string, hash Hash, reader io.Reader) (*FitFile, error) {
 			activityRecord.Timestamp,
 			activityRecord.PositionLat.Degrees(),
 			activityRecord.PositionLong.Degrees(),
-			activityRecord.Distance)
+			distanceScaled)
 		records = append(records, record)
 	}
 
 	return &FitFile{FitFileSummary: summary, Records: records, ActivityBounds: activityBounds}, nil
+}
+
+func (f *FitFile) GetLaps(incrementMetres float64) []*Lap {
+	nextIncrement := incrementMetres
+	var laps []*Lap
+
+	amountOfRecords := len(f.Records)
+	if amountOfRecords == 0 {
+		return laps
+	}
+
+	thisLap := &Lap{StartTimestamp: f.Records[0].Timestamp}
+	lastLap := &Lap{}
+
+	lastIndex := amountOfRecords - 1
+	for index, record := range f.Records {
+		if record.Distance < nextIncrement && (index != lastIndex) {
+			// nothing special about this record
+			continue
+		}
+
+		distanceInLap := record.Distance - lastLap.CumulativeDistanceMetres
+
+		thisLap.EndTimestamp = record.Timestamp
+		thisLap.CumulativeDistanceMetres = record.Distance
+		thisLap.DistanceInLapMetres = distanceInLap
+
+		laps = append(laps, thisLap)
+
+		lastLap = thisLap
+		thisLap = &Lap{StartTimestamp: record.Timestamp}
+
+		nextIncrement += incrementMetres
+	}
+
+	return laps
 }
