@@ -102,8 +102,11 @@ define([
             target: $mapContainer.get(0),
             //renderer: "canvas",
             view: new OpenLayers.View({
-              center: OpenLayers.proj.fromLonLat([37.41, 8.82]),
-              zoom: 4
+              center: OpenLayers.proj.fromLonLat([
+                (track.activityBounds.longMin + track.activityBounds.longMax) / 2,
+                (track.activityBounds.latMin + track.activityBounds.latMax) / 2,
+              ]),
+              resolution: 20
             })
           });
         }).fail(function(){
