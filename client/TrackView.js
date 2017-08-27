@@ -11,6 +11,9 @@ define([
           "<th>Time (s)</th>",
           "<th>Distance (m)</th>",
           "<th>Total Distance Covered (m)</th>",
+          "<th>Start Altitude (m)</th>",
+          "<th>End Altitude (m)</th>",
+          "<th>Altitude Gain (m)</th>",
         "</tr>",
       "</thead>",
         "<tbody>",
@@ -19,6 +22,9 @@ define([
           "<td>{{timeTakenStr}}</td>",
           "<td>{{distanceInLapMetres}}</td>",
           "<td>{{cumulativeDistanceMetres}}</td>",
+          "<td>{{startAltitude}}</td>",
+          "<td>{{endAltitude}}</td>",
+          "<td>{{altitudeGain}}</td>",
           "</tr>",
         "{{/laps}}",
       "</tbody>",
@@ -116,7 +122,8 @@ define([
           $.ajax("/api/fit/" + encodeURIComponent(trackName) + "/laps").then(function(laps) {
             $element.find(".laps-container").html(lapsTemplate({
               laps: laps.map(function(lap) {
-                lap.timeTakenStr = formatDuration((new Date(lap.endTimestamp).getTime() - new Date(lap.startTimestamp).getTime()) / 1000)
+                lap.timeTakenStr = formatDuration((new Date(lap.endTimestamp).getTime() - new Date(lap.startTimestamp).getTime()) / 1000),
+                lap.altitudeGain = Math.round(lap.endAltitude - lap.startAltitude);
 
                 return lap;
               })

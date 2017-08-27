@@ -63,14 +63,14 @@ func (h *FitHandler) handleGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FitHandler) handleGetLaps(w http.ResponseWriter, r *http.Request) {
-	var incrementMetres float64 = 1000
+	incrementMetres := 1000
 	var err error
 
 	vars := mux.Vars(r)
 	fileName := vars["fitFileName"]
 	incrementMetresStr := r.URL.Query().Get("lapLength")
 	if incrementMetresStr != "" {
-		incrementMetres, err = strconv.ParseFloat(incrementMetresStr, 64)
+		incrementMetres, err = strconv.Atoi(incrementMetresStr)
 		if nil != err {
 			http.Error(w, fmt.Sprintf("couldn't convert lapLength '%s' to a number. Error: %s", incrementMetresStr, err), 400)
 			return

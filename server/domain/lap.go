@@ -5,6 +5,8 @@ import "time"
 type Lap struct {
 	StartTimestamp           time.Time `json:"startTimestamp"`
 	EndTimestamp             time.Time `json:"endTimestamp"`
-	DistanceInLapMetres      float64   `json:"distanceInLapMetres"`
-	CumulativeDistanceMetres float64   `json:"cumulativeDistanceMetres"`
+	DistanceInLapMetres      int       `json:"distanceInLapMetres"`
+	CumulativeDistanceMetres int       `json:"cumulativeDistanceMetres"`
+	StartAltitude            int       `json:"startAltitude"`
+	EndAltitude              int       `json:"endAltitude"`
 }

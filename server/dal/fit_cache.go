@@ -8,7 +8,7 @@ import (
 
 type cacheMap map[domain.Hash]*domain.FitFileSummary
 
-// FitCache maintains a cache of fit file properties
+// fitFileSummaryCache maintains a cache of fit file properties
 type fitFileSummaryCache struct {
 	cacheMap
 	mu sync.Mutex

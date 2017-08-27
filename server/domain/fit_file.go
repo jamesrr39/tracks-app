@@ -76,14 +76,22 @@ func NewFitFile(name string, hash Hash, reader io.Reader) (*FitFile, error) {
 			activityRecord.Timestamp,
 			activityRecord.PositionLat.Degrees(),
 			activityRecord.PositionLong.Degrees(),
-			distanceScaled)
+			round(distanceScaled),
+			round(activityRecord.GetAltitudeScaled()))
 		records = append(records, record)
 	}
 
 	return &FitFile{FitFileSummary: summary, Records: records, ActivityBounds: activityBounds}, nil
 }
 
-func (f *FitFile) GetLaps(incrementMetres float64) []*Lap {
+func round(n float64) int {
+	if n > 0 {
+		return int(math.Floor(n + 0.5))
+	}
+	return int(math.Floor(n - 0.5))
+}
+
+func (f *FitFile) GetLaps(incrementMetres int) []*Lap {
 	nextIncrement := incrementMetres
 	var laps []*Lap
 
@@ -92,7 +100,7 @@ func (f *FitFile) GetLaps(incrementMetres float64) []*Lap {
 		return laps
 	}
 
-	thisLap := &Lap{StartTimestamp: f.Records[0].Timestamp}
+	thisLap := &Lap{StartTimestamp: f.Records[0].Timestamp, StartAltitude: f.Records[0].Altitude}
 	lastLap := &Lap{}
 
 	lastIndex := amountOfRecords - 1
@@ -107,11 +115,12 @@ func (f *FitFile) GetLaps(incrementMetres float64) []*Lap {
 		thisLap.EndTimestamp = record.Timestamp
 		thisLap.CumulativeDistanceMetres = record.Distance
 		thisLap.DistanceInLapMetres = distanceInLap
+		thisLap.EndAltitude = record.Altitude
 
 		laps = append(laps, thisLap)
 
 		lastLap = thisLap
-		thisLap = &Lap{StartTimestamp: record.Timestamp}
+		thisLap = &Lap{StartTimestamp: record.Timestamp, StartAltitude: record.Altitude}
 
 		nextIncrement += incrementMetres
 	}
