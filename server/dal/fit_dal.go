@@ -1,7 +1,12 @@
 package dal
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,24 +14,38 @@ import (
 
 	"github.com/jamesrr39/go-tracks-app/server/domain"
 	"github.com/jamesrr39/goutil/dirtraversal"
-	"github.com/jezard/fit"
 	"github.com/spf13/afero"
 )
 
 // FitDAL represents an object that can scan for and parse .fit files
 type FitDAL struct {
-	fs      afero.Fs
-	rootDir string
+	fs           afero.Fs
+	rootDir      string
+	summaryCache *fitFileSummaryCache
+	cachesDir    string
 }
 
-// NewFitDAL creates a FitDAL with a normal OS Filesystem (not for testing)
-func NewFitDAL(rootDir string) *FitDAL {
-	return &FitDAL{fs: afero.NewOsFs(), rootDir: rootDir}
+// NewFitDALAndScan creates a FitDAL with a normal OS Filesystem (not for testing)
+// and scans the rootDir to build up an 'inventory' of fit files
+func NewFitDALAndScan(rootDir, cachesDir string) (*FitDAL, error) {
+	fitDAL := &FitDAL{fs: afero.NewOsFs(), rootDir: rootDir, summaryCache: newFitCache(), cachesDir: cachesDir}
+	err := fitDAL.RebuildCachesFromRootDir()
+	if nil != err {
+		return nil, err
+	}
+
+	return fitDAL, nil
 }
 
-// GetAll gets all the tracks under the given DAL root directory
-func (d *FitDAL) GetAll() ([]*domain.FitFileSummary, error) {
-	var fitFiles []*domain.FitFileSummary
+// GetAllSummariesInCache gets all the tracks currently in the cache
+// To rebuild the cache, call ScanRootDir
+func (d *FitDAL) GetAllSummariesInCache() []*domain.FitFileSummary {
+	return d.summaryCache.getAll()
+}
+
+// RebuildCachesFromRootDir rebuilds the cache from the rootDir
+func (d *FitDAL) RebuildCachesFromRootDir() error {
+	var fitFileSummaries []*domain.FitFileSummary
 
 	err := afero.Walk(d.fs, d.rootDir, func(path string, fileInfo os.FileInfo, err error) error {
 		if nil != err {
@@ -40,25 +59,142 @@ func (d *FitDAL) GetAll() ([]*domain.FitFileSummary, error) {
 		if !strings.HasSuffix(fileInfo.Name(), ".fit") {
 			return nil
 		}
+		log.Printf("processing %s\n", path)
+		file, err := d.fs.Open(path)
+		if nil != err {
+			return err
+		}
+		defer file.Close()
 
-		fitFiles = append(fitFiles, domain.NewFitFileSummary(fileInfo.Name()))
+		fileBytes, err := ioutil.ReadAll(file)
+		if nil != err {
+			return fmt.Errorf("couldn't read '%s' into memory. Error: %s", path, err)
+		}
+
+		hash, err := domain.NewHash(bytes.NewBuffer(fileBytes))
+		if nil != err {
+			return fmt.Errorf("couldn't generate a hash for %s. Error: %s", path, err)
+		}
+
+		fitFileSummary, err := d.readFromPersistedFile(hash)
+		if nil != err {
+			return fmt.Errorf("error while reading from persisted path '%s'. Error: %s", path, err)
+		}
+
+		if nil == fitFileSummary {
+			fitFileSummary, err = domain.NewFitFileSummaryFromReader(fileInfo.Name(), hash, bytes.NewBuffer(fileBytes))
+			if nil != err {
+				return fmt.Errorf("couldn't generate a FitFileSummary for '%s'. Error: %s", path, err)
+			}
+		}
+
+		fitFileSummaries = append(fitFileSummaries, fitFileSummary)
 
 		return nil
 	})
 
 	if nil != err {
+		return err
+	}
+
+	d.summaryCache.rebuildCache(fitFileSummaries)
+
+	for _, fitFileSummary := range fitFileSummaries {
+		err := d.persistFitFileSummary(fitFileSummary.Hash, fitFileSummary)
+		if nil != err {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// readFromPersistedFile reads a FitFileSummary from a gob-encoded pre-existing file
+// it returns (nil, error) if there was an unexpected error
+// (nil, nil) if no on-disk file was found (and no unexpected errors)
+// (*domain.FitFileSummary, nil) if a file on-disk was found and read successfully
+func (d *FitDAL) readFromPersistedFile(hash domain.Hash) (*domain.FitFileSummary, error) {
+	pathToPersistedFile := filepath.Join(d.cachesDir, string(hash))
+
+	persistedFile, err := d.fs.Open(pathToPersistedFile)
+	if nil != err {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	defer persistedFile.Close()
+
+	var fitFileSummary *domain.FitFileSummary
+
+	err = gob.NewDecoder(persistedFile).Decode(&fitFileSummary)
+	if nil != err {
 		return nil, err
 	}
 
-	return fitFiles, nil
+	return fitFileSummary, nil
 }
 
 // Get gets a parsed fit file
-func (d *FitDAL) Get(relativeFilePath string) (*fit.FitFile, error) {
+func (d *FitDAL) Get(relativeFilePath string) (*domain.FitFile, error) {
 	if dirtraversal.IsTryingToTraverseUp(relativeFilePath) {
 		return nil, errors.New("../ not allowed in filepath")
 	}
-	log.Printf("dal parsing fit file at: %s\n", filepath.Join(d.rootDir, relativeFilePath))
-	fitFile := fit.Parse(filepath.Join(d.rootDir, relativeFilePath), false)
-	return &fitFile, nil
+
+	filePath := filepath.Join(d.rootDir, relativeFilePath)
+	log.Printf("dal parsing fit file at: %s\n", filePath)
+	file, err := d.fs.Open(filePath)
+	if nil != err {
+		return nil, err
+	}
+	defer file.Close()
+
+	fileBytes, err := ioutil.ReadAll(file)
+	if nil != err {
+		return nil, err
+	}
+
+	hash, err := domain.NewHash(bytes.NewBuffer(fileBytes))
+	if nil != err {
+		return nil, err
+	}
+
+	fitFile, err := domain.NewFitFile(relativeFilePath, hash, bytes.NewBuffer(fileBytes))
+	if nil != err {
+		return nil, err
+	}
+
+	return fitFile, nil
+}
+
+func (d *FitDAL) persistFitFileSummary(hash domain.Hash, fitFile *domain.FitFileSummary) error {
+	filePath := filepath.Join(d.cachesDir, string(hash))
+	_, err := d.fs.Stat(filePath)
+	if nil != err {
+		if os.IsNotExist(err) {
+			// cache file already exists, do nothing
+			return nil
+		}
+		return err
+	}
+
+	buf := bytes.NewBuffer(nil)
+
+	err = gob.NewEncoder(buf).Encode(fitFile)
+	if nil != err {
+		return err
+	}
+
+	file, err := d.fs.Create(filePath)
+	if nil != err {
+		return err
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, buf)
+	if nil != err {
+		return err
+	}
+
+	return nil
 }

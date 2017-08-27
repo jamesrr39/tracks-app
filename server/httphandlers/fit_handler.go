@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jamesrr39/go-tracks-app/server/dal"
+	"github.com/jamesrr39/go-tracks-app/server/domain"
 )
 
 // FitHandler is an HTTP handler for fit files
@@ -26,14 +27,13 @@ func NewFitHandler(dal *dal.FitDAL) *FitHandler {
 
 func (h *FitHandler) handleGetAll(w http.ResponseWriter, r *http.Request) {
 
-	fitFilesSummaries, err := h.dal.GetAll()
-	if nil != err {
-		http.Error(w, "couldn't get fit tracks. Error: "+err.Error(), 500)
-		return
+	fitFilesSummaries := h.dal.GetAllSummariesInCache()
+	if 0 == len(fitFilesSummaries) {
+		fitFilesSummaries = []*domain.FitFileSummary{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(fitFilesSummaries)
+	err := json.NewEncoder(w).Encode(fitFilesSummaries)
 	if nil != err {
 		http.Error(w, "couldn't encode fit tracks to json. Error: "+err.Error(), 500)
 		return
