@@ -4,20 +4,20 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_RebuildCachesFromRootDir_and_GetAllSummariesInCache(t *testing.T) {
-	fitDAL := &FitDAL{fs: &afero.MemMapFs{}, rootDir: "/activities", summaryCache: newFitCache(), cachesDir: "/caches"}
+	fs := afero.NewMemMapFs()
+	err := fs.Mkdir("/activities", 0700)
+	require.Nil(t, err)
 
-	file, err := fitDAL.fs.Create("/activities/a.fit")
-	assert.Nil(t, err)
-	defer file.Close()
+	fitDAL := &FitDAL{fs: fs, rootDir: "/activities", summaryCache: newFitCache(), cachesDir: "/caches"}
 
 	err = fitDAL.RebuildCachesFromRootDir()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	fitFileSummaries := fitDAL.GetAllSummariesInCache()
-	assert.Len(t, fitFileSummaries, 1)
+	require.Len(t, fitFileSummaries, 0)
 
 }
