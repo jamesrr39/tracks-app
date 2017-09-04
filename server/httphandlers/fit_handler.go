@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/jamesrr39/go-tracks-app/server/dal"
-	"github.com/jamesrr39/go-tracks-app/server/domain"
+	"github.com/jamesrr39/tracks-app/server/dal"
+	"github.com/jamesrr39/tracks-app/server/domain"
 )
 
 // FitHandler is an HTTP handler for fit files

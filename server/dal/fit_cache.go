@@ -3,7 +3,7 @@ package dal
 import (
 	"sync"
 
-	"github.com/jamesrr39/go-tracks-app/server/domain"
+	"github.com/jamesrr39/tracks-app/server/domain"
 )
 
 type cacheMap map[domain.Hash]*domain.FitFileSummary

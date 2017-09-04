@@ -6,17 +6,17 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/jamesrr39/go-tracks-app/clienthandler"
-	"github.com/jamesrr39/go-tracks-app/server/dal"
-	"github.com/jamesrr39/go-tracks-app/server/httphandlers"
 	"github.com/jamesrr39/goutil/userextra"
+	"github.com/jamesrr39/tracks-app/clienthandler"
+	"github.com/jamesrr39/tracks-app/server/dal"
+	"github.com/jamesrr39/tracks-app/server/httphandlers"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 func main() {
 	rootDir := kingpin.Arg("rootDir", "directory that all tracks can be found under").Required().String()
-	unexpandedCachesDir := kingpin.Flag("caches-dir", "directory to store the caches in").Default("~/.caches/github.com/jamesrr39/go-tracks-app").String()
+	unexpandedCachesDir := kingpin.Flag("caches-dir", "directory to store the caches in").Default("~/.caches/github.com/jamesrr39/tracks-app").String()
 
 	kingpin.Parse()
 

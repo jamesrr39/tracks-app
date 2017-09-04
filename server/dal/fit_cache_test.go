@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jamesrr39/go-tracks-app/server/domain"
+	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/stretchr/testify/assert"
 )
 

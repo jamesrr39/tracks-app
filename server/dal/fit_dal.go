@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jamesrr39/go-tracks-app/server/domain"
+	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/jamesrr39/goutil/dirtraversal"
 	"github.com/spf13/afero"
 )
