@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/jamesrr39/goutil/dirtraversal"
+	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/spf13/afero"
 )
 
@@ -81,8 +81,10 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 			return fmt.Errorf("error while reading from persisted path '%s'. Error: %s", path, err)
 		}
 
+		relativeFilePath := strings.TrimPrefix(strings.TrimPrefix(path, d.rootDir), string(filepath.Separator))
+		log.Printf("relative file path: %s\n", relativeFilePath)
 		if nil == fitFileSummary {
-			fitFileSummary, err = domain.NewFitFileSummaryFromReader(fileInfo.Name(), hash, bytes.NewBuffer(fileBytes))
+			fitFileSummary, err = domain.NewFitFileSummaryFromReader(relativeFilePath, hash, bytes.NewBuffer(fileBytes))
 			if nil != err {
 				return fmt.Errorf("couldn't generate a FitFileSummary for '%s'. Error: %s", path, err)
 			}

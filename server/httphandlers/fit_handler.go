@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -21,10 +22,11 @@ type FitHandler struct {
 // NewFitHandler creates a new FitHandler
 func NewFitHandler(dal *dal.FitDAL) *FitHandler {
 	router := mux.NewRouter()
+
 	handler := &FitHandler{dal: dal, router: router}
 	router.HandleFunc("/", handler.handleGetAll).Methods("GET")
-	router.HandleFunc("/{fitFileName}", handler.handleGet).Methods("GET")
-	router.HandleFunc("/{fitFileName}/laps", handler.handleGetLaps).Methods("GET")
+	router.HandleFunc("/file", handler.handleGet).Methods("GET")
+	router.HandleFunc("/laps", handler.handleGetLaps).Methods("GET")
 	return handler
 }
 
@@ -44,11 +46,16 @@ func (h *FitHandler) handleGetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FitHandler) handleGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	fileName := vars["fitFileName"]
+	escapedFilePath := r.URL.Query().Get("filePath")
 
-	log.Println("getting fit file for " + fileName)
-	fitFile, err := h.dal.Get(fileName)
+	filePath, err := url.QueryUnescape(escapedFilePath)
+	if nil != err {
+		http.Error(w, fmt.Sprintf("couldn't unescape fit file name: '%s'. Error: %s", escapedFilePath, err), 400)
+		return
+	}
+
+	log.Println("getting fit file for " + filePath)
+	fitFile, err := h.dal.Get(filePath)
 	if nil != err {
 		http.Error(w, err.Error(), 500) // todo better response codes
 		return
@@ -66,8 +73,10 @@ func (h *FitHandler) handleGetLaps(w http.ResponseWriter, r *http.Request) {
 	incrementMetres := 1000
 	var err error
 
-	vars := mux.Vars(r)
-	fileName := vars["fitFileName"]
+	escapedFilePath := r.URL.Query().Get("filePath")
+
+	filePath, err := url.QueryUnescape(escapedFilePath)
+
 	incrementMetresStr := r.URL.Query().Get("lapLength")
 	if incrementMetresStr != "" {
 		incrementMetres, err = strconv.Atoi(incrementMetresStr)
@@ -77,7 +86,7 @@ func (h *FitHandler) handleGetLaps(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fitFile, err := h.dal.Get(fileName)
+	fitFile, err := h.dal.Get(filePath)
 	if nil != err {
 		http.Error(w, err.Error(), 500) // todo better response codes
 		return

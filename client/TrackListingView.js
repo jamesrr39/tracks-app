@@ -51,7 +51,7 @@ define([
   return function() {
     return {
       render: function($element) {
-        $.ajax("/api/fit/").then(function(summaries) {
+        $.ajax("/api/tracks/").then(function(summaries) {
           var trackSummaryDatesMap = {}; // [] dayTs[tracks]
 
           summaries.forEach(function(summary) {

@@ -33,10 +33,10 @@ define([
 
   var trackTemplate = Handlebars.compile([
     "<div>",
-      "<h2>{{startDateStr}} ({{durationStr}})</h2>",
+      "<h2>{{startDateStr}}</h2>",
       "<p>{{name}}</p>",
       "<p>Recorded with {{deviceStr}}</p>",
-      "<p>{{distanceKm}} Km</p>",
+      "<p>{{distanceKm}} Km in {{durationStr}}</p>",
       "<div style='width: 100%; height:600px;' class='map-container'></div>",
       "<div class='laps-container'>Loading laps...</div>",
     "</div>"
@@ -103,7 +103,7 @@ define([
   return function(trackName) {
     return {
       render: function($element) {
-        $.ajax("/api/fit/" + encodeURIComponent(trackName)).then(function(track) {
+        $.ajax("/api/tracks/file?filePath=" + encodeURIComponent(trackName)).then(function(track) {
           var deviceProduct = track.summary.deviceProduct || "(Unknown Product)";
           var startDate = new Date(track.summary.startTime);
           var endDate = new Date(track.summary.endTime);
@@ -119,7 +119,7 @@ define([
           }));
 
           // load laps
-          $.ajax("/api/fit/" + encodeURIComponent(trackName) + "/laps").then(function(laps) {
+          $.ajax("/api/tracks/laps?filePath=" + encodeURIComponent(trackName)).then(function(laps) {
             $element.find(".laps-container").html(lapsTemplate({
               laps: laps.map(function(lap) {
                 lap.timeTakenStr = formatDuration((new Date(lap.endTimestamp).getTime() - new Date(lap.startTimestamp).getTime()) / 1000),

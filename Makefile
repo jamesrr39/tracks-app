@@ -3,4 +3,7 @@ build: bundle_static_assets
 	go build -tags prod -o bin/tracks-app
 
 bundle_static_assets:
-	go-bindata-assetfs -tags prod -o clienthandler/generated_static_web_files.go -pkg clienthandler client/...
+	# bundle then move output to clienthandler.
+	# go-bindata-assetfs doesn't include assetFS() when using the -o flag
+	go-bindata-assetfs -tags prod -pkg clienthandler client/...
+	mv bindata_assetfs.go clienthandler/bindata_assetfs.go
