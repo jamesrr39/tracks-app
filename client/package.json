@@ -1,0 +1,26 @@
+{
+  "name": "tracks-client",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "webpack -w"
+  },
+  "dependencies": {
+    "@angular/animations": "^4.2.4",
+    "@angular/common": "^4.2.4",
+    "@angular/compiler": "^4.2.4",
+    "@angular/core": "^4.2.4",
+    "@angular/forms": "^4.2.4",
+    "@angular/http": "^4.2.4",
+    "@angular/platform-browser": "^4.2.4",
+    "@angular/platform-browser-dynamic": "^4.2.4",
+    "@angular/router": "^4.2.4",
+    "core-js": "^2.4.1",
+    "rxjs": "^5.4.2",
+    "ts-loader": "^2.3.4",
+    "typescript": "^2.5.2",
+    "webpack": "^3.5.5",
+    "zone.js": "^0.8.14"
+  }
+}
