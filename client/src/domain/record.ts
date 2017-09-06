@@ -1,3 +1,3 @@
 export class Record {
-  public constructor(timestamp: Date, posLat, posLong: number, distance, altitude: number){}
+  public constructor(public timestamp: Date, public posLat, public posLong: number, public distance, public altitude: number){}
 }

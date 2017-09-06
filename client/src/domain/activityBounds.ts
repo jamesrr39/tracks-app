@@ -1,3 +1,3 @@
 export class ActivityBounds {
-  public constructor(latMin, latMax, longMin, longMax: number) {}
+  public constructor(public latMin, public latMax, public longMin, public longMax: number) {}
 }

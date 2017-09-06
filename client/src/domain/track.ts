@@ -33,5 +33,5 @@ export class TrackSummary {
 }
 
 export class Track {
-  constructor(public summary: TrackSummary, records: Record[], activityBounds: ActivityBounds){}
+  constructor(public summary: TrackSummary, public records: Record[], public activityBounds: ActivityBounds){}
 }
