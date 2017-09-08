@@ -8,10 +8,10 @@ import { TrackSummary } from '../domain/track';
   template: `
   <div>
     <div *ngFor="let trackSummary of trackSummaries">
-      <a routerLink="/tracks/{{trackSummary.name}}" routerLinkActive="active">
+      <a routerLink="/tracks/{{ trackSummary.name }}" routerLinkActive="active">
         {{ trackSummary.name }}
       </a>
-      {{ trackSummary.getDurationString() }}
+      {{ trackSummary.getDistanceString() }} in {{ trackSummary.getDurationString() }}
     </div>
   </div>
   `

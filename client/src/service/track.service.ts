@@ -6,6 +6,7 @@ import '../rxjs-operators';
 import { Track, TrackSummary } from '../domain/track';
 import { Record } from '../domain/record';
 import { ActivityBounds } from '../domain/activityBounds';
+import { Lap } from '../domain/lap';
 
 @Injectable()
 export class TrackService {
@@ -22,8 +23,6 @@ export class TrackService {
     fetchTrack(name: string): Observable<Track> {
       return this.http.get("/api/tracks/file?filePath=" + encodeURIComponent(name)).map((r: Response) => {
         const responseObject = r.json();
-
-        console.log(responseObject)
 
         const records = responseObject.records.map((recordObject) => {
           return new Record(
@@ -47,6 +46,23 @@ export class TrackService {
           records,
           activityBounds
         );
+      });
+    }
+
+    fetchLaps(trackName: string): Observable<Lap[]> {
+      return this.http.get("/api/tracks/laps?filePath=" + trackName).map((r: Response) => {
+          const responseObject = r.json();
+
+          return responseObject.map((lapObject) => {
+            return new Lap(
+              new Date(lapObject.startTimestamp),
+              new Date(lapObject.endTimestamp),
+              lapObject.distanceInLapMetres,
+              lapObject.cumulativeDistanceMetres,
+              lapObject.startAltitude,
+              lapObject.endAltitude
+            );
+          });
       });
     }
 
