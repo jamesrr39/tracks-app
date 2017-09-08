@@ -1,9 +1,7 @@
 import { Component, Input, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
-import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/switchMap';
-import 'rxjs/add/operator/merge';
 import { of } from 'rxjs/observable/of';
 
 import * as OpenLayers from 'openlayers';
