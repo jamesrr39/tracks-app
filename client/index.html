@@ -1,24 +1,20 @@
-<html>
-	<head>
-		<title>Tracks</title>
-		<link rel="stylesheet" href="/libs/bootstrap-4.0.0-alpha.6.css" />
-		<link rel="stylesheet" href="/libs/font-awesome-4.7.0.css" />
-		<link rel="stylesheet" href="/libs/openlayers-v4.3.1-dist/ol.css" />
-		<style type="text/css">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tracks</title>
+  <base href="/">
 
-		</style>
-	</head>
-	<body>
-		<nav class="navbar navbar-default">
-			<div class="container-fluid">
-				<div class="navbar-header">
-					<a class="navbar-brand" href="#">Tracks</a>
-				</div>
-			</div>
-		</nav>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<div id="content"></div>
+  <!-- Polyfill(s) for older browsers -->
+  <script src="node_modules/core-js/client/shim.min.js"></script>
+  <script src="node_modules/zone.js/dist/zone.js"></script>
+  <script src="node_modules/reflect-metadata/Reflect.js"></script>
 
-		<script data-main="main.js" src="libs/require-2.3.4.js"></script>
-	</body>
+</head>
+<body>
+  <tracks-app></tracks-app>
+  <script src="/dist/bundle.js"></script>
+</body>
 </html>

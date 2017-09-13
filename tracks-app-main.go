@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jamesrr39/goutil/userextra"
-	"github.com/jamesrr39/tracks-app/clienthandler"
 	"github.com/jamesrr39/tracks-app/server/dal"
 	"github.com/jamesrr39/tracks-app/server/httphandlers"
 
@@ -38,8 +37,7 @@ func main() {
 
 	serverHandler := mux.NewRouter()
 	serverHandler.PathPrefix("/api/").Handler(http.StripPrefix("/api", apiHandler))
-
-	serverHandler.PathPrefix("/").Handler(clienthandler.GetClientHandler())
+	serverHandler.PathPrefix("/").Handler(http.StripPrefix("/", httphandlers.NewClientHandler()))
 
 	log.Printf("attempting to broadcast on '%s'\n", *addr)
 
