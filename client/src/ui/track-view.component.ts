@@ -87,19 +87,22 @@ export class TrackView {
   }
 
   private drawMap() {
-    const waypoints = new OpenLayers.layer.Vector({
-      source: new OpenLayers.source.Vector({
-        features: this.track.records.map((record) => {
-          const coords = OpenLayers.proj.transform([
-              record.posLong,
-              record.posLat
-            ], "EPSG:4326", "EPSG:3857");
+    const coords = this.track.records.map((record) => {
+      return [record.posLong, record.posLat];
+    }) as [number, number][];
 
-          return new OpenLayers.Feature({
-            geometry: new OpenLayers.geom.Point(coords),
-            name: record.distance
-          });
-        })
+    const lineString = new OpenLayers.geom.LineString(coords);
+    lineString.transform('EPSG:4326', 'EPSG:3857');
+
+    const feature = new OpenLayers.Feature({
+      geometry: lineString,
+      name: "line"
+    });
+
+    const lineStyle = new OpenLayers.style.Style({
+      stroke: new OpenLayers.style.Stroke({
+        color: '#0000ff',
+        width: 4
       })
     });
 
@@ -108,15 +111,14 @@ export class TrackView {
         new OpenLayers.layer.Tile({
           source: new OpenLayers.source.OSM()
         }),
-        waypoints
+        new OpenLayers.layer.Vector({
+          source: new OpenLayers.source.Vector({
+            features: [feature]
+          }),
+          style: lineStyle
+        })
       ],
-      /*controls: OpenLayers.control.defaults({
-        attributionOptions: {
-          collapsible: false
-        }
-      }),*/
       target: this.mapContainer.nativeElement,
-      //renderer: "canvas",
       view: new OpenLayers.View({
         center: OpenLayers.proj.fromLonLat([
           (this.track.activityBounds.longMin + this.track.activityBounds.longMax) / 2,

@@ -1,7 +1,15 @@
 
+
+// TODO does this belong in domain package?
+
+
 export function getDurationString(startTime, endTime: Date): string {
   const durationSeconds = (endTime.getTime() - startTime.getTime()) / 1000
 
+  return formatDuration(durationSeconds);
+};
+
+export function formatDuration(durationSeconds: number): string {
   const hours = Math.floor(durationSeconds / (3600));
   const minutes = (Math.floor(durationSeconds / 60)) - (hours * 60)
   const seconds = durationSeconds - (minutes * 60 + hours * 3600)
@@ -16,4 +24,4 @@ export function getDurationString(startTime, endTime: Date): string {
   s+= seconds + "s";
 
   return s;
-};
+}

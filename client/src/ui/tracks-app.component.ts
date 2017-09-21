@@ -4,9 +4,11 @@ import { Component, ViewEncapsulation } from '@angular/core';
   selector: "tracks-app",
   template: `
   <nav>
-    <a routerLink="/" routerLinkActive="active">
-      <h1>Tracks</h1>
-    </a>
+    <h1>
+      <a routerLink="/" routerLinkActive="active">
+        Tracks
+      </a>
+    </h1>
   </nav>
   <router-outlet></router-outlet>
   `,

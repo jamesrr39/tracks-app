@@ -12,6 +12,10 @@ export class TrackSummary {
   getDistanceString(): string {
     return (this.totalDistance/1000).toFixed(2) + "km";
   }
+
+  getDurationSeconds() {
+    return (this.endTime.getTime() - this.startTime.getTime()) / 1000;
+  }
 }
 
 export class Track {
