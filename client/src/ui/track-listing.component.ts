@@ -20,6 +20,11 @@ import { formatDuration } from '../domain/duration';
         <div *ngFor="let trackSummary of group.trackSummaries">
           <a routerLink="/tracks/{{ encodeURIComponent(trackSummary.name) }}" routerLinkActive="active">
             {{ trackSummary.getDistanceString() }} in {{ trackSummary.getDurationString() }} on  {{ formatDateToISOString(trackSummary.startTime) }}
+            <ul>
+              <li *ngFor="let nearbyObject of trackSummary.nearbyObjects">
+                {{ nearbyObject.tags.name }}
+              </li>
+            </ul>
           </a>
           <small>({{ trackSummary.name }})</small>
         </div>

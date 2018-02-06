@@ -1,9 +1,19 @@
 import { Record } from './record';
 import { ActivityBounds } from './activityBounds';
 import { getDurationString } from './duration';
+import { GeographicMapElement } from './geographicMapElement';
 
 export class TrackSummary {
-  constructor(public name: string, public startTime: Date, public endTime: Date, public deviceManufacturer: string, public deviceProduct: string, public totalDistance: number){}
+  constructor(
+    public readonly name: string,
+    public readonly startTime: Date,
+    public readonly endTime: Date,
+    public readonly deviceManufacturer: string,
+    public readonly deviceProduct: string,
+    public readonly totalDistance: number,
+    public readonly activityBounds: ActivityBounds[],
+    public readonly nearbyObjects: GeographicMapElement[]
+){}
 
   getDurationString() {
    return getDurationString(this.startTime, this.endTime);

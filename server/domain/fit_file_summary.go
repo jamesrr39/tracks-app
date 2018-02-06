@@ -11,27 +11,29 @@ import (
 
 // FitFileSummary is a summary of a fit file
 type FitFileSummary struct {
-	Name               string    `json:"name"`
-	Hash               Hash      `json:"hash"`
-	StartTime          time.Time `json:"startTime"`
-	EndTime            time.Time `json:"endTime"`
-	DeviceManufacturer string    `json:"deviceManufacturer"`
-	DeviceProduct      string    `json:"deviceProduct"`
-	TotalDistance      float64   `json:"totalDistance"`
+	Name               string                  `json:"name"`
+	Hash               Hash                    `json:"hash"`
+	StartTime          time.Time               `json:"startTime"`
+	EndTime            time.Time               `json:"endTime"`
+	DeviceManufacturer string                  `json:"deviceManufacturer"`
+	DeviceProduct      string                  `json:"deviceProduct"`
+	TotalDistance      float64                 `json:"totalDistance"`
+	ActivityBounds     *ActivityBounds         `json:"activityBounds"`
+	NearbyObjects      []*GeographicMapElement `json:"nearbyObjects"`
 }
 
 // NewFitFileSummary creates a new FitFileSummary
-func NewFitFileSummary(name string, hash Hash, startTime, endTime time.Time, deviceManufacturer, deviceProduct string, totalDistance float64) *FitFileSummary {
-	return &FitFileSummary{Name: name, Hash: hash, StartTime: startTime, EndTime: endTime, DeviceManufacturer: deviceManufacturer, DeviceProduct: deviceProduct, TotalDistance: totalDistance}
+func NewFitFileSummary(name string, hash Hash, startTime, endTime time.Time, deviceManufacturer, deviceProduct string, totalDistance float64, activityBounds *ActivityBounds, nearbyObjects []*GeographicMapElement) *FitFileSummary {
+	return &FitFileSummary{name, hash, startTime, endTime, deviceManufacturer, deviceProduct, totalDistance, activityBounds, nearbyObjects}
 }
 
-func NewFitFileSummaryFromReader(name string, hash Hash, reader io.Reader) (*FitFileSummary, error) {
+func NewFitFileSummaryFromReader(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher NearbyObjectsFetcher) (*FitFileSummary, error) {
 	file, err := fit.Decode(reader)
 	if nil != err {
 		return nil, err
 	}
 
-	summary, err := newSummaryFromDecodedFitFile(name, hash, file)
+	summary, err := newSummaryFromDecodedFitFile(name, hash, file, nearbyObjectsFetcher)
 	if nil != err {
 		return nil, fmt.Errorf("failed to create a summary for %s. Error: %s", name, err)
 	}
@@ -39,7 +41,7 @@ func NewFitFileSummaryFromReader(name string, hash Hash, reader io.Reader) (*Fit
 	return summary, nil
 }
 
-func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitFileSummary, error) {
+func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File, nearbyObjectsFetcher NearbyObjectsFetcher) (*FitFileSummary, error) {
 	// sport, err := file.Sport() // TODO include sport?
 
 	activity, err := file.Activity()
@@ -62,6 +64,17 @@ func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitF
 		break
 	}
 
+	activityBounds := ActivityBoundsFromFitActivity(activity)
+	// nearbyObjects, err := externalservices.FetchNearbyCityData(time.Second*10, activityBounds)
+	// if nil != err {
+	// 	return nil, err
+	// }
+
+	nearbyObjects, err := nearbyObjectsFetcher.Fetch(activityBounds)
+	if nil != err {
+		return nil, err
+	}
+
 	return NewFitFileSummary(
 			name,
 			hash,
@@ -69,7 +82,10 @@ func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitF
 			activity.Records[len(activity.Records)-1].Timestamp,
 			file.FileId.Manufacturer.String(),
 			file.FileId.ProductName,
-			distanceScaled),
+			distanceScaled,
+			activityBounds,
+			nearbyObjects,
+		),
 		nil
 
 }

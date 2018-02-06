@@ -73,7 +73,9 @@ export class TrackService {
         new Date(responseObject.endTime),
         responseObject.deviceManufacturer,
         responseObject.deviceProduct,
-        responseObject.totalDistance
+        responseObject.totalDistance,
+        responseObject.activityBounds,
+        responseObject.nearbyObjects
       );
     }
 

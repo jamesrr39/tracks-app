@@ -14,13 +14,13 @@ type FitFile struct {
 	*ActivityBounds `json:"activityBounds"`
 }
 
-func NewFitFile(name string, hash Hash, reader io.Reader) (*FitFile, error) {
+func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher NearbyObjectsFetcher) (*FitFile, error) {
 	decodedFile, err := fit.Decode(reader)
 	if nil != err {
 		return nil, err
 	}
 
-	summary, err := newSummaryFromDecodedFitFile(name, hash, decodedFile)
+	summary, err := newSummaryFromDecodedFitFile(name, hash, decodedFile, nearbyObjectsFetcher)
 	if nil != err {
 		return nil, err
 	}
@@ -30,7 +30,8 @@ func NewFitFile(name string, hash Hash, reader io.Reader) (*FitFile, error) {
 		return nil, fmt.Errorf("failed to get activity for %s. Error: %s", name, err)
 	}
 
-	activityBounds := &ActivityBounds{90, -90, 180, -180}
+	// activityBounds := &ActivityBounds{90, -90, 180, -180}
+	activityBounds := ActivityBoundsFromFitActivity(activity)
 
 	// parse all records
 	var records []*Record
@@ -47,23 +48,23 @@ func NewFitFile(name string, hash Hash, reader io.Reader) (*FitFile, error) {
 			continue
 		}
 
-		posLat := activityRecord.PositionLat.Degrees()
-		if posLat < activityBounds.LatMin {
-			activityBounds.LatMin = posLat
-		}
-
-		if posLat > activityBounds.LatMax {
-			activityBounds.LatMax = posLat
-		}
-
-		posLong := activityRecord.PositionLong.Degrees()
-		if posLong < activityBounds.LongMin {
-			activityBounds.LongMin = posLong
-		}
-
-		if posLong > activityBounds.LongMax {
-			activityBounds.LongMax = posLong
-		}
+		// posLat := activityRecord.PositionLat.Degrees()
+		// if posLat < activityBounds.LatMin {
+		// 	activityBounds.LatMin = posLat
+		// }
+		//
+		// if posLat > activityBounds.LatMax {
+		// 	activityBounds.LatMax = posLat
+		// }
+		//
+		// posLong := activityRecord.PositionLong.Degrees()
+		// if posLong < activityBounds.LongMin {
+		// 	activityBounds.LongMin = posLong
+		// }
+		//
+		// if posLong > activityBounds.LongMax {
+		// 	activityBounds.LongMax = posLong
+		// }
 
 		record := NewRecord(
 			activityRecord.Timestamp,
@@ -77,6 +78,7 @@ func NewFitFile(name string, hash Hash, reader io.Reader) (*FitFile, error) {
 	return &FitFile{FitFileSummary: summary, Records: records, ActivityBounds: activityBounds}, nil
 }
 
+// TODO: replace in Go 1.10
 func round(n float64) int {
 	if n > 0 {
 		return int(math.Floor(n + 0.5))

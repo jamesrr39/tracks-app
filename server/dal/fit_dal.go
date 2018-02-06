@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/jamesrr39/goutil/dirtraversal"
 	"github.com/jamesrr39/tracks-app/server/domain"
@@ -19,16 +20,17 @@ import (
 
 // FitDAL represents an object that can scan for and parse .fit files
 type FitDAL struct {
-	fs           afero.Fs
-	rootDir      string
-	summaryCache *fitFileSummaryCache
-	cachesDir    string
+	fs                   afero.Fs
+	rootDir              string
+	summaryCache         *fitFileSummaryCache
+	cachesDir            string
+	nearbyObjectsFetcher domain.NearbyObjectsFetcher
 }
 
 // NewFitDALAndScan creates a FitDAL with a normal OS Filesystem (not for testing)
 // and scans the rootDir to build up an 'inventory' of fit files
-func NewFitDALAndScan(rootDir, cachesDir string) (*FitDAL, error) {
-	fitDAL := &FitDAL{fs: afero.NewOsFs(), rootDir: rootDir, summaryCache: newFitCache(), cachesDir: cachesDir}
+func NewFitDALAndScan(rootDir, cachesDir string, nearbyObjectsFetcher domain.NearbyObjectsFetcher) (*FitDAL, error) {
+	fitDAL := &FitDAL{fs: afero.NewOsFs(), rootDir: rootDir, summaryCache: newFitCache(), cachesDir: cachesDir, nearbyObjectsFetcher: nearbyObjectsFetcher}
 	err := fitDAL.RebuildCachesFromRootDir()
 	if nil != err {
 		return nil, err
@@ -46,6 +48,8 @@ func (d *FitDAL) GetAllSummariesInCache() []*domain.FitFileSummary {
 // RebuildCachesFromRootDir rebuilds the cache from the rootDir
 func (d *FitDAL) RebuildCachesFromRootDir() error {
 	var fitFileSummaries []*domain.FitFileSummary
+	var wg sync.WaitGroup
+	var mu sync.Mutex
 
 	err := afero.Walk(d.fs, d.rootDir, func(path string, fileInfo os.FileInfo, err error) error {
 		if nil != err {
@@ -59,38 +63,21 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 		if !strings.HasSuffix(fileInfo.Name(), ".fit") {
 			return nil
 		}
-		log.Printf("processing %s\n", path)
-		file, err := d.fs.Open(path)
-		if nil != err {
-			return err
-		}
-		defer file.Close()
 
-		fileBytes, err := ioutil.ReadAll(file)
-		if nil != err {
-			return fmt.Errorf("couldn't read '%s' into memory. Error: %s", path, err)
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.Printf("processing %s\n", path)
 
-		hash, err := domain.NewHash(bytes.NewBuffer(fileBytes))
-		if nil != err {
-			return fmt.Errorf("couldn't generate a hash for %s. Error: %s", path, err)
-		}
-
-		fitFileSummary, err := d.readFromPersistedFile(hash)
-		if nil != err {
-			return fmt.Errorf("error while reading from persisted path '%s'. Error: %s", path, err)
-		}
-
-		relativeFilePath := strings.TrimPrefix(strings.TrimPrefix(path, d.rootDir), string(filepath.Separator))
-		log.Printf("relative file path: %s\n", relativeFilePath)
-		if nil == fitFileSummary {
-			fitFileSummary, err = domain.NewFitFileSummaryFromReader(relativeFilePath, hash, bytes.NewBuffer(fileBytes))
+			fitFileSummary, err := d.processFitFile(path)
 			if nil != err {
-				return fmt.Errorf("couldn't generate a FitFileSummary for '%s'. Error: %s", path, err)
+				log.Printf("ERROR: couldn't process FitFile: %s. Error: %s\n", path, err)
+				return
 			}
-		}
-
-		fitFileSummaries = append(fitFileSummaries, fitFileSummary)
+			mu.Lock()
+			fitFileSummaries = append(fitFileSummaries, fitFileSummary)
+			mu.Unlock()
+		}()
 
 		return nil
 	})
@@ -98,7 +85,7 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 	if nil != err {
 		return err
 	}
-
+	wg.Wait()
 	d.summaryCache.rebuildCache(fitFileSummaries)
 
 	for _, fitFileSummary := range fitFileSummaries {
@@ -109,6 +96,41 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 	}
 
 	return nil
+}
+
+func (d *FitDAL) processFitFile(path string) (*domain.FitFileSummary, error) {
+
+	file, err := d.fs.Open(path)
+	if nil != err {
+		return nil, err
+	}
+	defer file.Close()
+
+	fileBytes, err := ioutil.ReadAll(file)
+	if nil != err {
+		return nil, fmt.Errorf("couldn't read '%s' into memory. Error: %s", path, err)
+	}
+
+	hash, err := domain.NewHash(bytes.NewBuffer(fileBytes))
+	if nil != err {
+		return nil, fmt.Errorf("couldn't generate a hash for %s. Error: %s", path, err)
+	}
+
+	fitFileSummary, err := d.readFromPersistedFile(hash)
+	if nil != err {
+		return nil, fmt.Errorf("error while reading from persisted path '%s'. Error: %s", path, err)
+	}
+
+	relativeFilePath := strings.TrimPrefix(strings.TrimPrefix(path, d.rootDir), string(filepath.Separator))
+	log.Printf("relative file path: %s\n", relativeFilePath)
+	if nil == fitFileSummary {
+		fitFileSummary, err = domain.NewFitFileSummaryFromReader(relativeFilePath, hash, bytes.NewBuffer(fileBytes), d.nearbyObjectsFetcher)
+		if nil != err {
+			return nil, fmt.Errorf("couldn't generate a FitFileSummary for '%s'. Error: %s", path, err)
+		}
+	}
+
+	return fitFileSummary, nil
 }
 
 // readFromPersistedFile reads a FitFileSummary from a gob-encoded pre-existing file
@@ -161,7 +183,7 @@ func (d *FitDAL) Get(relativeFilePath string) (*domain.FitFile, error) {
 		return nil, err
 	}
 
-	fitFile, err := domain.NewFitFile(relativeFilePath, hash, bytes.NewBuffer(fileBytes))
+	fitFile, err := domain.NewFitFile(relativeFilePath, hash, bytes.NewBuffer(fileBytes), d.nearbyObjectsFetcher)
 	if nil != err {
 		return nil, err
 	}
