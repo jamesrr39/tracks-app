@@ -21,15 +21,7 @@ import { TracksByMonthView } from '../domain/tracks-by-month-group';
       <small>{{ group.trackSummaries.length }} tracks, {{ group.getTotalDistanceKm() }}Km in {{ group.getTotalDurationStr() }}</small>
       <div class="summaries-container">
         <div class="summary-container" *ngFor="let trackSummary of group.trackSummaries">
-          <a routerLink="/tracks/{{ encodeURIComponent(trackSummary.name) }}" routerLinkActive="active">
-            {{ trackSummary.getDistanceString() }} in {{ trackSummary.getDurationString() }} on  {{ formatDateToISOString(trackSummary.startTime) }}
-            <ul>
-              <li *ngFor="let nearbyObject of trackSummary.nearbyObjects">
-                {{ nearbyObject.tags.name }}
-              </li>
-            </ul>
-          </a>
-          <small>({{ trackSummary.name }})</small>
+          <track-summary [trackSummary]="trackSummary"></track-summary>
         </div>
       </div>
     </div>
@@ -76,23 +68,5 @@ export class TrackListing {
 
   showByDistanceView() {
     this.trackSummaryGroups = new TracksByDistanceView(this.trackSummaries);
-  }
-
-  encodeURIComponent(text: string) {
-    return encodeURIComponent(text);
-  }
-
-  formatDateToISOString(date: Date) {
-    let month = (date.getMonth() + 1) + "";
-    if (month.length === 1) {
-      month = "0" + month;
-    }
-
-    let day = date.getDate() + "";
-    if (day.length === 1) {
-      day = "0" + day;
-    }
-
-    return date.getFullYear() + "-" + month + "-" + day;
   }
 }

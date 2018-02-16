@@ -8,12 +8,14 @@ import { Record } from '../domain/record';
 import { ActivityBounds } from '../domain/activityBounds';
 import { Lap } from '../domain/lap';
 
+const API_URL = "//localhost:8090"
+
 @Injectable()
 export class TrackService {
     constructor(private http: Http){}
 
     fetchAllSummaries(): Observable<TrackSummary[]> {
-      return this.http.get("/api/tracks/").map((r: Response) => {
+      return this.http.get(API_URL + "/api/tracks/").map((r: Response) => {
         return r.json().map((responseObject) => {
           return TrackService.trackSummaryFromJSObject(responseObject);
         });
@@ -21,7 +23,7 @@ export class TrackService {
     }
 
     fetchTrack(name: string): Observable<Track> {
-      return this.http.get("/api/tracks/file?filePath=" + encodeURIComponent(name)).map((r: Response) => {
+      return this.http.get(API_URL + "/api/tracks/file?filePath=" + encodeURIComponent(name)).map((r: Response) => {
         const responseObject = r.json();
 
         const records = responseObject.records.map((recordObject) => {
@@ -50,7 +52,7 @@ export class TrackService {
     }
 
     fetchLaps(trackName: string): Observable<Lap[]> {
-      return this.http.get("/api/tracks/laps?filePath=" + trackName).map((r: Response) => {
+      return this.http.get(API_URL + "/api/tracks/laps?filePath=" + trackName).map((r: Response) => {
           const responseObject = r.json();
 
           return responseObject.map((lapObject) => {

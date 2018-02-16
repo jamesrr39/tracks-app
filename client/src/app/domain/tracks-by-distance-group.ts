@@ -5,7 +5,7 @@ import { TrackSummary } from "./track";
 export class TracksByDistanceView implements GroupedTrackSummaries {
   constructor(private trackSummaries: TrackSummary[]) {}
 
-  getGroupsAscending(): Group[] {
+  getGroups(): Group[] {
     const groupsMap = new Map<number, TrackSummary[]>(); // number = multiple of 5. Ex = 2.5km = 0, 6km = 1, 15km = 3
 
     this.trackSummaries.forEach((trackSummary) => {

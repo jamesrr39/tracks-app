@@ -28,5 +28,5 @@ export class Group {
 }
 
 export interface GroupedTrackSummaries {
-  getGroupsAscending(): Group[]
+  getGroups(): Group[]
 }

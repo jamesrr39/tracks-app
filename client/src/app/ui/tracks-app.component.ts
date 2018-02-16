@@ -14,8 +14,8 @@ import { Component, ViewEncapsulation } from '@angular/core';
   `,
   encapsulation: ViewEncapsulation.None,
   styleUrls: [
-    "../../node_modules/bootstrap/dist/css/bootstrap.css",
-    "../../node_modules/openlayers/dist/ol.css"
+    "../../../node_modules/bootstrap/dist/css/bootstrap.css",
+    "../../../node_modules/openlayers/dist/ol.css"
   ]
 })
 export class TracksApp {

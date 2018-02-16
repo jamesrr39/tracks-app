@@ -10,6 +10,7 @@ import { TrackListing } from './ui/track-listing.component';
 import { TrackView } from './ui/track-view.component';
 
 import { TrackService } from './service/track.service';
+import { TrackListingSummary } from './ui/track-summary.component';
 
 const appRoutes: Routes = [
   {
@@ -30,8 +31,8 @@ const appRoutes: Routes = [
 
 @NgModule({
 	imports: [BrowserModule, HttpModule, RouterModule.forRoot(appRoutes, {useHash: true})],
-	declarations: [TracksApp, TrackListing, TrackView],
+	declarations: [TracksApp, TrackListing, TrackView, TrackListingSummary],
   bootstrap: [TracksApp],
   providers: [TrackService]
 })
-export class AppModule { }
+export class TracksModule { }
