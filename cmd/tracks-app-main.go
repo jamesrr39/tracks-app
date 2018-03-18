@@ -45,13 +45,8 @@ func main() {
 		log.Fatalf("failed to create a new dal and scan the files under %s. Error: %s\n", *rootDir, err)
 	}
 
-	fitHandler := httphandlers.NewFitHandler(fitDAL)
-
-	apiHandler := mux.NewRouter()
-	apiHandler.PathPrefix("/tracks/").Handler(http.StripPrefix("/tracks", fitHandler))
-
 	serverHandler := mux.NewRouter()
-	serverHandler.PathPrefix("/api/").Handler(http.StripPrefix("/api", apiHandler))
+	serverHandler.PathPrefix("/api/").Handler(http.StripPrefix("/api", httphandlers.NewApiHandler(fitDAL)))
 	serverHandler.PathPrefix("/").Handler(http.StripPrefix("/", httphandlers.NewClientHandler()))
 
 	log.Printf("attempting to broadcast on '%s'\n", *addr)
