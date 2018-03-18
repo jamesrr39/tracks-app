@@ -21,6 +21,7 @@ import { Lap } from '../domain/lap';
   </div>
   <div #map></div>
   <div *ngIf="areLapsLoaded">
+    <speed-chart track="track"></speed-chart>
     <table class="table">
       <thead>
         <tr>
@@ -128,4 +129,80 @@ export class TrackView {
       })
     });
   }
+}
+
+@Component({
+  selector: "speed-chart",
+  template: `
+    <canvas baseChart width="400" height="400"
+                    [datasets]="lineChartData"
+                    [labels]="lineChartLabels"
+                    [options]="lineChartOptions"
+                    [colors]="lineChartColors"
+                    [legend]="lineChartLegend"
+                    [chartType]="lineChartType"
+                    (chartHover)="chartHovered($event)"
+                    (chartClick)="chartClicked($event)"></canvas>
+  `
+})
+export class SpeedChart {
+  @Input() track: Track;
+
+  private lineChartData = [];
+
+  private lineChartLabels = [];
+  public lineChartOptions:any = {
+     responsive: true
+   };
+   public lineChartColors:Array<any> = [
+     { // grey
+       backgroundColor: 'rgba(148,159,177,0.2)',
+       borderColor: 'rgba(148,159,177,1)',
+       pointBackgroundColor: 'rgba(148,159,177,1)',
+       pointBorderColor: '#fff',
+       pointHoverBackgroundColor: '#fff',
+       pointHoverBorderColor: 'rgba(148,159,177,0.8)'
+     }
+   ];
+   public lineChartLegend:boolean = true;
+   public lineChartType:string = 'line';
+
+   ngOnInit() {
+     this.lineChartData = this.generateChartData();
+   }
+   generateChartData() {
+     if (this.track.records.length === 0) {
+       return [];
+     }
+
+     const INTERVAL_DURATION_SECONDS = 10;
+     const setData = [];
+     let lastPoint = this.track.records[0];
+     let nextInterval = INTERVAL_DURATION_SECONDS;
+
+     for (let i = 0; i < this.track.records.length; i++) {
+       const thisPoint = this.track.records[i];
+       if (thisPoint.timestamp.getTime() - lastPoint.timestamp.getTime() >= INTERVAL_DURATION_SECONDS * 1000) {
+         const distanceLatDeg = Math.abs(thisPoint.posLat - lastPoint.posLat);
+         const distanceLongDeg = Math.abs(thisPoint.posLong - lastPoint.posLong);
+
+         // https://stackoverflow.com/questions/1253499/simple-calculations-for-working-with-lat-lon-km-distance
+         const distanceLatM = 110574 * distanceLatDeg;
+         const thisLatRadians = (thisPoint.posLat * Math.PI / 180);
+         const distanceLongM = 111320 * Math.cos(thisLatRadians);
+
+         const distanceTraveled = Math.sqrt(distanceLatM ** 2 + distanceLongM ** 2);
+         setData.push(distanceTraveled);
+       }
+     }
+     return setData;
+   }
+
+   public chartClicked(e:any):void {
+      console.log(e);
+    }
+
+    public chartHovered(e:any):void {
+      console.log(e);
+    }
 }
