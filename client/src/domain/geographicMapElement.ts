@@ -3,5 +3,5 @@ export interface GeographicMapElement {
     isIn: string;
     name: string;
     place: string;
-  }
+  };
 }

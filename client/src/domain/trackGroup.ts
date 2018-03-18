@@ -1,12 +1,12 @@
-import { TrackSummary } from "./track";
-import { formatDuration } from "./duration";
+import { TrackSummary, getDurationSeconds } from './track';
+import { formatDuration } from '../utilities/duration';
 
 export class Group {
   constructor(
     public readonly name: string,
-    public readonly trackSummaries: TrackSummary[]){}
+    public readonly trackSummaries: TrackSummary[]) {}
 
-  getTotalDistanceKm() :string {
+  getTotalDistanceKm(): string {
     const distanceMetres = this.trackSummaries.map((trackSummary) => {
       return trackSummary.totalDistance;
     }).reduce((prev, thisVal) => {
@@ -16,9 +16,9 @@ export class Group {
     return (distanceMetres / 1000).toFixed(2);
   }
 
-  getTotalDurationStr() :string {
+  getTotalDurationStr(): string {
     const durationSeconds = this.trackSummaries.map((trackSummary) => {
-      return trackSummary.getDurationSeconds();
+      return getDurationSeconds(trackSummary);
     }).reduce((prev, thisVal) => {
       return prev + thisVal;
     });
@@ -28,5 +28,5 @@ export class Group {
 }
 
 export interface GroupedTrackSummaries {
-  getGroups(): Group[]
+  getGroups(): Group[];
 }
