@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { TrackSummary, getTrackDurationString, getDistanceString } from '../domain/track';
+import { Link } from 'react-router-dom';
 
 type TrackThumbnailProps = {
   trackSummary: TrackSummary
@@ -14,9 +15,14 @@ export class TrackThumbnail extends React.Component<TrackThumbnailProps> {
 
       return <li key={objectIndex}>{content}</li>;
     });
+
+    const trackViewLink = `/tracks/${encodeURIComponent(this.props.trackSummary.name)}`;
+
     return (
-      <div style={{backgroundColor: '#2C7'}}>
-        <p>{this.props.trackSummary.name}</p>
+      <div style={{backgroundColor: '#22A'}}>
+        <Link to={trackViewLink}>
+          <p>{this.props.trackSummary.name}</p>
+        </Link>
         <p>{getDistanceString(this.props.trackSummary)}
         &nbsp;in {getTrackDurationString(this.props.trackSummary)}
         &nbsp;on {this.props.trackSummary.startTime.toUTCString()}</p>
