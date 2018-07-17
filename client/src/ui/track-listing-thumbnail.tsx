@@ -19,7 +19,7 @@ export class TrackThumbnail extends React.Component<TrackThumbnailProps> {
     const trackViewLink = `/tracks/${encodeURIComponent(this.props.trackSummary.name)}`;
 
     return (
-      <div style={{backgroundColor: '#22A'}}>
+      <div style={{backgroundColor: '#DDD'}}>
         <Link to={trackViewLink}>
           <p>{this.props.trackSummary.name}</p>
         </Link>

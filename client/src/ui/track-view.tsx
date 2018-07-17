@@ -122,7 +122,7 @@ class TrackMap extends React.Component<TrackMapProps> {
   }
   render() {
     return (
-      <div id="map" style={{width: '600px', height: '600px'}} ref={this.renderMap} />
+      <div id="map" style={{width: '100%', height: '100%'}} ref={this.renderMap} />
     );
   }
 }
