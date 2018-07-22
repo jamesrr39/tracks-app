@@ -18,6 +18,7 @@ import Stroke from 'ol/style/stroke';
 import Style from 'ol/style/style';
 import { SpeedChart } from './speed-chart';
 import { getDurationString } from '../utilities/duration';
+import { LapsView } from './laps-view';
 // import ol from 'ol';
 // import * as proj from 'openlayers';
 // import { Coordinate } from 'openlayers';
@@ -126,7 +127,6 @@ class TrackMap extends React.Component<TrackMapProps> {
     return (
       <div>
         <div id="map" style={{width: '100%', height: '600px'}} ref={this.renderMap} />
-        <SpeedChart track={this.props.track} />
       </div>
     );
   }
@@ -173,7 +173,9 @@ export class TrackView extends React.Component<Route, TrackViewState> {
       <div>
         {distance} in {durationStr} ({avSpeedKph} Km/h)
         <TrackMap track={track} />
-        </div>
-      );
+        <LapsView track={track} />
+        <SpeedChart track={track} />
+      </div>
+    );
   }
 }
