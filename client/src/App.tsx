@@ -18,7 +18,7 @@ class Main extends React.Component {
         <Switch>
           <Route exact={true} path="/" component={TrackListing}/>
           <Route path="/tracks/:trackName" component={TrackView}/>
-        </Switch>;
+        </Switch>
       </main >
     );
   }

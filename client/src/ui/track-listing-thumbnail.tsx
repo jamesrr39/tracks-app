@@ -6,6 +6,18 @@ type TrackThumbnailProps = {
   trackSummary: TrackSummary
 };
 
+const styles = {
+  container: {
+    backgroundColor: '#ddd',
+    margin: '10px',
+    minWidth: '250px',
+  },
+  nearbyObjectsList: {
+    maxHeight: '100px',
+    overflow: 'auto',
+  } as React.CSSProperties
+};
+
 export class TrackThumbnail extends React.Component<TrackThumbnailProps> {
   render() {
     const nearbyObjectsElements = this.props.trackSummary.nearbyObjects.map((nearbyObject, objectIndex) => {
@@ -19,14 +31,14 @@ export class TrackThumbnail extends React.Component<TrackThumbnailProps> {
     const trackViewLink = `/tracks/${encodeURIComponent(this.props.trackSummary.name)}`;
 
     return (
-      <div style={{backgroundColor: '#DDD'}}>
+      <div style={styles.container}>
         <Link to={trackViewLink}>
           <p>{this.props.trackSummary.name}</p>
         </Link>
         <p>{getDistanceString(this.props.trackSummary)}
         &nbsp;in {getTrackDurationString(this.props.trackSummary)}
         &nbsp;on {this.props.trackSummary.startTime.toUTCString()}</p>
-        <ul className="list-unstyled">
+        <ul style={styles.nearbyObjectsList} className="list-unstyled">
           {nearbyObjectsElements}
         </ul>
       </div>

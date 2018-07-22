@@ -2,10 +2,50 @@ import * as React from 'react';
 import { TrackSummary } from '../domain/track';
 import { TrackThumbnail } from './track-listing-thumbnail';
 
-export class TrackListing extends React.Component {
+const styles = {
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  } as React.CSSProperties
+};
+
+const sort = (a: number, b: number) => {
+  if (a === b) {
+    return 0;
+  }
+  return (a > b) ? -1 : 1;
+};
+
+interface Sorter {
+  name: string;
+  sort(a: TrackSummary, b: TrackSummary): number;
+}
+
+const sortByDate = {
+  name: 'Date',
+  sort: (a: TrackSummary, b: TrackSummary) => {
+    return sort(a.startTime.getTime(), b.startTime.getTime());
+  },
+};
+
+const sortByDistance = {
+  name: 'Km',
+  sort: (a: TrackSummary, b: TrackSummary) => {
+    return sort(a.totalDistance, b.totalDistance);
+  },
+};
+
+type State = {
+  trackSummaries: TrackSummary[],
+  isLoaded: boolean,
+  listingSortType: Sorter,
+};
+
+export class TrackListing extends React.Component<{}, State> {
   state = {
     trackSummaries: [],
     isLoaded: false,
+    listingSortType: sortByDate,
   };
 
   componentWillMount() {
@@ -17,12 +57,6 @@ export class TrackListing extends React.Component {
             trackSummary.endTime = new Date(trackSummary.endTime);
           });
 
-          trackSummaries.sort((a: TrackSummary, b: TrackSummary) => {
-            if (a.startTime === b.startTime) {
-              return 0;
-            }
-            return (a.startTime > b.startTime) ? -1 : 1;
-          });
           this.setState({
             trackSummaries,
             isLoaded: true,
@@ -31,17 +65,57 @@ export class TrackListing extends React.Component {
       });
     }
   }
+
+  setSorter = (sorter: Sorter) => {
+    this.setState({
+      listingSortType: sorter,
+    });
+  }
+
   render() {
-    if (this.state.isLoaded === false) {
+    const { isLoaded, listingSortType } = this.state;
+
+    if (isLoaded === false) {
       return (<p>Loading</p>);
     }
 
-    const summaryThumbnails = this.state.trackSummaries.map((trackSummary: TrackSummary, index) => {
+    const trackSummaries = [].concat(this.state.trackSummaries);
+
+    trackSummaries.sort(listingSortType.sort);
+
+    const summaryThumbnails = trackSummaries.map((trackSummary: TrackSummary, index) => {
       return <TrackThumbnail trackSummary={trackSummary} key={index} />;
     });
 
+    const sorters = [sortByDate, sortByDistance].map((sorter, i) => {
+      return (
+        <a key={i} href="#" className="dropdown-item" onClick={() => this.setSorter(sorter)}>
+          {sorter.name}
+        </a>
+      );
+
+    });
+
     return (
-      <div>{summaryThumbnails}</div>
+      <div>
+        <div className="dropdown">
+          <button
+            className="btn btn-default dropdown-toggle"
+            type="button"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            {listingSortType.name}
+          </button>
+          <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            {sorters}
+          </div>
+        </div>
+        <div style={styles.container}>
+        {summaryThumbnails}
+        </div>
+      </div>
     );
   }
 }

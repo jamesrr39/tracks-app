@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Track } from '../domain/track';
+import { Track, getDistanceString } from '../domain/track';
 
 import 'ol/ol.css';
 // import ol from 'ol';
@@ -16,6 +16,8 @@ const proj = require('ol/proj').default;
 
 import Stroke from 'ol/style/stroke';
 import Style from 'ol/style/style';
+import { SpeedChart } from './speed-chart';
+import { getDurationString } from '../utilities/duration';
 // import ol from 'ol';
 // import * as proj from 'openlayers';
 // import { Coordinate } from 'openlayers';
@@ -122,7 +124,10 @@ class TrackMap extends React.Component<TrackMapProps> {
   }
   render() {
     return (
-      <div id="map" style={{width: '100%', height: '100%'}} ref={this.renderMap} />
+      <div>
+        <div id="map" style={{width: '100%', height: '600px'}} ref={this.renderMap} />
+        <SpeedChart track={this.props.track} />
+      </div>
     );
   }
 }
@@ -136,6 +141,13 @@ export class TrackView extends React.Component<Route, TrackViewState> {
     const url = `//localhost:8090/api/tracks/file?filePath=${encodeURIComponent(this.props.match.params.trackName)}`;
     fetch(url).then(resp => {
       resp.json().then((track: Track) => {
+        track.summary.startTime = new Date(track.summary.startTime);
+        track.summary.endTime = new Date(track.summary.endTime);
+
+        track.records.forEach((record) => {
+          record.timestamp = new Date(record.timestamp);
+        });
+
         this.setState({
           track
         });
@@ -144,12 +156,24 @@ export class TrackView extends React.Component<Route, TrackViewState> {
   }
 
   render() {
-    const {track} = this.state;
+    let {track} = this.state;
 
     if (track === null) {
       return (<p>Loading</p>);
     }
 
-    return (<div><TrackMap track={track} /></div>);
+    const t = (track as Track);
+    const durationStr = getDurationString(t.summary.startTime, t.summary.endTime);
+    const distance = getDistanceString(t.summary);
+    const durationSeconds = (t.summary.endTime.getTime() - t.summary.startTime.getTime()) / 1000;
+    const avSpeedMetresPerSecond = t.summary.totalDistance / durationSeconds;
+    const avSpeedKph = (avSpeedMetresPerSecond * 3600 / 1000).toFixed(2);
+
+    return (
+      <div>
+        {distance} in {durationStr} ({avSpeedKph} Km/h)
+        <TrackMap track={track} />
+        </div>
+      );
   }
 }

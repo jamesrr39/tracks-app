@@ -2,9 +2,6 @@
 // TODO does this belong in domain package?
 
 export function getDurationString(startTime: Date, endTime: Date): string {
-  if (!endTime) {
-    return '???';
-  }
   const durationSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
 
   return formatDuration(durationSeconds);

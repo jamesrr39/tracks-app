@@ -15,7 +15,6 @@ export type TrackSummary = {
 };
 
 export function getTrackDurationString(trackSummary: TrackSummary) {
-
   return getDurationString(trackSummary.startTime, trackSummary.endTime);
 }
 

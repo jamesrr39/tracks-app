@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/jest": "^22.2.0",
+    "@types/node": "^9.4.7",
     "@types/ol": "^4.6.1",
+    "@types/react": "^16.0.40",
+    "@types/react-dom": "^16.0.4",
     "@types/react-router-dom": "^4.2.5",
     "bootstrap": "^4.0.0",
     "ol": "^4.6.5",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-router-dom": "^4.2.2",
-    "react-scripts-ts": "2.14.0"
+    "react-scripts-ts": "2.14.0",
+    "typescript": "^2.7.2"
   },
   "scripts": {
     "start": "react-scripts-ts start",
@@ -18,12 +23,5 @@
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
     "tslint-fix": "tslint --fix src/**/*"
-  },
-  "devDependencies": {
-    "@types/jest": "^22.2.0",
-    "@types/node": "^9.4.7",
-    "@types/react": "^16.0.40",
-    "@types/react-dom": "^16.0.4",
-    "typescript": "^2.7.2"
   }
 }
