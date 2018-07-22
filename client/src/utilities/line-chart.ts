@@ -26,6 +26,7 @@ export class LineChart {
       throw new Error('canvas context was null');
     }
 
+    ctx.beginPath();
     ctx.moveTo(0, height);
     const p: Point[] = [];
     this.points.forEach((point, index) => {
@@ -35,6 +36,16 @@ export class LineChart {
     });
 
     p.forEach(po => ctx.lineTo(po.x, height - po.y));
+
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = 'lightblue';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.restore();
+
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 2;
 
     ctx.stroke();
   }
