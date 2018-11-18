@@ -23,8 +23,10 @@ export class LapsView extends React.Component<Props> {
     let lapStartTimeMS = track.records[0].timestamp;
     let lapStartDistanceM = track.records[0].distance;
 
-    this.props.track.records.forEach(record => {
-      if (record.distance < nextLapBound) {
+    this.props.track.records.forEach((record, index) => {
+      const isLastRecord = index === this.props.track.records.length - 1;
+      const hasReachedNextBound = record.distance >= nextLapBound;
+      if (!hasReachedNextBound && !isLastRecord) {
         return;
       }
 
