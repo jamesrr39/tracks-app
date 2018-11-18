@@ -25,7 +25,7 @@ run_dev_client:
 
 .PHONY: install
 install: build_prod
-	cp bin/tracks-app $(GOPATH)/tracks-app
+	cp bin/tracks-app $(GOBIN)/tracks-app
 
 # docker save jamesrr39/tracks-app-raspberry-pi:latest | bzip2 |      ssh raspberrypi 'bunzip2 | sudo docker load'
 # docker run -d -p 8090:8090 -v /mnt/enc-container-1/data/tracks:/home/tracks/tracks-data jamesrr39/tracks-app-raspberry-pi
