@@ -1,0 +1,27 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "fV97ryTfS2E+uL7jBjhX8tO1I7k=",
+			"path": "github.com/rakyll/statik",
+			"revision": "d5ad23bc79e541d7dbff7f7a7cc8f583c15fc384",
+			"revisionTime": "2018-07-09T22:41:48Z"
+		},
+		{
+			"checksumSHA1": "++Uxr4F++QrnFEbBlQsJ3VuQoNM=",
+			"path": "github.com/rakyll/statik/fs",
+			"revision": "d5ad23bc79e541d7dbff7f7a7cc8f583c15fc384",
+			"revisionTime": "2018-07-09T22:41:48Z"
+		},
+		{
+			"path": "github.com/rakyll/statik/statik",
+			"revision": ""
+		},
+		{
+			"path": "github.com/rakyll/statik/statik.go",
+			"revision": ""
+		}
+	],
+	"rootPath": "github.com/jamesrr39/tracks-app"
+}
