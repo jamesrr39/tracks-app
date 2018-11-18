@@ -64,15 +64,13 @@ func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File, nearby
 		break
 	}
 
-	activityBounds := ActivityBoundsFromFitActivity(activity)
-	// nearbyObjects, err := externalservices.FetchNearbyCityData(time.Second*10, activityBounds)
-	// if nil != err {
-	// 	return nil, err
-	// }
-
-	nearbyObjects, err := nearbyObjectsFetcher.Fetch(activityBounds)
-	if nil != err {
-		return nil, err
+	nearbyObjects := []*GeographicMapElement{}
+	activityBounds, err := ActivityBoundsFromFitActivity(activity)
+	if err == nil {
+		nearbyObjects, err = nearbyObjectsFetcher.Fetch(activityBounds)
+		if nil != err {
+			return nil, err
+		}
 	}
 
 	return NewFitFileSummary(

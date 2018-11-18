@@ -30,8 +30,7 @@ func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher N
 		return nil, fmt.Errorf("failed to get activity for %s. Error: %s", name, err)
 	}
 
-	// activityBounds := &ActivityBounds{90, -90, 180, -180}
-	activityBounds := ActivityBoundsFromFitActivity(activity)
+	activityBounds, _ := ActivityBoundsFromFitActivity(activity)
 
 	// parse all records
 	var records []*Record
@@ -47,24 +46,6 @@ func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher N
 		if math.IsNaN(distanceScaled) {
 			continue
 		}
-
-		// posLat := activityRecord.PositionLat.Degrees()
-		// if posLat < activityBounds.LatMin {
-		// 	activityBounds.LatMin = posLat
-		// }
-		//
-		// if posLat > activityBounds.LatMax {
-		// 	activityBounds.LatMax = posLat
-		// }
-		//
-		// posLong := activityRecord.PositionLong.Degrees()
-		// if posLong < activityBounds.LongMin {
-		// 	activityBounds.LongMin = posLong
-		// }
-		//
-		// if posLong > activityBounds.LongMax {
-		// 	activityBounds.LongMax = posLong
-		// }
 
 		record := NewRecord(
 			activityRecord.Timestamp,

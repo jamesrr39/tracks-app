@@ -1,9 +1,14 @@
 package domain
 
 import (
+	"errors"
 	"math"
 
 	"github.com/tormoder/fit"
+)
+
+var (
+	ErrNoRecordsWithLocaiton = errors.New("no records with location")
 )
 
 type ActivityBounds struct {
@@ -13,8 +18,9 @@ type ActivityBounds struct {
 	LongMax float64 `json:"longMax"` // between -180 and +180
 }
 
-func ActivityBoundsFromFitActivity(activity *fit.ActivityFile) *ActivityBounds {
+func ActivityBoundsFromFitActivity(activity *fit.ActivityFile) (*ActivityBounds, error) {
 	activityBounds := &ActivityBounds{90, -90, 180, -180}
+	boundsFound := false
 
 	for _, activityRecord := range activity.Records {
 		// todo handle activityRecord.PositionLat.Invalid ?
@@ -46,6 +52,13 @@ func ActivityBoundsFromFitActivity(activity *fit.ActivityFile) *ActivityBounds {
 		if posLong > activityBounds.LongMax {
 			activityBounds.LongMax = posLong
 		}
+
+		boundsFound = true
 	}
-	return activityBounds
+
+	if !boundsFound {
+		return nil, ErrNoRecordsWithLocaiton
+	}
+
+	return activityBounds, nil
 }
