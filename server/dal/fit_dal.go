@@ -1,18 +1,18 @@
 package dal
 
 import (
-	"bytes"
 	"encoding/gob"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/jamesrr39/go-errorsx"
 	"github.com/jamesrr39/goutil/dirtraversal"
 	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/spf13/afero"
@@ -47,7 +47,7 @@ func (d *FitDAL) GetAllSummariesInCache() []*domain.FitFileSummary {
 
 // RebuildCachesFromRootDir rebuilds the cache from the rootDir
 func (d *FitDAL) RebuildCachesFromRootDir() error {
-	var fitFileSummaries []*domain.FitFileSummary
+	fitFileSummaries := []*domain.FitFileSummary{}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -67,7 +67,7 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("processing %s\n", path)
+			slog.Info("processing file", "path", path)
 
 			fitFileSummary, err := d.processFitFile(path)
 			if nil != err {
@@ -106,14 +106,19 @@ func (d *FitDAL) processFitFile(path string) (*domain.FitFileSummary, error) {
 	}
 	defer file.Close()
 
-	fileBytes, err := ioutil.ReadAll(file)
-	if nil != err {
-		return nil, fmt.Errorf("couldn't read '%s' into memory. Error: %s", path, err)
-	}
+	// fileBytes, err := ioutil.ReadAll(file)
+	// if nil != err {
+	// 	return nil, fmt.Errorf("couldn't read '%s' into memory. Error: %s", path, err)
+	// }
 
-	hash, err := domain.NewHash(bytes.NewBuffer(fileBytes))
+	hash, err := domain.NewHash(file)
 	if nil != err {
 		return nil, fmt.Errorf("couldn't generate a hash for %s. Error: %s", path, err)
+	}
+
+	_, err = file.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, errorsx.Wrap(err)
 	}
 
 	fitFileSummary, err := d.readFromPersistedFile(hash)
@@ -122,11 +127,16 @@ func (d *FitDAL) processFitFile(path string) (*domain.FitFileSummary, error) {
 	}
 
 	relativeFilePath := strings.TrimPrefix(strings.TrimPrefix(path, d.rootDir), string(filepath.Separator))
-	log.Printf("relative file path: %s\n", relativeFilePath)
+
 	if nil == fitFileSummary {
-		fitFileSummary, err = domain.NewFitFileSummaryFromReader(relativeFilePath, hash, bytes.NewBuffer(fileBytes), d.nearbyObjectsFetcher)
+		fitFileSummary, err = domain.NewFitFileSummaryFromReader(relativeFilePath, hash, file, d.nearbyObjectsFetcher)
 		if nil != err {
 			return nil, fmt.Errorf("couldn't generate a FitFileSummary for '%s'. Error: %s", path, err)
+		}
+
+		_, err = file.Seek(0, io.SeekStart)
+		if err != nil {
+			return nil, errorsx.Wrap(err)
 		}
 	}
 
@@ -159,31 +169,36 @@ func (d *FitDAL) readFromPersistedFile(hash domain.Hash) (*domain.FitFileSummary
 	return fitFileSummary, nil
 }
 
-// Get gets a parsed fit file
+// Get gets a parsed fit file. Returns os.ErrNotExist if file not found
 func (d *FitDAL) Get(relativeFilePath string) (*domain.FitFile, error) {
 	if dirtraversal.IsTryingToTraverseUp(relativeFilePath) {
 		return nil, errors.New("../ not allowed in filepath")
 	}
 
 	filePath := filepath.Join(d.rootDir, relativeFilePath)
-	log.Printf("dal parsing fit file at: %s\n", filePath)
+	slog.Info("dal parsing fit file", "filePath", filePath)
 	file, err := d.fs.Open(filePath)
 	if nil != err {
 		return nil, err
 	}
 	defer file.Close()
 
-	fileBytes, err := ioutil.ReadAll(file)
+	hash, err := domain.NewHash(file)
 	if nil != err {
 		return nil, err
 	}
 
-	hash, err := domain.NewHash(bytes.NewBuffer(fileBytes))
+	_, err = file.Seek(0, io.SeekStart)
 	if nil != err {
 		return nil, err
 	}
 
-	fitFile, err := domain.NewFitFile(relativeFilePath, hash, bytes.NewBuffer(fileBytes), d.nearbyObjectsFetcher)
+	fitFile, err := domain.NewFitFile(relativeFilePath, hash, file, d.nearbyObjectsFetcher)
+	if nil != err {
+		return nil, err
+	}
+
+	_, err = file.Seek(0, io.SeekStart)
 	if nil != err {
 		return nil, err
 	}
@@ -202,20 +217,13 @@ func (d *FitDAL) persistFitFileSummary(hash domain.Hash, fitFile *domain.FitFile
 		return err
 	}
 
-	buf := bytes.NewBuffer(nil)
-
-	err = gob.NewEncoder(buf).Encode(fitFile)
-	if nil != err {
-		return err
-	}
-
 	file, err := d.fs.Create(filePath)
 	if nil != err {
 		return err
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, buf)
+	err = gob.NewEncoder(file).Encode(fitFile)
 	if nil != err {
 		return err
 	}

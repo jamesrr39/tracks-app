@@ -11,11 +11,11 @@ type cacheMap map[domain.Hash]*domain.FitFileSummary
 // fitFileSummaryCache maintains a cache of fit file properties
 type fitFileSummaryCache struct {
 	cacheMap
-	mu sync.Mutex
+	mu sync.RWMutex
 }
 
 func newFitCache() *fitFileSummaryCache {
-	return &fitFileSummaryCache{cacheMap: make(cacheMap), mu: sync.Mutex{}}
+	return &fitFileSummaryCache{cacheMap: make(cacheMap), mu: sync.RWMutex{}}
 }
 
 func (c *fitFileSummaryCache) rebuildCache(fitFileSummaries []*domain.FitFileSummary) {
@@ -29,11 +29,11 @@ func (c *fitFileSummaryCache) rebuildCache(fitFileSummaries []*domain.FitFileSum
 }
 
 func (c *fitFileSummaryCache) getAll() []*domain.FitFileSummary {
-	var fitFileSummaries []*domain.FitFileSummary
-	c.mu.Lock()
+	fitFileSummaries := []*domain.FitFileSummary{}
+	c.mu.RLock()
 	for _, v := range c.cacheMap {
 		fitFileSummaries = append(fitFileSummaries, v)
 	}
-	c.mu.Unlock()
+	c.mu.RUnlock()
 	return fitFileSummaries
 }

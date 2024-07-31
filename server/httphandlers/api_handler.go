@@ -1,26 +1,26 @@
 package httphandlers
 
-import (
-	"net/http"
+// import (
+// 	"net/http"
 
-	"github.com/go-chi/chi"
-	"github.com/jamesrr39/tracks-app/server/dal"
-)
+// 	"github.com/go-chi/chi"
+// 	"github.com/jamesrr39/tracks-app/server/dal"
+// )
 
-type ApiHandler struct {
-	http.Handler
-}
+// type ApiHandler struct {
+// 	http.Handler
+// }
 
-func NewApiHandler(fitDAL *dal.FitDAL) *ApiHandler {
+// func NewApiHandler(fitDAL *dal.FitDAL) *ApiHandler {
 
-	fitHandler := NewFitHandler(fitDAL)
+// 	fitHandler := NewFitHandler(fitDAL)
 
-	router := chi.NewRouter()
+// 	router := chi.NewRouter()
 
-	router.Use(CorsSettings)
+// 	router.Use(CorsSettings)
 
-	router.Mount("/tracks/", http.StripPrefix("/tracks", fitHandler))
-	// apiHandler.PathPrefix("/tracks/").Handler(http.StripPrefix("/tracks", fitHandler))
+// 	router.Mount("/tracks/", http.StripPrefix("/tracks", fitHandler))
+// 	// apiHandler.PathPrefix("/tracks/").Handler(http.StripPrefix("/tracks", fitHandler))
 
-	return &ApiHandler{router}
-}
+// 	return &ApiHandler{router}
+// }

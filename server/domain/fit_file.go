@@ -11,7 +11,6 @@ import (
 type FitFile struct {
 	*FitFileSummary `json:"summary"`
 	Records         []*Record `json:"records"`
-	*ActivityBounds `json:"activityBounds"`
 }
 
 func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher NearbyObjectsFetcher) (*FitFile, error) {
@@ -30,10 +29,8 @@ func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher N
 		return nil, fmt.Errorf("failed to get activity for %s. Error: %s", name, err)
 	}
 
-	activityBounds, _ := ActivityBoundsFromFitActivity(activity)
-
 	// parse all records
-	var records []*Record
+	records := []*Record{}
 	for _, activityRecord := range activity.Records {
 		// todo handle activityRecord.PositionLat.Invalid ?
 		if activityRecord.PositionLat.Invalid() || activityRecord.PositionLong.Invalid() {
@@ -56,7 +53,7 @@ func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher N
 		records = append(records, record)
 	}
 
-	return &FitFile{FitFileSummary: summary, Records: records, ActivityBounds: activityBounds}, nil
+	return &FitFile{FitFileSummary: summary, Records: records}, nil
 }
 
 // TODO: replace in Go 1.10
