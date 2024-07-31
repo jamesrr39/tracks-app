@@ -66,7 +66,7 @@ func round(n float64) int {
 
 func (f *FitFile) GetLaps(incrementMetres int) []*Lap {
 	nextIncrement := incrementMetres
-	var laps []*Lap
+	laps := []*Lap{}
 
 	amountOfRecords := len(f.Records)
 	if amountOfRecords == 0 {
