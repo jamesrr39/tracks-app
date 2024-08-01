@@ -1,0 +1,23 @@
+{
+  "name": "workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "preact": "^10.22.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/plugin-transform-react-jsx-development": "^7.24.7",
+    "@preact/preset-vite": "^2.8.3",
+    "@types/babel__core": "^7",
+    "babel-plugin-transform-hook-names": "^1.0.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.4"
+  }
+}
