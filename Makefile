@@ -40,10 +40,8 @@ run_dev_server:
 install: build_prod
 	cp bin/tracks-app $(GOBIN)/tracks-app
 
-# docker save jamesrr39/tracks-app-raspberry-pi:latest | bzip2 |      ssh raspberrypi 'bunzip2 | sudo docker load'
-# docker run -d -p 8090:8090 -v /mnt/enc-container-1/data/tracks:/home/tracks/tracks-data jamesrr39/tracks-app-raspberry-pi
 .PHONY: generate_openapi_typescript
 generate_openapi_typescript:
 	mkdir -p ${OPENAPI_SPEC_OUTDIR}
-	go run apiserver/api-server-main.go generate-openapi-spec --output ${OPENAPI_SPEC_OUTDIR}/openapi3-spec.yml
-	cd web-client && yarn generate-openapi
+	go run cmd/tracks-app-main.go generate-openapi-spec --output ${OPENAPI_SPEC_OUTDIR}/openapi3-spec.yml
+	cd web-client && mkdir -p src/openapi/generated && rm -f src/openapi/generated/* && yarn generate-openapi

@@ -76,7 +76,7 @@ func setupGenerateOpenapiSpec() {
 			return errorsx.ErrWithStack(errorsx.Wrap(err))
 		}
 
-		err = os.WriteFile(*outputFilePath, specBytes, 644)
+		err = os.WriteFile(*outputFilePath, specBytes, 0644)
 		if err != nil {
 			return errorsx.ErrWithStack(errorsx.Wrap(err))
 		}

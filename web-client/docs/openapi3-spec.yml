@@ -1,0 +1,140 @@
+openapi: 3.0.3
+info:
+  description: REST API definitions for Tracks App
+  title: Tracks
+  version: dev
+paths:
+  /api/v1/tracks:
+    get:
+      operationId: getAllTrackSummaries
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersBuildGetAllSummariesResponse'
+          description: OK
+      summary: Get All Track Summaries
+      tags:
+      - Tracks
+  /api/v1/tracks/{path}:
+    get:
+      operationId: getTrackSummaryByPath
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersBuildGetTrackSummaryResponse'
+          description: OK
+      summary: Get Track Summary by Path
+      tags:
+      - Tracks
+  /api/v1/tracks/{path}/records:
+    get:
+      operationId: getTrackRecord
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersBuildGetTrackDetailResponse'
+          description: OK
+      summary: Get Track Record
+      tags:
+      - Tracks
+components:
+  schemas:
+    DomainActivityBounds:
+      properties:
+        latMax:
+          type: number
+        latMin:
+          type: number
+        longMax:
+          type: number
+        longMin:
+          type: number
+      type: object
+    DomainFitFileSummary:
+      properties:
+        activityBounds:
+          $ref: '#/components/schemas/DomainActivityBounds'
+        deviceManufacturer:
+          type: string
+        deviceProduct:
+          type: string
+        endTime:
+          format: date-time
+          type: string
+        hash:
+          type: string
+        name:
+          type: string
+        nearbyObjects:
+          items:
+            $ref: '#/components/schemas/DomainGeographicMapElement'
+          type: array
+        startTime:
+          format: date-time
+          type: string
+        totalDistance:
+          type: number
+      type: object
+    DomainGeographicMapElement:
+      properties:
+        tags:
+          properties:
+            isIn:
+              type: string
+            name:
+              type: string
+            place:
+              type: string
+          type: object
+      type: object
+    DomainRecord:
+      properties:
+        altitude:
+          type: integer
+        distance:
+          type: integer
+        posLat:
+          type: number
+        posLong:
+          type: number
+        timestamp:
+          format: date-time
+          type: string
+      type: object
+    HttphandlersBuildGetAllSummariesResponse:
+      properties:
+        trackSummaries:
+          items:
+            $ref: '#/components/schemas/DomainFitFileSummary'
+          type: array
+      type: object
+    HttphandlersBuildGetTrackDetailResponse:
+      properties:
+        records:
+          items:
+            $ref: '#/components/schemas/DomainRecord'
+          type: array
+      type: object
+    HttphandlersBuildGetTrackSummaryResponse:
+      properties:
+        trackSummary:
+          $ref: '#/components/schemas/DomainFitFileSummary'
+      type: object
