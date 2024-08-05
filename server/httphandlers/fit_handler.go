@@ -15,7 +15,7 @@ import (
 type EmptyStruct struct{}
 
 type BuildGetAllSummariesResponse struct {
-	TrackSummaries []*domain.FitFileSummary `json:"trackSummaries" nullable:"false"`
+	TrackSummaries []*domain.FitFileSummary `json:"trackSummaries" nullable:"false" required:"true"`
 }
 
 func BuildGetAllSummaries(fitDAL *dal.FitDAL) *nethttp.Handler {
@@ -38,7 +38,7 @@ type BuildGetTrackSummaryRequest struct {
 }
 
 type BuildGetTrackSummaryResponse struct {
-	TrackSummary *domain.FitFileSummary `json:"trackSummary"`
+	TrackSummary *domain.FitFileSummary `json:"trackSummary" required:"true"`
 }
 
 func BuildGetTrackSummary(fitDAL *dal.FitDAL) *nethttp.Handler {
@@ -68,7 +68,7 @@ type BuildGetTrackDetailRequest struct {
 }
 
 type BuildGetTrackDetailResponse struct {
-	Records []*domain.Record `json:"records" nullable:"false"`
+	Records []*domain.Record `json:"records" nullable:"false" required:"true"`
 }
 
 func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {

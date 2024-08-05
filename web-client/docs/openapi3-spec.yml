@@ -67,6 +67,11 @@ components:
           type: number
         longMin:
           type: number
+      required:
+      - latMin
+      - latMax
+      - longMin
+      - longMax
       type: object
     DomainFitFileSummary:
       properties:
@@ -92,6 +97,16 @@ components:
           type: string
         totalDistance:
           type: number
+      required:
+      - name
+      - hash
+      - startTime
+      - endTime
+      - deviceManufacturer
+      - deviceProduct
+      - totalDistance
+      - activityBounds
+      - nearbyObjects
       type: object
     DomainGeographicMapElement:
       properties:
@@ -103,7 +118,13 @@ components:
               type: string
             place:
               type: string
+          required:
+          - name
+          - place
+          - isIn
           type: object
+      required:
+      - tags
       type: object
     DomainRecord:
       properties:
@@ -118,6 +139,12 @@ components:
         timestamp:
           format: date-time
           type: string
+      required:
+      - timestamp
+      - posLat
+      - posLong
+      - distance
+      - altitude
       type: object
     HttphandlersBuildGetAllSummariesResponse:
       properties:
@@ -125,6 +152,8 @@ components:
           items:
             $ref: '#/components/schemas/DomainFitFileSummary'
           type: array
+      required:
+      - trackSummaries
       type: object
     HttphandlersBuildGetTrackDetailResponse:
       properties:
@@ -132,9 +161,13 @@ components:
           items:
             $ref: '#/components/schemas/DomainRecord'
           type: array
+      required:
+      - records
       type: object
     HttphandlersBuildGetTrackSummaryResponse:
       properties:
         trackSummary:
           $ref: '#/components/schemas/DomainFitFileSummary'
+      required:
+      - trackSummary
       type: object

@@ -23,9 +23,13 @@ export default function TracksGallery() {
         </tr>
       </thead>
       <tbody>
-        {data.trackSummaries?.map((track) => (
+        {data.trackSummaries.map((track) => (
           <tr>
-            <td>{track.name}</td>
+            <td>
+              <a href={`/tracks/${encodeURIComponent(track.name)}`}>
+                {track.name}
+              </a>
+            </td>
           </tr>
         ))}
       </tbody>

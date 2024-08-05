@@ -4,57 +4,57 @@
  * @version dev
  */
 export type DomainActivityBounds = {
-  latMax?: number;
-  latMin?: number;
-  longMax?: number;
-  longMin?: number;
+  latMax: number;
+  latMin: number;
+  longMax: number;
+  longMin: number;
 };
 
 export type DomainFitFileSummary = {
-  activityBounds?: DomainActivityBounds;
-  deviceManufacturer?: string;
-  deviceProduct?: string;
+  activityBounds: DomainActivityBounds;
+  deviceManufacturer: string;
+  deviceProduct: string;
   /**
    * @format date-time
    */
-  endTime?: string;
-  hash?: string;
-  name?: string;
-  nearbyObjects?: DomainGeographicMapElement[];
+  endTime: string;
+  hash: string;
+  name: string;
+  nearbyObjects: DomainGeographicMapElement[];
   /**
    * @format date-time
    */
-  startTime?: string;
-  totalDistance?: number;
+  startTime: string;
+  totalDistance: number;
 };
 
 export type DomainGeographicMapElement = {
-  tags?: {
-    isIn?: string;
-    name?: string;
-    place?: string;
+  tags: {
+    isIn: string;
+    name: string;
+    place: string;
   };
 };
 
 export type DomainRecord = {
-  altitude?: number;
-  distance?: number;
-  posLat?: number;
-  posLong?: number;
+  altitude: number;
+  distance: number;
+  posLat: number;
+  posLong: number;
   /**
    * @format date-time
    */
-  timestamp?: string;
+  timestamp: string;
 };
 
 export type HttphandlersBuildGetAllSummariesResponse = {
-  trackSummaries?: DomainFitFileSummary[];
+  trackSummaries: DomainFitFileSummary[];
 };
 
 export type HttphandlersBuildGetTrackDetailResponse = {
-  records?: DomainRecord[];
+  records: DomainRecord[];
 };
 
 export type HttphandlersBuildGetTrackSummaryResponse = {
-  trackSummary?: DomainFitFileSummary;
+  trackSummary: DomainFitFileSummary;
 };

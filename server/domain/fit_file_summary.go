@@ -11,15 +11,15 @@ import (
 
 // FitFileSummary is a summary of a fit file
 type FitFileSummary struct {
-	Name               string                  `json:"name"`
-	Hash               Hash                    `json:"hash"`
-	StartTime          time.Time               `json:"startTime"`
-	EndTime            time.Time               `json:"endTime"`
-	DeviceManufacturer string                  `json:"deviceManufacturer"`
-	DeviceProduct      string                  `json:"deviceProduct"`
-	TotalDistance      float64                 `json:"totalDistance"`
-	ActivityBounds     *ActivityBounds         `json:"activityBounds"`
-	NearbyObjects      []*GeographicMapElement `json:"nearbyObjects" nullable:"false"`
+	Name               string                  `json:"name" required:"true"`
+	Hash               Hash                    `json:"hash" required:"true"`
+	StartTime          time.Time               `json:"startTime" required:"true"`
+	EndTime            time.Time               `json:"endTime" required:"true"`
+	DeviceManufacturer string                  `json:"deviceManufacturer" required:"true"`
+	DeviceProduct      string                  `json:"deviceProduct" required:"true"`
+	TotalDistance      float64                 `json:"totalDistance" required:"true"`
+	ActivityBounds     *ActivityBounds         `json:"activityBounds" required:"true"`
+	NearbyObjects      []*GeographicMapElement `json:"nearbyObjects" required:"true" nullable:"false"`
 }
 
 // NewFitFileSummary creates a new FitFileSummary
