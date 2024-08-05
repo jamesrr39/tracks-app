@@ -9,7 +9,7 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/gorilla/mux v1.8.1
 	github.com/jamesrr39/go-errorsx v0.0.0-20230202224242-c4eca1581e78
-	github.com/jamesrr39/go-openapix v0.0.0-20240526231144-598d604be6fc
+	github.com/jamesrr39/go-openapix v0.0.0-20240805224438-613a47dbccba
 	github.com/jamesrr39/goutil v0.0.0-20240329225739-244c41ec945f
 	github.com/jamesrr39/semaphore v0.0.0-20220902154938-76b2cf39e114
 	github.com/rakyll/statik v0.1.2
@@ -35,17 +35,17 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v3 v3.1.0 // indirect
 	github.com/swaggest/form/v5 v5.1.1 // indirect
-	github.com/swaggest/jsonschema-go v0.3.70 // indirect
-	github.com/swaggest/openapi-go v0.2.50 // indirect
+	github.com/swaggest/jsonschema-go v0.3.72 // indirect
+	github.com/swaggest/openapi-go v0.2.53 // indirect
 	github.com/swaggest/refl v1.3.0 // indirect
 	github.com/swaggest/usecase v1.3.1 // indirect
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20221208152030-732eee02a75a // indirect
-	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.21.0 // indirect
+	golang.org/x/tools v0.23.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.4.2 // indirect

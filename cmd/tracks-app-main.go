@@ -117,6 +117,8 @@ func setupServe() {
 
 		r, _ := createRouter(fitDAL)
 
+		r.Mount("/", httphandlers.NewClientHandler())
+
 		slog.Info("attempting to broadcast", "address", *addr)
 
 		server := &http.Server{
