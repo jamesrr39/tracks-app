@@ -34,7 +34,7 @@ func NewFitHandler(dal *dal.FitDAL) *FitHandler {
 	return handler
 }
 
-type BuildGetAllSummariesRequest struct{}
+type EmptyStruct struct{}
 
 type BuildGetAllSummariesResponse struct {
 	TrackSummaries []*domain.FitFileSummary `json:"trackSummaries"`
@@ -46,10 +46,40 @@ func BuildGetAllSummaries(fitDAL *dal.FitDAL) *nethttp.Handler {
 		&openapix.HandlerOptions{
 			Tags: []string{TagTracks},
 		},
-		func(ctx context.Context, input *BuildGetAllSummariesRequest, output *BuildGetAllSummariesResponse) error {
+		func(ctx context.Context, input *EmptyStruct, output *BuildGetAllSummariesResponse) error {
 			summaries := fitDAL.GetAllSummariesInCache()
 
 			output.TrackSummaries = summaries
+			return nil
+		},
+	)
+}
+
+type BuildGetTrackSummaryRequest struct {
+	RelativePath string `path:"path"`
+}
+
+type BuildGetTrackSummaryResponse struct {
+	TrackSummary *domain.FitFileSummary `json:"trackSummary"`
+}
+
+func BuildGetTrackSummary(fitDAL *dal.FitDAL) *nethttp.Handler {
+	return openapix.MustCreateOpenapiEndpoint(
+		"Get Track Summary by Path",
+		&openapix.HandlerOptions{
+			Tags: []string{TagTracks},
+		},
+		func(ctx context.Context, input *BuildGetTrackSummaryRequest, output *BuildGetTrackSummaryResponse) error {
+			summary, err := fitDAL.Get(input.RelativePath)
+			if err != nil {
+				if os.IsNotExist(err) {
+					return status.Wrap(err, http.StatusNotFound)
+				}
+
+				return status.Wrap(err, http.StatusInternalServerError)
+			}
+
+			output.TrackSummary = summary.FitFileSummary
 			return nil
 		},
 	)
@@ -60,12 +90,12 @@ type BuildGetTrackDetailRequest struct {
 }
 
 type BuildGetTrackDetailResponse struct {
-	Track *domain.FitFile `json:"track"`
+	Records []*domain.Record `json:"records"`
 }
 
-func BuildGetTrackDetail(fitDAL *dal.FitDAL) *nethttp.Handler {
+func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {
 	return openapix.MustCreateOpenapiEndpoint(
-		"Get All Track Summaries",
+		"Get Track Record",
 		&openapix.HandlerOptions{
 			Tags: []string{TagTracks},
 		},
@@ -78,7 +108,7 @@ func BuildGetTrackDetail(fitDAL *dal.FitDAL) *nethttp.Handler {
 				return status.Wrap(err, http.StatusInternalServerError)
 			}
 
-			output.Track = track
+			output.Records = track.Records
 			return nil
 		},
 	)

@@ -102,10 +102,10 @@ func main() {
 	// serverHandler.PathPrefix("/").Handler(http.StripPrefix("/", httphandlers.NewClientHandler()))
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Route("/tracks", func(r chi.Router) {
-			openapix.Get(r, "/library", httphandlers.BuildGetAllSummaries(fitDAL))
-			openapix.Get(r, "/detail/{path}", httphandlers.BuildGetTrackDetail(fitDAL))
-		})
+		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
+		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
+		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
+
 	})
 
 	log.Printf("attempting to broadcast on '%s'\n", *addr)

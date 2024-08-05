@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -71,7 +70,7 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 
 			fitFileSummary, err := d.processFitFile(path)
 			if nil != err {
-				log.Printf("ERROR: couldn't process FitFile: %s. Error: %s\n", path, err)
+				slog.Error("couldn't process FitFile", "path", path, "Error", err)
 				return
 			}
 			mu.Lock()
