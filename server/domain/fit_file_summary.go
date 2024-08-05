@@ -19,7 +19,7 @@ type FitFileSummary struct {
 	DeviceProduct      string                  `json:"deviceProduct"`
 	TotalDistance      float64                 `json:"totalDistance"`
 	ActivityBounds     *ActivityBounds         `json:"activityBounds"`
-	NearbyObjects      []*GeographicMapElement `json:"nearbyObjects"`
+	NearbyObjects      []*GeographicMapElement `json:"nearbyObjects" nullable:"false"`
 }
 
 // NewFitFileSummary creates a new FitFileSummary

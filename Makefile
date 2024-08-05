@@ -1,5 +1,7 @@
 LOCALENV_DATA_DIR=localenv/data
 
+OPENAPI_SPEC_OUTDIR=web-client/docs
+
 .PHONY: help
 help:
 	echo 'see README/Makefile'
@@ -32,7 +34,7 @@ run_dev_client:
 
 .PHONY: run_dev_server
 run_dev_server:
-	go run cmd/tracks-app-main.go ${LOCALENV_DATA_DIR}
+	go run cmd/tracks-app-main.go serve ${LOCALENV_DATA_DIR}
 
 .PHONY: install
 install: build_prod
@@ -40,3 +42,8 @@ install: build_prod
 
 # docker save jamesrr39/tracks-app-raspberry-pi:latest | bzip2 |      ssh raspberrypi 'bunzip2 | sudo docker load'
 # docker run -d -p 8090:8090 -v /mnt/enc-container-1/data/tracks:/home/tracks/tracks-data jamesrr39/tracks-app-raspberry-pi
+.PHONY: generate_openapi_typescript
+generate_openapi_typescript:
+	mkdir -p ${OPENAPI_SPEC_OUTDIR}
+	go run apiserver/api-server-main.go generate-openapi-spec --output ${OPENAPI_SPEC_OUTDIR}/openapi3-spec.yml
+	cd web-client && yarn generate-openapi

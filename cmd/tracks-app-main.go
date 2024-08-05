@@ -1,14 +1,14 @@
 package main
 
 import (
-	"log"
+	"encoding/json"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	// "github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/swaggest/rest"
@@ -21,6 +21,7 @@ import (
 	"github.com/swaggest/rest/response/gzip"
 	"github.com/swaggest/swgui/v3cdn"
 
+	"github.com/jamesrr39/go-errorsx"
 	"github.com/jamesrr39/go-openapix"
 	"github.com/jamesrr39/goutil/userextra"
 	"github.com/jamesrr39/tracks-app/server/dal"
@@ -31,40 +32,111 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-var AppVersion = "dev"
+var (
+	AppVersion = "dev"
+	app        *kingpin.Application
+)
 
 func main() {
-	rootDir := kingpin.Arg("rootDir", "directory that all tracks can be found under").Required().String()
-	unexpandedCachesDir := kingpin.Flag("caches-dir", "directory to store the caches in").Default("~/.cache/github.com/jamesrr39/tracks-app").String()
-	addr := kingpin.Flag("addr", "address and port to serve on. ':8090' = to everyone on port 8090. 'localhost:8090' = to only localhost on 8090").Default("localhost:8090").String()
-	overpassApiBaseURL := kingpin.Flag("overpass-api-base-url", "Supply a URL for your own instance of the Overpass API server, if you prefer to use your own.").Default(overpass.DefaultOverpassAPIBaseURL).String()
+	app = kingpin.New("api server", "")
+	setupServe()
+	setupGenerateOpenapiSpec()
+	kingpin.MustParse(app.Parse(os.Args[1:]))
+}
 
-	kingpin.Parse()
+const (
+	SpecFormatYAML       = "yaml"
+	SpecFormatJSON       = "json"
+	SpecFormatJSONPretty = "jsonpretty"
+)
 
-	cachesDir, err := userextra.ExpandUser(*unexpandedCachesDir)
-	if nil != err {
-		log.Fatalln(err)
-	}
+func setupGenerateOpenapiSpec() {
+	cmd := app.Command("generate-openapi-spec", "")
+	format := cmd.Flag("format", "output format").Short('F').Default(SpecFormatYAML).Enum(SpecFormatYAML, SpecFormatJSON, SpecFormatJSONPretty)
+	outputFilePath := cmd.Flag("output", "").Short('O').Default(os.Stdout.Name()).String()
+	cmd.Action(func(pc *kingpin.ParseContext) error {
+		_, apiSchema := createRouter(&dal.FitDAL{})
+		spec := apiSchema.Reflector().Spec
 
-	err = os.MkdirAll(cachesDir, 0700)
-	if nil != err {
-		log.Fatalln(err)
-	}
+		specMarshalFuncMap := map[string]func() ([]byte, error){
+			SpecFormatYAML: spec.MarshalYAML,
+			SpecFormatJSON: spec.MarshalJSON,
+			SpecFormatJSONPretty: func() ([]byte, error) {
+				return json.MarshalIndent(spec, "", "\t")
+			},
+		}
 
-	cacheDBPath := filepath.Join(cachesDir, "tracks-cache-bolt.db")
-	cacheDBConn, err := diskcache.NewConn(cacheDBPath)
-	if nil != err {
-		log.Fatalln(err)
-	}
+		specMarshalFunc, ok := specMarshalFuncMap[*format]
+		if !ok {
+			return errorsx.Errorf("unknown format type: %q", *format)
+		}
 
-	fitDAL, err := dal.NewFitDALAndScan(*rootDir, cachesDir, overpass.NewOverpassNearbyCityDataFetcher(time.Second*10, 2, cacheDBConn, *overpassApiBaseURL))
-	if nil != err {
-		log.Fatalf("failed to create a new dal and scan the files under %s. Error: %s\n", *rootDir, err)
-	}
+		specBytes, err := specMarshalFunc()
+		if err != nil {
+			return errorsx.ErrWithStack(errorsx.Wrap(err))
+		}
 
-	// serverHandler := mux.NewRouter()
-	// serverHandler.PathPrefix("/api/").Handler(http.StripPrefix("/api", httphandlers.NewApiHandler(fitDAL)))
-	// serverHandler.PathPrefix("/").Handler(http.StripPrefix("/", httphandlers.NewClientHandler()))
+		err = os.WriteFile(*outputFilePath, specBytes, 644)
+		if err != nil {
+			return errorsx.ErrWithStack(errorsx.Wrap(err))
+		}
+
+		return nil
+	})
+}
+
+func setupServe() {
+	cmd := app.Command("serve", "")
+	rootDir := cmd.Arg("rootDir", "directory that all tracks can be found under").Required().String()
+	unexpandedCachesDir := cmd.Flag("caches-dir", "directory to store the caches in").Default("~/.cache/github.com/jamesrr39/tracks-app").String()
+	addr := cmd.Flag("addr", "address and port to serve on. ':8090' = to everyone on port 8090. 'localhost:8090' = to only localhost on 8090").Default("localhost:8090").String()
+	overpassApiBaseURL := cmd.Flag("overpass-api-base-url", "Supply a URL for your own instance of the Overpass API server, if you prefer to use your own.").Default(overpass.DefaultOverpassAPIBaseURL).String()
+
+	cmd.Action(func(pc *kingpin.ParseContext) error {
+
+		cachesDir, err := userextra.ExpandUser(*unexpandedCachesDir)
+		if err != nil {
+			return errorsx.ErrWithStack(errorsx.Wrap(err))
+		}
+
+		err = os.MkdirAll(cachesDir, 0700)
+		if err != nil {
+			return errorsx.ErrWithStack(errorsx.Wrap(err))
+		}
+
+		cacheDBPath := filepath.Join(cachesDir, "tracks-cache-bolt.db")
+		cacheDBConn, err := diskcache.NewConn(cacheDBPath)
+		if err != nil {
+			return errorsx.ErrWithStack(errorsx.Wrap(err))
+		}
+
+		fitDAL, err := dal.NewFitDALAndScan(*rootDir, cachesDir, overpass.NewOverpassNearbyCityDataFetcher(time.Second*10, 2, cacheDBConn, *overpassApiBaseURL))
+		if err != nil {
+			return errorsx.ErrWithStack(errorsx.Wrap(err, "root directory", *rootDir))
+		}
+
+		r, _ := createRouter(fitDAL)
+
+		slog.Info("attempting to broadcast", "address", *addr)
+
+		server := &http.Server{
+			Addr:           *addr,
+			Handler:        r,
+			ReadTimeout:    10 * time.Second,
+			WriteTimeout:   10 * time.Second,
+			MaxHeaderBytes: 1 << 20,
+		}
+
+		err = server.ListenAndServe()
+		if err != nil {
+			return errorsx.ErrWithStack(errorsx.Wrap(err))
+		}
+
+		return nil
+	})
+}
+
+func createRouter(fitDAL *dal.FitDAL) (*chirouter.Wrapper, *openapi.Collector) {
 
 	apiSchema := &openapi.Collector{}
 	apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
@@ -99,9 +171,6 @@ func main() {
 		)
 	})
 
-	// r. httphandlers.NewApiHandler(fitDAL)))
-	// serverHandler.PathPrefix("/").Handler(http.StripPrefix("/", httphandlers.NewClientHandler()))
-
 	r.Route("/api/v1", func(r chi.Router) {
 		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
 		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
@@ -109,20 +178,10 @@ func main() {
 
 	})
 
-	log.Printf("attempting to broadcast on '%s'\n", *addr)
+	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)
+	openapix.MustNotHaveDuplicateOperationIDOrUnknownSecurity(apiSchema.Reflector().Spec)
 
-	server := &http.Server{
-		Addr:           *addr,
-		Handler:        r,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
-	}
-
-	err = server.ListenAndServe()
-	if nil != err {
-		panic(err)
-	}
+	return r, apiSchema
 }
 
 func cspHeaderMiddleware(next http.Handler) http.Handler {

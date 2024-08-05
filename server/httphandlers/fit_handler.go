@@ -2,14 +2,9 @@ package httphandlers
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/url"
 	"os"
-	"strconv"
 
-	"github.com/gorilla/mux"
 	openapix "github.com/jamesrr39/go-openapix"
 	"github.com/jamesrr39/tracks-app/server/dal"
 	"github.com/jamesrr39/tracks-app/server/domain"
@@ -17,27 +12,10 @@ import (
 	"github.com/swaggest/usecase/status"
 )
 
-// FitHandler is an HTTP handler for fit files
-type FitHandler struct {
-	dal    *dal.FitDAL
-	router *mux.Router
-}
-
-// NewFitHandler creates a new FitHandler
-func NewFitHandler(dal *dal.FitDAL) *FitHandler {
-	router := mux.NewRouter()
-
-	handler := &FitHandler{dal: dal, router: router}
-	// router.HandleFunc("/", handler.handleGetAll).Methods("GET")
-	// router.HandleFunc("/file", handler.handleGet).Methods("GET")
-	router.HandleFunc("/laps", handler.handleGetLaps).Methods("GET")
-	return handler
-}
-
 type EmptyStruct struct{}
 
 type BuildGetAllSummariesResponse struct {
-	TrackSummaries []*domain.FitFileSummary `json:"trackSummaries"`
+	TrackSummaries []*domain.FitFileSummary `json:"trackSummaries" nullable:"false"`
 }
 
 func BuildGetAllSummaries(fitDAL *dal.FitDAL) *nethttp.Handler {
@@ -90,7 +68,7 @@ type BuildGetTrackDetailRequest struct {
 }
 
 type BuildGetTrackDetailResponse struct {
-	Records []*domain.Record `json:"records"`
+	Records []*domain.Record `json:"records" nullable:"false"`
 }
 
 func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {
@@ -112,68 +90,4 @@ func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {
 			return nil
 		},
 	)
-}
-
-// func (h *FitHandler) handleGet(w http.ResponseWriter, r *http.Request) {
-// 	escapedFilePath := r.URL.Query().Get("filePath")
-
-// 	filePath, err := url.QueryUnescape(escapedFilePath)
-// 	if nil != err {
-// 		http.Error(w, fmt.Sprintf("couldn't unescape fit file name: '%s'. Error: %s", escapedFilePath, err), 400)
-// 		return
-// 	}
-
-// 	log.Println("getting fit file for " + filePath)
-// 	fitFile, err := h.dal.Get(filePath)
-// 	if nil != err {
-// 		http.Error(w, err.Error(), 500) // todo better response codes
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	err = json.NewEncoder(w).Encode(fitFile)
-// 	if nil != err {
-// 		http.Error(w, err.Error(), 500)
-// 		return
-// 	}
-// }
-
-func (h *FitHandler) handleGetLaps(w http.ResponseWriter, r *http.Request) {
-	incrementMetres := 1000
-	var err error
-
-	escapedFilePath := r.URL.Query().Get("filePath")
-
-	filePath, err := url.QueryUnescape(escapedFilePath)
-	if nil != err {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-
-	incrementMetresStr := r.URL.Query().Get("lapLength")
-	if incrementMetresStr != "" {
-		incrementMetres, err = strconv.Atoi(incrementMetresStr)
-		if nil != err {
-			http.Error(w, fmt.Sprintf("couldn't convert lapLength '%s' to a number. Error: %s", incrementMetresStr, err), 400)
-			return
-		}
-	}
-
-	fitFile, err := h.dal.Get(filePath)
-	if nil != err {
-		http.Error(w, err.Error(), 500) // todo better response codes
-		return
-	}
-
-	laps := fitFile.GetLaps(incrementMetres)
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(laps)
-	if nil != err {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-}
-
-func (h *FitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.router.ServeHTTP(w, r)
 }

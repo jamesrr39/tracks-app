@@ -12,7 +12,10 @@ func MustNotHaveDuplicateOperationIDOrUnknownSecurity(spec *openapi3.Spec) {
 	// map[title]url_path
 	summaryMap := map[string]string{}
 
-	allSecuritySchemeNames := maps.Keys(spec.Components.SecuritySchemes.MapOfSecuritySchemeOrRefValues)
+	var allSecuritySchemeNames []string
+	if spec.Components.SecuritySchemes != nil {
+		allSecuritySchemeNames = maps.Keys(spec.Components.SecuritySchemes.MapOfSecuritySchemeOrRefValues)
+	}
 
 	for path, pathItem := range spec.Paths.MapOfPathItemValues {
 		for httpMethod, operation := range pathItem.MapOfOperationValues {
