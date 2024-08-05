@@ -37,6 +37,7 @@ func main() {
 	rootDir := kingpin.Arg("rootDir", "directory that all tracks can be found under").Required().String()
 	unexpandedCachesDir := kingpin.Flag("caches-dir", "directory to store the caches in").Default("~/.cache/github.com/jamesrr39/tracks-app").String()
 	addr := kingpin.Flag("addr", "address and port to serve on. ':8090' = to everyone on port 8090. 'localhost:8090' = to only localhost on 8090").Default("localhost:8090").String()
+	overpassApiBaseURL := kingpin.Flag("overpass-api-base-url", "Supply a URL for your own instance of the Overpass API server, if you prefer to use your own.").Default(overpass.DefaultOverpassAPIBaseURL).String()
 
 	kingpin.Parse()
 
@@ -56,7 +57,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fitDAL, err := dal.NewFitDALAndScan(*rootDir, cachesDir, overpass.NewOverpassNearbyCityDataFetcher(time.Second*10, 2, cacheDBConn))
+	fitDAL, err := dal.NewFitDALAndScan(*rootDir, cachesDir, overpass.NewOverpassNearbyCityDataFetcher(time.Second*10, 2, cacheDBConn, *overpassApiBaseURL))
 	if nil != err {
 		log.Fatalf("failed to create a new dal and scan the files under %s. Error: %s\n", *rootDir, err)
 	}

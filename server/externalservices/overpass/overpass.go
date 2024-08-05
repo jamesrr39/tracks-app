@@ -13,16 +13,19 @@ import (
 	"github.com/jamesrr39/tracks-app/server/domain"
 )
 
+const DefaultOverpassAPIBaseURL = "https://overpass-api.de/api/interpreter"
+
 type OverpassNearbyCityDataFetcher struct {
-	Timeout   time.Duration
-	Sema      *semaphore.Semaphore
-	cacheConn *diskcache.Conn
+	Timeout            time.Duration
+	Sema               *semaphore.Semaphore
+	cacheConn          *diskcache.Conn
+	overpassAPIBaseURL string
 }
 
-func NewOverpassNearbyCityDataFetcher(timeout time.Duration, maxConcurrentConnections uint, cacheConn *diskcache.Conn) *OverpassNearbyCityDataFetcher {
+func NewOverpassNearbyCityDataFetcher(timeout time.Duration, maxConcurrentConnections uint, cacheConn *diskcache.Conn, overpassAPIBaseURL string) *OverpassNearbyCityDataFetcher {
 	sema := semaphore.NewSemaphore(maxConcurrentConnections)
 
-	return &OverpassNearbyCityDataFetcher{timeout, sema, cacheConn}
+	return &OverpassNearbyCityDataFetcher{timeout, sema, cacheConn, overpassAPIBaseURL}
 }
 
 func (fetcher *OverpassNearbyCityDataFetcher) Fetch(activityBounds *domain.ActivityBounds) ([]*domain.GeographicMapElement, error) {
@@ -56,7 +59,7 @@ func (fetcher *OverpassNearbyCityDataFetcher) fetch(activityBounds *domain.Activ
 		Timeout: fetcher.Timeout,
 	}
 
-	url := fmt.Sprintf("https://overpass-api.de/api/interpreter?data=[out:json];node[\"place\"](%s);out;", formatBoundsToOverpassFormat(activityBounds))
+	url := fmt.Sprintf("%s?data=[out:json];node[\"place\"](%s);out;", fetcher.overpassAPIBaseURL, formatBoundsToOverpassFormat(activityBounds))
 
 	// place name
 	//req, err := http.NewRequest("GET", "https://overpass-api.de/api/interpreter?data=node[name=\"London\"];out;", bytes.NewBuffer(nil))
