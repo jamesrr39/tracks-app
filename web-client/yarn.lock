@@ -2732,6 +2732,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"preact-iso@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "preact-iso@npm:2.6.3"
+  peerDependencies:
+    preact: ">=10"
+    preact-render-to-string: ">=6.4.0"
+  checksum: 10c0/dbc6526ed7f528468b3f250d9525a70c7c241f916a91fe4b71fe78218c511a4706e9b9d55b96385ce7f2b0c85cdc3fe84c7e1296a5d1200cc3695b894315b87c
+  languageName: node
+  linkType: hard
+
+"preact-render-to-string@npm:^6.5.7":
+  version: 6.5.7
+  resolution: "preact-render-to-string@npm:6.5.7"
+  peerDependencies:
+    preact: ">=10"
+  checksum: 10c0/39b2c56fbf32cb5c4f2c7119985bda786ee295229b998f9a1b4ba47755e6b64e4922b6f1e0edbcb154df1dbceb9c2dd1ca42ab4d900881aedcf5acd9f12c726e
+  languageName: node
+  linkType: hard
+
 "preact@npm:^10.22.1":
   version: 10.23.1
   resolution: "preact@npm:10.23.1"
@@ -3576,6 +3595,8 @@ __metadata:
     "@types/babel__core": "npm:^7"
     babel-plugin-transform-hook-names: "npm:^1.0.2"
     preact: "npm:^10.22.1"
+    preact-iso: "npm:^2.6.3"
+    preact-render-to-string: "npm:^6.5.7"
     typescript: "npm:^5.2.2"
     vite: "npm:^5.3.4"
     yoga-layout-prebuilt: "npm:^1.10.0"

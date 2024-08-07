@@ -36,6 +36,8 @@ const RAW_RUNTIME_STATE =
           ["@types/babel__core", "npm:7.20.5"],\
           ["babel-plugin-transform-hook-names", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:1.0.2"],\
           ["preact", "npm:10.23.1"],\
+          ["preact-iso", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.6.3"],\
+          ["preact-render-to-string", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:6.5.7"],\
           ["typescript", "patch:typescript@npm%3A5.5.4#optional!builtin<compat/typescript>::version=5.5.4&hash=379a07"],\
           ["vite", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.5"],\
           ["yoga-layout-prebuilt", "npm:1.10.0"]\
@@ -3274,6 +3276,54 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["preact-iso", [\
+      ["npm:2.6.3", {\
+        "packageLocation": "./.yarn/berry/cache/preact-iso-npm-2.6.3-fb8df72ef7-10c0.zip/node_modules/preact-iso/",\
+        "packageDependencies": [\
+          ["preact-iso", "npm:2.6.3"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.6.3", {\
+        "packageLocation": "./.yarn/__virtual__/preact-iso-virtual-af557f9406/0/berry/cache/preact-iso-npm-2.6.3-fb8df72ef7-10c0.zip/node_modules/preact-iso/",\
+        "packageDependencies": [\
+          ["preact-iso", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.6.3"],\
+          ["@types/preact", null],\
+          ["@types/preact-render-to-string", null],\
+          ["preact", "npm:10.23.1"],\
+          ["preact-render-to-string", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:6.5.7"]\
+        ],\
+        "packagePeers": [\
+          "@types/preact-render-to-string",\
+          "@types/preact",\
+          "preact-render-to-string",\
+          "preact"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["preact-render-to-string", [\
+      ["npm:6.5.7", {\
+        "packageLocation": "./.yarn/berry/cache/preact-render-to-string-npm-6.5.7-f72eb502f0-10c0.zip/node_modules/preact-render-to-string/",\
+        "packageDependencies": [\
+          ["preact-render-to-string", "npm:6.5.7"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:6.5.7", {\
+        "packageLocation": "./.yarn/__virtual__/preact-render-to-string-virtual-e7658a6fe2/0/berry/cache/preact-render-to-string-npm-6.5.7-f72eb502f0-10c0.zip/node_modules/preact-render-to-string/",\
+        "packageDependencies": [\
+          ["preact-render-to-string", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:6.5.7"],\
+          ["@types/preact", null],\
+          ["preact", "npm:10.23.1"]\
+        ],\
+        "packagePeers": [\
+          "@types/preact",\
+          "preact"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["prettier", [\
       ["npm:3.3.3", {\
         "packageLocation": "./.yarn/unplugged/prettier-npm-3.3.3-e811f023f3/node_modules/prettier/",\
@@ -4161,6 +4211,8 @@ const RAW_RUNTIME_STATE =
           ["@types/babel__core", "npm:7.20.5"],\
           ["babel-plugin-transform-hook-names", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:1.0.2"],\
           ["preact", "npm:10.23.1"],\
+          ["preact-iso", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.6.3"],\
+          ["preact-render-to-string", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:6.5.7"],\
           ["typescript", "patch:typescript@npm%3A5.5.4#optional!builtin<compat/typescript>::version=5.5.4&hash=379a07"],\
           ["vite", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.5"],\
           ["yoga-layout-prebuilt", "npm:1.10.0"]\
