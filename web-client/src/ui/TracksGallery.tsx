@@ -1,19 +1,18 @@
 import { useGetAllTrackSummaries } from "../openapi/generated/tracksAppComponents";
+import Error from "./Error";
+import Loading from "./Loading";
 
 export default function TracksGallery() {
   const { error, isLoading, data } = useGetAllTrackSummaries({});
 
   if (error) {
-    return (
-      <div className="alert alert-danger">
-        Error loading tracks: {error || "unknown error"}
-      </div>
-    );
+    return <Error error={error} />;
   }
 
   if (isLoading || !data) {
-    return <div className="alert alert-info">Loading</div>;
+    return <Loading />;
   }
+
   console.log(data);
   return (
     <table className="table table-striped">
