@@ -1,0 +1,3 @@
+[submodule "mapstyles/maptiler-basic-gl-style"]
+	path = mapstyles/maptiler-basic-gl-style
+	url = https://github.com/openmaptiles/maptiler-basic-gl-style.git
