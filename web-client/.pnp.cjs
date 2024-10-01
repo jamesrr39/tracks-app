@@ -40,6 +40,7 @@ const RAW_RUNTIME_STATE =
           ["preact", "npm:10.23.1"],\
           ["preact-iso", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.6.3"],\
           ["preact-render-to-string", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:6.5.7"],\
+          ["protomaps-themes-base", "npm:3.1.0"],\
           ["react", [\
             "@preact/compat",\
             "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:17.1.2"\
@@ -3837,6 +3838,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["protomaps-themes-base", [\
+      ["npm:3.1.0", {\
+        "packageLocation": "./.yarn/berry/cache/protomaps-themes-base-npm-3.1.0-7509724c1c-10c0.zip/node_modules/protomaps-themes-base/",\
+        "packageDependencies": [\
+          ["protomaps-themes-base", "npm:3.1.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["quick-lru", [\
       ["npm:5.1.1", {\
         "packageLocation": "./.yarn/berry/cache/quick-lru-npm-5.1.1-e38e0edce3-10c0.zip/node_modules/quick-lru/",\
@@ -4841,6 +4851,7 @@ const RAW_RUNTIME_STATE =
           ["preact", "npm:10.23.1"],\
           ["preact-iso", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.6.3"],\
           ["preact-render-to-string", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:6.5.7"],\
+          ["protomaps-themes-base", "npm:3.1.0"],\
           ["react", [\
             "@preact/compat",\
             "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:17.1.2"\

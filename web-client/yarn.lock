@@ -3179,6 +3179,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"protomaps-themes-base@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "protomaps-themes-base@npm:3.1.0"
+  checksum: 10c0/934f9c7552bb5cbe11ab5d40522f5ffb70bda68567c8ca0419a7f1e12d737aad2a05cd0cb744e0bc7de66be26be42f6b7bf49723ea7ff43604a6bfd5a55b764f
+  languageName: node
+  linkType: hard
+
 "quick-lru@npm:^5.1.1":
   version: 5.1.1
   resolution: "quick-lru@npm:5.1.1"
@@ -4126,6 +4133,7 @@ __metadata:
     preact: "npm:^10.22.1"
     preact-iso: "npm:^2.6.3"
     preact-render-to-string: "npm:^6.5.7"
+    protomaps-themes-base: "npm:^3.1.0"
     react: "npm:@preact/compat@*"
     typescript: "npm:^5.2.2"
     vite: "npm:^5.3.4"

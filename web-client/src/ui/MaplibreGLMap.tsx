@@ -8,6 +8,8 @@ import {
 } from "../openapi/generated/tracksAppSchemas";
 import { Layers } from "./Layers";
 
+import ProtomapLayers from "protomaps-themes-base";
+
 const styles = {
   mapWrapper: {
     position: "relative",
@@ -59,7 +61,7 @@ export function MaplibreGLMap(props: Props) {
     // const PMTILES_URL =
     //   "https://pmtiles.io/protomaps(vector)ODbL_firenze.pmtiles";
     const PMTILES_URL = "/map/pmtiles";
-
+    const PMTILES_SOURCE_NAME = "local_pmtiles_source";
     const p = new pmtiles.PMTiles(PMTILES_URL);
 
     // this is so we share one instance across the JS code and the map renderer
@@ -90,53 +92,127 @@ export function MaplibreGLMap(props: Props) {
         // style: "/map/styles/maplibregl/maptiler-basic-gl-style/style.json",
         style: {
           version: 8,
+          glyphs: "https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf",
           sources: {
-            local_pmtiles_source: {
+            [PMTILES_SOURCE_NAME]: {
               type: "vector",
               url: `pmtiles://${PMTILES_URL}`,
               attribution:
                 '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
             },
           },
+          layers: ProtomapLayers(PMTILES_SOURCE_NAME, "light"),
+
+          // layers: [
+          //   {
+          //     id: "water",
+          //     source: PMTILES_SOURCE_NAME,
+          //     "source-layer": "water",
+          //     filter: ["==", ["geometry-type"], "Polygon"],
+          //     type: "fill",
+          //     paint: {
+          //       "fill-color": "#80b1d3",
+          //     },
+          //   },
+          //   {
+          //     id: "buildings",
+          //     source: PMTILES_SOURCE_NAME,
+          //     "source-layer": "buildings",
+          //     type: "fill",
+          //     paint: {
+          //       "fill-color": "#d9d9d9",
+          //     },
+          //   },
+          //   {
+          //     id: "roads",
+          //     source: PMTILES_SOURCE_NAME,
+          //     "source-layer": "roads",
+          //     type: "line",
+          //     paint: {
+          //       "line-color": "#fc8d62",
+          //     },
+          //     minzoom: 15,
+          //   },
+          //   {
+          //     id: "pois",
+          //     source: PMTILES_SOURCE_NAME,
+          //     "source-layer": "pois",
+          //     type: "circle",
+          //     paint: {
+          //       "circle-color": "#ffffb3",
+          //     },
+          //   },
+          // ],
+
+          // layers: [
+          //   {
+          //     id: "buildings",
+          //     source: PMTILES_SOURCE_NAME,
+          //     "source-layer": "landuse",
+          //     type: "fill",
+          //     paint: {
+          //       "fill-color": "limegreen",
+          //     },
+          //   },
+          //   {
+          //     id: "roads",
+          //     source: PMTILES_SOURCE_NAME,
+          //     "source-layer": "roads",
+          //     type: "line",
+          //     paint: {
+          //       "line-color": "black",
+          //     },
+          //   },
+          //   // {
+          //   //   id: "mask",
+          //   //   source: PMTILES_SOURCE_NAME,
+          //   //   "source-layer": "mask",
+          //   //   type: "fill",
+          //   //   paint: {
+          //   //     "fill-color": "white",
+          //   //   },
+          //   // },
+          // ],
+
           // layers: Layers as unknown as LayerSpecification[],
-          layers: [
-            {
-              id: "water",
-              source: "local_pmtiles_source",
-              "source-layer": "water",
-              type: "fill",
-              paint: {
-                "fill-color": "#80b1d3",
-              },
-            },
-            {
-              id: "buildings",
-              source: "local_pmtiles_source",
-              "source-layer": "buildings",
-              type: "fill",
-              paint: {
-                "fill-color": "#d9d9d9",
-              },
-            },
-            {
-              id: "roads",
-              source: "local_pmtiles_source",
-              "source-layer": "roads",
-              type: "line",
-              paint: {
-                "line-color": "#fc8d62",
-              },
-            },
-            {
-              id: "pois",
-              source: "local_pmtiles_source",
-              "source-layer": "pois",
-              type: "circle",
-              paint: {
-                "circle-color": "#ffffb3",
-              },
-            },
-          ],
+          // layers: [
+          //   {
+          //     id: "water",
+          //     source: "local_pmtiles_source",
+          //     "source-layer": "water",
+          //     type: "fill",
+          //     paint: {
+          //       "fill-color": "#80b1d3",
+          //     },
+          //   },
+          //   {
+          //     id: "buildings",
+          //     source: "local_pmtiles_source",
+          //     "source-layer": "buildings",
+          //     type: "fill",
+          //     paint: {
+          //       "fill-color": "#d9d9d9",
+          //     },
+          //   },
+          //   {
+          //     id: "roads",
+          //     source: "local_pmtiles_source",
+          //     "source-layer": "roads",
+          //     type: "line",
+          //     paint: {
+          //       "line-color": "#fc8d62",
+          //     },
+          //   },
+          //   {
+          //     id: "pois",
+          //     source: "local_pmtiles_source",
+          //     "source-layer": "pois",
+          //     type: "circle",
+          //     paint: {
+          //       "circle-color": "#ffffb3",
+          //     },
+          //   },
+          // ],
         },
       });
 

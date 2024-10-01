@@ -55,7 +55,7 @@ func setupGenerateOpenapiSpec() {
 	format := cmd.Flag("format", "output format").Short('F').Default(SpecFormatYAML).Enum(SpecFormatYAML, SpecFormatJSON, SpecFormatJSONPretty)
 	outputFilePath := cmd.Flag("output", "").Short('O').Default(os.Stdout.Name()).String()
 	cmd.Action(func(pc *kingpin.ParseContext) error {
-		_, apiSchema := createRouter(&dal.FitDAL{})
+		_, apiSchema := createRouter(&dal.FitDAL{}, "")
 		spec := apiSchema.Reflector().Spec
 
 		specMarshalFuncMap := map[string]func() ([]byte, error){
@@ -91,6 +91,7 @@ func setupServe() {
 	unexpandedCachesDir := cmd.Flag("caches-dir", "directory to store the caches in").Default("~/.cache/github.com/jamesrr39/tracks-app").String()
 	addr := cmd.Flag("addr", "address and port to serve on. ':8090' = to everyone on port 8090. 'localhost:8090' = to only localhost on 8090").Default("localhost:8090").String()
 	overpassApiBaseURL := cmd.Flag("overpass-api-base-url", "Supply a URL for your own instance of the Overpass API server, if you prefer to use your own.").Default(overpass.DefaultOverpassAPIBaseURL).String()
+	pmtilesMapFilePath := cmd.Flag("pmtiles-file-path", "").Required().String()
 
 	cmd.Action(func(pc *kingpin.ParseContext) error {
 
@@ -115,7 +116,7 @@ func setupServe() {
 			return errorsx.ErrWithStack(errorsx.Wrap(err, "root directory", *rootDir))
 		}
 
-		r, _ := createRouter(fitDAL)
+		r, _ := createRouter(fitDAL, *pmtilesMapFilePath)
 
 		r.Mount("/", httphandlers.NewClientHandler())
 
@@ -138,7 +139,7 @@ func setupServe() {
 	})
 }
 
-func createRouter(fitDAL *dal.FitDAL) (*chirouter.Wrapper, *openapi.Collector) {
+func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wrapper, *openapi.Collector) {
 
 	apiSchema := &openapi.Collector{}
 	apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
@@ -151,19 +152,20 @@ func createRouter(fitDAL *dal.FitDAL) (*chirouter.Wrapper, *openapi.Collector) {
 	decoderFactory.ApplyDefaults = true
 	decoderFactory.SetDecoderFunc(rest.ParamInPath, chirouter.PathToURLValues)
 
-	r := chirouter.NewWrapper(chi.NewRouter())
+	rootRouter := chirouter.NewWrapper(chi.NewRouter())
 
-	r.Use(
-		middleware.Recoverer,                          // Panic recovery.
-		nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
-		request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
-		request.ValidatorMiddleware(validatorFactory), // Request validator setup.
-		response.EncoderMiddleware,                    // Response encoder setup.
-		gzip.Middleware,                               // Response compression with support for direct gzip pass through.
-		middleware.DefaultLogger,
+	rootRouter.Use(
+		middleware.Recoverer, // Panic recovery.
+		// nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
+		// request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
+		// request.ValidatorMiddleware(validatorFactory), // Request validator setup.
+		// response.EncoderMiddleware,                    // Response encoder setup.
+		gzip.Middleware, // Response compression with support for direct gzip pass through.
+		// middleware.DefaultLogger,
 	)
+	// TODO: middleware.DefaultLogger wraps ReadFrom method and ends up in infinite loop when used with http.ServeFile
 
-	r.Route("/docs", func(r chi.Router) {
+	rootRouter.Route("/docs", func(r chi.Router) {
 		r.Use(cspHeaderMiddleware)
 		r.Method(http.MethodGet, "/openapi.json", apiSchema)
 		r.Mount("/", v3cdn.NewHandler(
@@ -173,17 +175,30 @@ func createRouter(fitDAL *dal.FitDAL) (*chirouter.Wrapper, *openapi.Collector) {
 		)
 	})
 
-	r.Route("/api/v1", func(r chi.Router) {
+	apiRouter := chirouter.NewWrapper(chi.NewRouter())
+	apiRouter.Use(
+		nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
+		request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
+		request.ValidatorMiddleware(validatorFactory), // Request validator setup.
+		response.EncoderMiddleware,                    // Response encoder setup.
+	)
+
+	apiRouter.Route("/v1", func(r chi.Router) {
 		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
 		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
 		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
+	})
 
+	rootRouter.Mount("/api", apiRouter)
+
+	rootRouter.Route("/map", func(r chi.Router) {
+		r.Get("/pmtiles", httphandlers.BuildGetPMTilesMapData(pmtilesMapFilePath))
 	})
 
 	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)
 	openapix.MustNotHaveDuplicateOperationIDOrUnknownSecurity(apiSchema.Reflector().Spec)
 
-	return r, apiSchema
+	return rootRouter, apiSchema
 }
 
 func cspHeaderMiddleware(next http.Handler) http.Handler {

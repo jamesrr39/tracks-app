@@ -12,6 +12,7 @@ import {
 import Error from "./Error";
 import Loading from "./Loading";
 import { MaplibreGLMap } from "./MaplibreGLMap";
+import { formatDuration } from "../util/time";
 
 export default function TrackDetail(props: { params: { id: string } }) {
   const reactQueryOpts = {
@@ -45,7 +46,8 @@ export default function TrackDetail(props: { params: { id: string } }) {
         <h1>{name}</h1>
       </div>
       <div>
-        {totalDistance / 1000}km in {durationMillis / (1000 * 60)} minutes
+        {(totalDistance / 1000).toFixed(2)}km in{" "}
+        {formatDuration(durationMillis / 1000)}
       </div>
       <div>
         <ul>

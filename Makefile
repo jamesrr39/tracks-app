@@ -2,6 +2,7 @@ LOCALENV_DATA_DIR=localenv/data
 
 OPENAPI_SPEC_OUTDIR=web-client/docs
 VITE_DEV_SERVER_ADDR=http://localhost:5173
+PM_TILES_FILEPATH=localenv/map/pmtiles/v3.pmtiles
 
 .PHONY: help
 help:
@@ -35,7 +36,7 @@ run_dev_client:
 
 .PHONY: run_dev_server
 run_dev_server:
-	LOCAL_DEV_SERVER_URL=${VITE_DEV_SERVER_ADDR} go run cmd/tracks-app-main.go serve ${LOCALENV_DATA_DIR}
+	LOCAL_DEV_SERVER_URL=${VITE_DEV_SERVER_ADDR} go run cmd/tracks-app-main.go serve ${LOCALENV_DATA_DIR} --pmtiles-file-path ${PM_TILES_FILEPATH}
 
 .PHONY: install
 install: build_prod
