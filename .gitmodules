@@ -1,0 +1,3 @@
+[submodule "server/resources/pmtiles/basemaps-assets"]
+	path = server/resources/pmtiles/basemaps-assets
+	url = https://github.com/protomaps/basemaps-assets

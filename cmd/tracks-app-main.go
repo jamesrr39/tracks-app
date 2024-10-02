@@ -192,6 +192,7 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 	rootRouter.Mount("/api", apiRouter)
 
 	rootRouter.Route("/map", func(r chi.Router) {
+		r.Handle("/pmtiles-basemap-assets/fonts/*", http.StripPrefix("/map/pmtiles-basemap-assets/fonts/", httphandlers.BuildGetPMTilesBasemapAssets()))
 		r.Get("/pmtiles", httphandlers.BuildGetPMTilesMapData(pmtilesMapFilePath))
 	})
 

@@ -16,3 +16,8 @@ Start webpack client:
     yarn start
 
 For production and docker builds, see the Makefile.
+
+# Glyphs for PM tiles
+
+https://til.simonwillison.net/gis/pmtiles
+https://github.com/protomaps/basemaps-assets
