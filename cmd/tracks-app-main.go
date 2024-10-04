@@ -156,14 +156,9 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 
 	rootRouter.Use(
 		middleware.Recoverer, // Panic recovery.
-		// nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
-		// request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
-		// request.ValidatorMiddleware(validatorFactory), // Request validator setup.
-		// response.EncoderMiddleware,                    // Response encoder setup.
-		gzip.Middleware, // Response compression with support for direct gzip pass through.
-		// middleware.DefaultLogger,
+		gzip.Middleware,      // Response compression with support for direct gzip pass through.
+		middleware.DefaultLogger,
 	)
-	// TODO: middleware.DefaultLogger wraps ReadFrom method and ends up in infinite loop when used with http.ServeFile
 
 	rootRouter.Route("/docs", func(r chi.Router) {
 		r.Use(cspHeaderMiddleware)
