@@ -4,10 +4,8 @@ go 1.21.4
 
 require (
 	github.com/boltdb/bolt v1.3.1
-	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/cors v1.2.1
-	github.com/gorilla/mux v1.8.1
 	github.com/jamesrr39/go-errorsx v0.0.0-20230202224242-c4eca1581e78
 	github.com/jamesrr39/go-openapix v0.0.0-20240805224438-613a47dbccba
 	github.com/jamesrr39/goutil v0.0.0-20240329225739-244c41ec945f
@@ -17,6 +15,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggest/rest v0.2.66
 	github.com/swaggest/swgui v1.8.1
+	github.com/swaggest/usecase v1.3.1
 	github.com/tormoder/fit v0.15.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
@@ -38,7 +37,6 @@ require (
 	github.com/swaggest/jsonschema-go v0.3.72 // indirect
 	github.com/swaggest/openapi-go v0.2.53 // indirect
 	github.com/swaggest/refl v1.3.0 // indirect
-	github.com/swaggest/usecase v1.3.1 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20221208152030-732eee02a75a // indirect
 	golang.org/x/mod v0.19.0 // indirect
