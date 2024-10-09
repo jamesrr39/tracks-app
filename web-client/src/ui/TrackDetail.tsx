@@ -6,7 +6,6 @@ import {
 } from "../openapi/generated/tracksAppComponents";
 import {
   DomainFitFileSummary,
-  DomainRecord,
   HttphandlersBuildGetTrackDetailResponse,
 } from "../openapi/generated/tracksAppSchemas";
 import Error from "./Error";
@@ -33,8 +32,15 @@ export default function TrackDetail(props: { params: { id: string } }) {
 
   const { trackSummary } = data;
 
-  const { name, totalDistance, endTime, startTime, nearbyObjects } =
-    trackSummary;
+  const {
+    name,
+    totalDistance,
+    endTime,
+    startTime,
+    nearbyObjects,
+    deviceManufacturer,
+    deviceProduct,
+  } = trackSummary;
 
   const durationMillis =
     new Date(endTime).getTime() - new Date(startTime).getTime();
@@ -49,6 +55,13 @@ export default function TrackDetail(props: { params: { id: string } }) {
         {(totalDistance / 1000).toFixed(2)}km in{" "}
         {formatDuration(durationMillis / 1000)}
       </div>
+      {(deviceManufacturer || deviceProduct) && (
+        <div>
+          <p>
+            Recorded with {deviceManufacturer} {deviceProduct}
+          </p>
+        </div>
+      )}
       <div>
         <ul>
           {nearbyObjects.map((object) => (
