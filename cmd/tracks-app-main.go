@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/swaggest/openapi-go/openapi3"
 	"github.com/swaggest/rest"
 	"github.com/swaggest/rest/chirouter"
 	"github.com/swaggest/rest/jsonschema"
@@ -144,7 +145,14 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 	apiSchema := &openapi.Collector{}
 	apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
 	apiSchema.Reflector().SpecEns().Info.WithDescription("REST API definitions for Tracks App")
+
+	serverDesc := "API server"
+
 	apiSchema.Reflector().SpecEns().Info.Version = AppVersion
+	apiSchema.Reflector().Spec.Servers = append(apiSchema.Reflector().Spec.Servers, openapi3.Server{
+		URL:         "/api",
+		Description: &serverDesc,
+	})
 
 	// Setup request decoder and validator.
 	validatorFactory := jsonschema.NewFactory(apiSchema, apiSchema)
