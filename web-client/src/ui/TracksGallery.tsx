@@ -1,4 +1,6 @@
 import { useGetAllTrackSummaries } from "../openapi/generated/tracksAppComponents";
+import { formatDistance } from "../util/distance";
+import { formatDuration, getDurationSeconds } from "../util/time";
 import Error from "./Error";
 import Loading from "./Loading";
 
@@ -9,29 +11,31 @@ export default function TracksGallery() {
     return <Error error={error} />;
   }
 
-  if (isLoading || !data) {
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (!data) {
     return <Loading />;
   }
 
   console.log(data);
   return (
-    <table className="table table-striped">
-      <thead>
-        <tr>
-          <th>Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.trackSummaries.map((track) => (
-          <tr>
-            <td>
-              <a href={`/tracks/${encodeURIComponent(track.name)}`}>
-                {track.name}
-              </a>
-            </td>
-          </tr>
+    <div>
+      <ul>
+        {data.trackSummaries.map((track, idx) => (
+          <li key={idx}>
+            <a href={`/tracks/${encodeURIComponent(track.name)}`}>
+              {track.name}
+            </a>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>{formatDistance(track.totalDistance)}</span>
+              <span>{formatDuration(getDurationSeconds(track))}</span>
+            </div>
+          </li>
         ))}
-      </tbody>
-    </table>
+      </ul>
+      {data.trackSummaries.length === 0 && <p>No tracks found</p>}
+    </div>
   );
 }

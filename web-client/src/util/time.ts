@@ -18,3 +18,13 @@ export function formatDuration(durationSeconds: number): string {
   }
   return s;
 }
+
+export function getDurationSeconds({
+  startTime,
+  endTime,
+}: {
+  startTime: string;
+  endTime: string;
+}): number {
+  return (new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000;
+}
