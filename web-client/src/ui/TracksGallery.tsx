@@ -4,6 +4,13 @@ import { formatDuration, getDurationSeconds } from "../util/time";
 import Error from "./Error";
 import Loading from "./Loading";
 
+const styles = {
+  dataTag: {
+    background: "grey",
+    margin: "10px",
+  },
+};
+
 export default function TracksGallery() {
   const { error, isLoading, data } = useGetAllTrackSummaries({});
 
@@ -28,9 +35,18 @@ export default function TracksGallery() {
             <a href={`/tracks/${encodeURIComponent(track.name)}`}>
               {track.name}
             </a>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>{formatDistance(track.totalDistance)}</span>
-              <span>{formatDuration(getDurationSeconds(track))}</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={styles.dataTag}>
+                {formatDistance(track.totalDistance)}
+              </div>
+              <div style={styles.dataTag}>
+                {formatDuration(getDurationSeconds(track))}
+              </div>
             </div>
           </li>
         ))}
