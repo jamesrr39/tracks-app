@@ -24,7 +24,7 @@ export const fetchGetAllTrackSummaries = (
     {},
     {},
     {}
-  >({ url: "/api/v1/tracks", method: "get", ...variables, signal });
+  >({ url: "/v1/tracks", method: "get", ...variables, signal });
 
 export const useGetAllTrackSummaries = <
   TData = Schemas.HttphandlersBuildGetAllSummariesResponse,
@@ -47,7 +47,7 @@ export const useGetAllTrackSummaries = <
     TData
   >({
     queryKey: queryKeyFn({
-      path: "/api/v1/tracks",
+      path: "/v1/tracks",
       operationId: "getAllTrackSummaries",
       variables,
     }),
@@ -79,7 +79,7 @@ export const fetchGetTrackSummaryByPath = (
     {},
     {},
     GetTrackSummaryByPathPathParams
-  >({ url: "/api/v1/tracks/{path}", method: "get", ...variables, signal });
+  >({ url: "/v1/tracks/{path}", method: "get", ...variables, signal });
 
 export const useGetTrackSummaryByPath = <
   TData = Schemas.HttphandlersBuildGetTrackSummaryResponse,
@@ -102,7 +102,7 @@ export const useGetTrackSummaryByPath = <
     TData
   >({
     queryKey: queryKeyFn({
-      path: "/api/v1/tracks/{path}",
+      path: "/v1/tracks/{path}",
       operationId: "getTrackSummaryByPath",
       variables,
     }),
@@ -113,42 +113,37 @@ export const useGetTrackSummaryByPath = <
   });
 };
 
-export type GetTrackRecordPathParams = {
+export type GetTrackRecordsPathParams = {
   path: string;
 };
 
-export type GetTrackRecordError = Fetcher.ErrorWrapper<undefined>;
+export type GetTrackRecordsError = Fetcher.ErrorWrapper<undefined>;
 
-export type GetTrackRecordVariables = {
-  pathParams: GetTrackRecordPathParams;
+export type GetTrackRecordsVariables = {
+  pathParams: GetTrackRecordsPathParams;
 } & TracksAppContext["fetcherOptions"];
 
-export const fetchGetTrackRecord = (
-  variables: GetTrackRecordVariables,
+export const fetchGetTrackRecords = (
+  variables: GetTrackRecordsVariables,
   signal?: AbortSignal,
 ) =>
   tracksAppFetch<
     Schemas.HttphandlersBuildGetTrackDetailResponse,
-    GetTrackRecordError,
+    GetTrackRecordsError,
     undefined,
     {},
     {},
-    GetTrackRecordPathParams
-  >({
-    url: "/api/v1/tracks/{path}/records",
-    method: "get",
-    ...variables,
-    signal,
-  });
+    GetTrackRecordsPathParams
+  >({ url: "/v1/tracks/{path}/records", method: "get", ...variables, signal });
 
-export const useGetTrackRecord = <
+export const useGetTrackRecords = <
   TData = Schemas.HttphandlersBuildGetTrackDetailResponse,
 >(
-  variables: GetTrackRecordVariables,
+  variables: GetTrackRecordsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
       Schemas.HttphandlersBuildGetTrackDetailResponse,
-      GetTrackRecordError,
+      GetTrackRecordsError,
       TData
     >,
     "queryKey" | "queryFn" | "initialData"
@@ -158,16 +153,16 @@ export const useGetTrackRecord = <
     useTracksAppContext(options);
   return reactQuery.useQuery<
     Schemas.HttphandlersBuildGetTrackDetailResponse,
-    GetTrackRecordError,
+    GetTrackRecordsError,
     TData
   >({
     queryKey: queryKeyFn({
-      path: "/api/v1/tracks/{path}/records",
-      operationId: "getTrackRecord",
+      path: "/v1/tracks/{path}/records",
+      operationId: "getTrackRecords",
       variables,
     }),
     queryFn: ({ signal }) =>
-      fetchGetTrackRecord({ ...fetcherOptions, ...variables }, signal),
+      fetchGetTrackRecords({ ...fetcherOptions, ...variables }, signal),
     ...options,
     ...queryOptions,
   });
@@ -175,17 +170,17 @@ export const useGetTrackRecord = <
 
 export type QueryOperation =
   | {
-      path: "/api/v1/tracks";
+      path: "/v1/tracks";
       operationId: "getAllTrackSummaries";
       variables: GetAllTrackSummariesVariables;
     }
   | {
-      path: "/api/v1/tracks/{path}";
+      path: "/v1/tracks/{path}";
       operationId: "getTrackSummaryByPath";
       variables: GetTrackSummaryByPathVariables;
     }
   | {
-      path: "/api/v1/tracks/{path}/records";
-      operationId: "getTrackRecord";
-      variables: GetTrackRecordVariables;
+      path: "/v1/tracks/{path}/records";
+      operationId: "getTrackRecords";
+      variables: GetTrackRecordsVariables;
     };

@@ -7,7 +7,7 @@ export type TracksAppFetcherExtraProps = {
    **/
 };
 
-const baseUrl = ""; // TODO add your baseUrl
+const baseUrl = "/api";
 
 export type ErrorWrapper<TError> =
   | TError

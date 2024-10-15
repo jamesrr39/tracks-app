@@ -24,7 +24,7 @@ export const fetchGetAllTrackSummaries = (
     {},
     {},
     {}
-  >({ url: "/api/v1/tracks", method: "get", ...variables, signal });
+  >({ url: "/v1/tracks", method: "get", ...variables, signal });
 
 export const getAllTrackSummariesQuery = (
   variables: GetAllTrackSummariesVariables,
@@ -37,7 +37,7 @@ export const getAllTrackSummariesQuery = (
   }) => Promise<Schemas.HttphandlersBuildGetAllSummariesResponse>,
 ] => [
   queryKeyFn({
-    path: "/api/v1/tracks",
+    path: "/v1/tracks",
     operationId: "getAllTrackSummaries",
     variables,
   }),
@@ -66,7 +66,7 @@ export const fetchGetTrackSummaryByPath = (
     {},
     {},
     GetTrackSummaryByPathPathParams
-  >({ url: "/api/v1/tracks/{path}", method: "get", ...variables, signal });
+  >({ url: "/v1/tracks/{path}", method: "get", ...variables, signal });
 
 export const getTrackSummaryByPathQuery = (
   variables: GetTrackSummaryByPathVariables,
@@ -79,7 +79,7 @@ export const getTrackSummaryByPathQuery = (
   }) => Promise<Schemas.HttphandlersBuildGetTrackSummaryResponse>,
 ] => [
   queryKeyFn({
-    path: "/api/v1/tracks/{path}",
+    path: "/v1/tracks/{path}",
     operationId: "getTrackSummaryByPath",
     variables,
   }),
@@ -87,36 +87,31 @@ export const getTrackSummaryByPathQuery = (
     fetchGetTrackSummaryByPath({ ...variables }, signal),
 ];
 
-export type GetTrackRecordPathParams = {
+export type GetTrackRecordsPathParams = {
   path: string;
 };
 
-export type GetTrackRecordError = Fetcher.ErrorWrapper<undefined>;
+export type GetTrackRecordsError = Fetcher.ErrorWrapper<undefined>;
 
-export type GetTrackRecordVariables = {
-  pathParams: GetTrackRecordPathParams;
+export type GetTrackRecordsVariables = {
+  pathParams: GetTrackRecordsPathParams;
 } & TracksAppContext["fetcherOptions"];
 
-export const fetchGetTrackRecord = (
-  variables: GetTrackRecordVariables,
+export const fetchGetTrackRecords = (
+  variables: GetTrackRecordsVariables,
   signal?: AbortSignal,
 ) =>
   tracksAppFetch<
     Schemas.HttphandlersBuildGetTrackDetailResponse,
-    GetTrackRecordError,
+    GetTrackRecordsError,
     undefined,
     {},
     {},
-    GetTrackRecordPathParams
-  >({
-    url: "/api/v1/tracks/{path}/records",
-    method: "get",
-    ...variables,
-    signal,
-  });
+    GetTrackRecordsPathParams
+  >({ url: "/v1/tracks/{path}/records", method: "get", ...variables, signal });
 
-export const getTrackRecordQuery = (
-  variables: GetTrackRecordVariables,
+export const getTrackRecordsQuery = (
+  variables: GetTrackRecordsVariables,
 ): [
   reactQuery.QueryKey,
   ({
@@ -126,27 +121,27 @@ export const getTrackRecordQuery = (
   }) => Promise<Schemas.HttphandlersBuildGetTrackDetailResponse>,
 ] => [
   queryKeyFn({
-    path: "/api/v1/tracks/{path}/records",
-    operationId: "getTrackRecord",
+    path: "/v1/tracks/{path}/records",
+    operationId: "getTrackRecords",
     variables,
   }),
   async ({ signal }: { signal?: AbortSignal }) =>
-    fetchGetTrackRecord({ ...variables }, signal),
+    fetchGetTrackRecords({ ...variables }, signal),
 ];
 
 export type QueryOperation =
   | {
-      path: "/api/v1/tracks";
+      path: "/v1/tracks";
       operationId: "getAllTrackSummaries";
       variables: GetAllTrackSummariesVariables;
     }
   | {
-      path: "/api/v1/tracks/{path}";
+      path: "/v1/tracks/{path}";
       operationId: "getTrackSummaryByPath";
       variables: GetTrackSummaryByPathVariables;
     }
   | {
-      path: "/api/v1/tracks/{path}/records";
-      operationId: "getTrackRecord";
-      variables: GetTrackRecordVariables;
+      path: "/v1/tracks/{path}/records";
+      operationId: "getTrackRecords";
+      variables: GetTrackRecordsVariables;
     };

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -56,7 +57,7 @@ func setupGenerateOpenapiSpec() {
 	format := cmd.Flag("format", "output format").Short('F').Default(SpecFormatYAML).Enum(SpecFormatYAML, SpecFormatJSON, SpecFormatJSONPretty)
 	outputFilePath := cmd.Flag("output", "").Short('O').Default(os.Stdout.Name()).String()
 	cmd.Action(func(pc *kingpin.ParseContext) error {
-		_, apiSchema := createRouter(&dal.FitDAL{}, "")
+		apiSchema, _ := createAPIRouter(&dal.FitDAL{})
 		spec := apiSchema.Reflector().Spec
 
 		specMarshalFuncMap := map[string]func() ([]byte, error){
@@ -140,8 +141,9 @@ func setupServe() {
 	})
 }
 
-func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wrapper, *openapi.Collector) {
+const ApiRouterBaseURL = "/api"
 
+func createAPIRouter(fitDAL *dal.FitDAL) (*openapi.Collector, *chirouter.Wrapper) {
 	apiSchema := &openapi.Collector{}
 	apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
 	apiSchema.Reflector().SpecEns().Info.WithDescription("REST API definitions for Tracks App")
@@ -159,6 +161,57 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 	decoderFactory := request.NewDecoderFactory()
 	decoderFactory.ApplyDefaults = true
 	decoderFactory.SetDecoderFunc(rest.ParamInPath, chirouter.PathToURLValues)
+
+	apiRouter := chirouter.NewWrapper(chi.NewRouter())
+	apiRouter.Use(
+		nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
+		request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
+		request.ValidatorMiddleware(validatorFactory), // Request validator setup.
+		response.EncoderMiddleware,                    // Response encoder setup.
+	)
+
+	apiRouter.Route("/v1", func(r chi.Router) {
+		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
+		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
+		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
+	})
+
+	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)
+	openapix.MustNotHaveDuplicateOperationIDOrUnknownSecurity(apiSchema.Reflector().Spec)
+
+	return apiSchema, apiRouter
+}
+
+func mustCheckFileExists(pmtilesMapFilePath string) {
+	_, err := os.Stat(pmtilesMapFilePath)
+	if err != nil {
+		panic(fmt.Sprintf("Error 'stat'ing PM tiles file path (%s). Error: %s", pmtilesMapFilePath, err))
+	}
+
+}
+
+func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wrapper, *openapi.Collector) {
+
+	// apiSchema := &openapi.Collector{}
+	// apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
+	// apiSchema.Reflector().SpecEns().Info.WithDescription("REST API definitions for Tracks App")
+
+	// serverDesc := "API server"
+
+	// apiSchema.Reflector().SpecEns().Info.Version = AppVersion
+	// apiSchema.Reflector().Spec.Servers = append(apiSchema.Reflector().Spec.Servers, openapi3.Server{
+	// 	URL:         "/api",
+	// 	Description: &serverDesc,
+	// })
+
+	// // Setup request decoder and validator.
+	// validatorFactory := jsonschema.NewFactory(apiSchema, apiSchema)
+	// decoderFactory := request.NewDecoderFactory()
+	// decoderFactory.ApplyDefaults = true
+	// decoderFactory.SetDecoderFunc(rest.ParamInPath, chirouter.PathToURLValues)
+	mustCheckFileExists(pmtilesMapFilePath)
+
+	apiSchema, apiRouter := createAPIRouter(fitDAL)
 
 	rootRouter := chirouter.NewWrapper(chi.NewRouter())
 
@@ -178,19 +231,19 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 		)
 	})
 
-	apiRouter := chirouter.NewWrapper(chi.NewRouter())
-	apiRouter.Use(
-		nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
-		request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
-		request.ValidatorMiddleware(validatorFactory), // Request validator setup.
-		response.EncoderMiddleware,                    // Response encoder setup.
-	)
+	// apiRouter := chirouter.NewWrapper(chi.NewRouter())
+	// apiRouter.Use(
+	// 	nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
+	// 	request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
+	// 	request.ValidatorMiddleware(validatorFactory), // Request validator setup.
+	// 	response.EncoderMiddleware,                    // Response encoder setup.
+	// )
 
-	apiRouter.Route("/v1", func(r chi.Router) {
-		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
-		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
-		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
-	})
+	// apiRouter.Route("/v1", func(r chi.Router) {
+	// 	openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
+	// 	openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
+	// 	openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
+	// })
 
 	rootRouter.Mount("/api", apiRouter)
 
@@ -198,9 +251,6 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 		r.Handle("/pmtiles-basemap-assets/fonts/*", http.StripPrefix("/map/pmtiles-basemap-assets/fonts/", httphandlers.BuildGetPMTilesBasemapAssets()))
 		r.Get("/pmtiles", httphandlers.BuildGetPMTilesMapData(pmtilesMapFilePath))
 	})
-
-	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)
-	openapix.MustNotHaveDuplicateOperationIDOrUnknownSecurity(apiSchema.Reflector().Spec)
 
 	return rootRouter, apiSchema
 }

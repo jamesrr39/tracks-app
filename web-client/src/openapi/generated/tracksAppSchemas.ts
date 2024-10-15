@@ -20,20 +20,11 @@ export type DomainFitFileSummary = {
   endTime: string;
   hash: string;
   name: string;
-  nearbyObjects: DomainGeographicMapElement[];
   /**
    * @format date-time
    */
   startTime: string;
   totalDistance: number;
-};
-
-export type DomainGeographicMapElement = {
-  tags: {
-    isIn: string;
-    name: string;
-    place: string;
-  };
 };
 
 export type DomainRecord = {

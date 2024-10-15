@@ -1,17 +1,18 @@
 import { UseQueryResult } from "@tanstack/react-query";
 import {
-  GetTrackRecordError,
-  useGetTrackRecord,
+  GetTrackRecordsError,
+  useGetTrackRecords,
   useGetTrackSummaryByPath,
 } from "../openapi/generated/tracksAppComponents";
-import {
-  DomainFitFileSummary,
-  HttphandlersBuildGetTrackDetailResponse,
-} from "../openapi/generated/tracksAppSchemas";
+
 import Error from "./Error";
 import Loading from "./Loading";
 import { MaplibreGLMap } from "./MaplibreGLMap";
 import { formatDuration } from "../util/time";
+import {
+  DomainFitFileSummary,
+  HttphandlersBuildGetTrackDetailResponse,
+} from "../openapi/generated/tracksAppSchemas";
 
 export default function TrackDetail(props: { params: { id: string } }) {
   const reactQueryOpts = {
@@ -20,7 +21,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
 
   const { error, isLoading, data } = useGetTrackSummaryByPath(reactQueryOpts);
 
-  const mapFetch = useGetTrackRecord(reactQueryOpts);
+  const mapFetch = useGetTrackRecords(reactQueryOpts);
 
   if (error) {
     return <Error error={error} />;
@@ -79,7 +80,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
 type MapProps = {
   fetcherProps: UseQueryResult<
     HttphandlersBuildGetTrackDetailResponse,
-    GetTrackRecordError
+    GetTrackRecordsError
   >;
   trackSummary: DomainFitFileSummary;
 };
