@@ -48,7 +48,7 @@ func MustNotHaveDuplicateOperationIDOrUnknownSecurity(spec *openapi3.Spec) {
 // Use if desired on your particular schema; this isn't suitable for all schemas.
 func MustCheckNonNullArrays(definitionMap map[string]openapi3.SchemaOrRef) {
 	for name, definition := range definitionMap {
-		if definition.Schema == nil || definition.Schema.Type == nil {
+		if definition.Schema == nil {
 			// SchemaOrRef is probably a Ref instead
 			continue
 		}

@@ -38,12 +38,19 @@ func (p FitParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 			continue
 		}
 
+		var altitude *float64
+		altitudeFromTrack := activityRecord.GetAltitudeScaled()
+		if !math.IsNaN(altitudeFromTrack) {
+			altitude = &altitudeFromTrack
+		}
+
 		record := NewRecord(
 			activityRecord.Timestamp,
 			activityRecord.PositionLat.Degrees(),
 			activityRecord.PositionLong.Degrees(),
 			round(distanceScaled),
-			round(activityRecord.GetAltitudeScaled()))
+			altitude,
+		)
 		records = append(records, record)
 	}
 

@@ -28,7 +28,7 @@ export type DomainFitFileSummary = {
 };
 
 export type DomainRecord = {
-  altitude: number;
+  altitude: number | null;
   distance: number;
   posLat: number;
   posLong: number;

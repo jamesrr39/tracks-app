@@ -2,6 +2,7 @@ package domain
 
 import (
 	"io"
+	"math"
 	"path/filepath"
 
 	"github.com/jamesrr39/go-errorsx"
@@ -63,18 +64,39 @@ func (g GpxParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 
 	track := gpxFile.Tracks[0]
 
+	if len(track.Segments) == 0 || len(track.Segments[0].Points) == 0 {
+		return nil, errorsx.Wrap(errorsx.Errorf("no segments in first track, or no points in first segment in GPX file"), "segments count", len(track.Segments))
+	}
+
+	cumulativeDistanceMetres := float64(0)
+	var prevPoint *gpx.GPXPoint
+
 	records := []*Record{}
 	for _, segment := range track.Segments {
 		for _, point := range segment.Points {
+			var distanceFromLastPointKm float64
+			if prevPoint == nil {
+				distanceFromLastPointKm = point.Distance3D(prevPoint)
+			}
+
+			cumulativeDistanceMetres += distanceFromLastPointKm / 1000
+
+			var altitude *float64
+			if point.Elevation.NotNull() {
+				val := point.Elevation.Value()
+				altitude = &val
+			}
+
 			record := Record{
 				Timestamp:    point.Timestamp,
 				PositionLat:  point.Latitude,
 				PositionLong: point.Longitude,
-				// Distance: point.
-				Altitude: 0, // TODO? no Altitude data?
+				Distance:     int(math.Round(cumulativeDistanceMetres)),
+				Altitude:     altitude,
 			}
 
 			records = append(records, &record)
+			prevPoint = &point
 		}
 
 	}

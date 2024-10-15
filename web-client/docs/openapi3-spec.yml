@@ -109,7 +109,8 @@ components:
     DomainRecord:
       properties:
         altitude:
-          type: integer
+          nullable: true
+          type: number
         distance:
           type: integer
         posLat:

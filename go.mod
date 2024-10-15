@@ -13,9 +13,11 @@ require (
 	github.com/rakyll/statik v0.1.2
 	github.com/spf13/afero v1.11.0
 	github.com/stretchr/testify v1.8.4
+	github.com/swaggest/openapi-go v0.2.53
 	github.com/swaggest/rest v0.2.66
 	github.com/swaggest/swgui v1.8.1
 	github.com/swaggest/usecase v1.3.1
+	github.com/tkrajina/gpxgo v1.4.0
 	github.com/tormoder/fit v0.15.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
@@ -35,9 +37,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v3 v3.1.0 // indirect
 	github.com/swaggest/form/v5 v5.1.1 // indirect
 	github.com/swaggest/jsonschema-go v0.3.72 // indirect
-	github.com/swaggest/openapi-go v0.2.53 // indirect
 	github.com/swaggest/refl v1.3.0 // indirect
-	github.com/tkrajina/gpxgo v1.4.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20221208152030-732eee02a75a // indirect
 	golang.org/x/mod v0.19.0 // indirect
