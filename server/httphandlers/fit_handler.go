@@ -12,6 +12,8 @@ import (
 	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/swaggest/rest/nethttp"
 	"github.com/swaggest/usecase/status"
+	"github.com/tkrajina/gpxgo/gpx"
+	"github.com/tormoder/fit"
 )
 
 type EmptyStruct struct{}
@@ -98,6 +100,64 @@ func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {
 			}
 
 			output.Records = records
+			return nil
+		},
+	)
+}
+
+type BuildGetParsedGpxFileResponse struct {
+	File *gpx.GPX `json:"file" nullable:"false" required:"true"`
+}
+
+type BuildGetParsedGpxFileRequest struct {
+	RelativeFilePath string `path:"path"`
+}
+
+func BuildGetParsedGpxFile(fitDAL *dal.FitDAL) *nethttp.Handler {
+	return openapix.MustCreateOpenapiEndpoint(
+		"Get parsed GPX track",
+		&openapix.HandlerOptions{
+			Tags: []string{TagTracks},
+		},
+		func(ctx context.Context, input *BuildGetParsedGpxFileRequest, output *BuildGetParsedGpxFileResponse) error {
+			file, err := fitDAL.GetParsedGPXFile(input.RelativeFilePath)
+			if err != nil {
+				if os.IsNotExist(err) {
+					return status.Wrap(err, http.StatusNotFound)
+				}
+				return status.Wrap(err, http.StatusInternalServerError)
+			}
+
+			output.File = file
+			return nil
+		},
+	)
+}
+
+type BuildGetParsedFitFileResponse struct {
+	File *fit.File `json:"file" nullable:"false" required:"true"`
+}
+
+type BuildGetParsedFitFileRequest struct {
+	RelativeFilePath string `path:"path"`
+}
+
+func BuildGetParsedFitFile(fitDAL *dal.FitDAL) *nethttp.Handler {
+	return openapix.MustCreateOpenapiEndpoint(
+		"Get parsed FIT track",
+		&openapix.HandlerOptions{
+			Tags: []string{TagTracks},
+		},
+		func(ctx context.Context, input *BuildGetParsedFitFileRequest, output *BuildGetParsedFitFileResponse) error {
+			file, err := fitDAL.GetParsedFitFile(input.RelativeFilePath)
+			if err != nil {
+				if os.IsNotExist(err) {
+					return status.Wrap(err, http.StatusNotFound)
+				}
+				return status.Wrap(err, http.StatusInternalServerError)
+			}
+
+			output.File = file
 			return nil
 		},
 	)

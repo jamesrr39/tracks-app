@@ -39,6 +39,44 @@ paths:
       summary: Get Track Summary by Path
       tags:
       - Tracks
+  /v1/tracks/{path}/parsed/fit:
+    get:
+      operationId: getParsedFITTrack
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersBuildGetParsedFitFileResponse'
+          description: OK
+      summary: Get parsed FIT track
+      tags:
+      - Tracks
+  /v1/tracks/{path}/parsed/gpx:
+    get:
+      operationId: getParsedGPXTrack
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersBuildGetParsedGpxFileResponse'
+          description: OK
+      summary: Get parsed GPX track
+      tags:
+      - Tracks
   /v1/tracks/{path}/records:
     get:
       operationId: getTrackRecords
@@ -85,6 +123,11 @@ components:
         endTime:
           format: date-time
           type: string
+        geoFileType:
+          enum:
+          - FIT
+          - GPX
+          type: string
         hash:
           type: string
         name:
@@ -96,6 +139,7 @@ components:
           type: number
       required:
       - name
+      - geoFileType
       - hash
       - startTime
       - endTime
@@ -124,6 +168,10 @@ components:
       - distance
       - altitude
       type: object
+    FitFile:
+      type: object
+    GpxGPX:
+      type: object
     HttphandlersBuildGetAllSummariesResponse:
       properties:
         trackSummaries:
@@ -132,6 +180,20 @@ components:
           type: array
       required:
       - trackSummaries
+      type: object
+    HttphandlersBuildGetParsedFitFileResponse:
+      properties:
+        file:
+          $ref: '#/components/schemas/FitFile'
+      required:
+      - file
+      type: object
+    HttphandlersBuildGetParsedGpxFileResponse:
+      properties:
+        file:
+          $ref: '#/components/schemas/GpxGPX'
+      required:
+      - file
       type: object
     HttphandlersBuildGetTrackDetailResponse:
       properties:

@@ -14,6 +14,17 @@ import {
   HttphandlersBuildGetTrackDetailResponse,
 } from "../openapi/generated/tracksAppSchemas";
 
+function getTypeLinkName(geoFileType: DomainFitFileSummary["geoFileType"]) {
+  switch (geoFileType) {
+    case "FIT":
+      return "fit";
+    case "GPX":
+      return "gpx";
+    default:
+      throw new TypeError(`didn't recognise file type "${geoFileType}"`);
+  }
+}
+
 export default function TrackDetail(props: { params: { id: string } }) {
   const reactQueryOpts = {
     pathParams: { path: encodeURIComponent(props.params.id) },
@@ -39,6 +50,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
     endTime,
     startTime,
     // nearbyObjects,
+    geoFileType,
     device,
   } = trackSummary;
 
@@ -60,6 +72,16 @@ export default function TrackDetail(props: { params: { id: string } }) {
           <p>Recorded with {device}</p>
         </div>
       )}
+      <div>
+        <a
+          target="_blank"
+          href={`/api/v1/tracks/${encodeURIComponent(
+            name
+          )}/parsed/${getTypeLinkName(geoFileType)}`}
+        >
+          Raw
+        </a>
+      </div>
       <div>
         <ul>
           {/* {nearbyObjects.map((object) => (

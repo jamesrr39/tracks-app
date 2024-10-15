@@ -13,6 +13,8 @@ import (
 	"github.com/jamesrr39/goutil/dirtraversal"
 	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/spf13/afero"
+	"github.com/tkrajina/gpxgo/gpx"
+	"github.com/tormoder/fit"
 )
 
 // FitDAL represents an object that can scan for and parse .fit files
@@ -207,4 +209,53 @@ func (d *FitDAL) persistFitFileSummary(hash domain.Hash, fitFile *domain.FitFile
 	}
 
 	return nil
+}
+
+func (d *FitDAL) GetParsedGPXFile(relativeFilePath string) (*gpx.GPX, errorsx.Error) {
+	if dirtraversal.IsTryingToTraverseUp(relativeFilePath) {
+		return nil, errorsx.Errorf("../ not allowed in filepath")
+	}
+
+	if filepath.Ext(relativeFilePath) != ".gpx" {
+		return nil, errorsx.Errorf("file path didn't end in .gpx, unable to parse as GPX file")
+	}
+
+	filePath := filepath.Join(d.rootDir, relativeFilePath)
+
+	file, err := d.fs.Open(filePath)
+	if err != nil {
+		return nil, errorsx.Wrap(err)
+	}
+	defer file.Close()
+
+	gpxFile, err := gpx.Parse(file)
+	if err != nil {
+		return nil, errorsx.Wrap(err)
+	}
+
+	return gpxFile, nil
+}
+func (d *FitDAL) GetParsedFitFile(relativeFilePath string) (*fit.File, errorsx.Error) {
+	if dirtraversal.IsTryingToTraverseUp(relativeFilePath) {
+		return nil, errorsx.Errorf("../ not allowed in filepath")
+	}
+
+	if filepath.Ext(relativeFilePath) != ".fit" {
+		return nil, errorsx.Errorf("file path didn't end in .fit, unable to parse as FIT file")
+	}
+
+	filePath := filepath.Join(d.rootDir, relativeFilePath)
+
+	file, err := d.fs.Open(filePath)
+	if err != nil {
+		return nil, errorsx.Wrap(err)
+	}
+	defer file.Close()
+
+	fitFile, err := fit.Decode(file)
+	if err != nil {
+		return nil, errorsx.Wrap(err)
+	}
+
+	return fitFile, nil
 }

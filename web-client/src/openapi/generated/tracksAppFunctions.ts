@@ -87,6 +87,100 @@ export const getTrackSummaryByPathQuery = (
     fetchGetTrackSummaryByPath({ ...variables }, signal),
 ];
 
+export type GetParsedFITTrackPathParams = {
+  path: string;
+};
+
+export type GetParsedFITTrackError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetParsedFITTrackVariables = {
+  pathParams: GetParsedFITTrackPathParams;
+} & TracksAppContext["fetcherOptions"];
+
+export const fetchGetParsedFITTrack = (
+  variables: GetParsedFITTrackVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersBuildGetParsedFitFileResponse,
+    GetParsedFITTrackError,
+    undefined,
+    {},
+    {},
+    GetParsedFITTrackPathParams
+  >({
+    url: "/v1/tracks/{path}/parsed/fit",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export const getParsedFitTrackQuery = (
+  variables: GetParsedFITTrackVariables,
+): [
+  reactQuery.QueryKey,
+  ({
+    signal,
+  }: {
+    signal?: AbortSignal;
+  }) => Promise<Schemas.HttphandlersBuildGetParsedFitFileResponse>,
+] => [
+  queryKeyFn({
+    path: "/v1/tracks/{path}/parsed/fit",
+    operationId: "getParsedFITTrack",
+    variables,
+  }),
+  async ({ signal }: { signal?: AbortSignal }) =>
+    fetchGetParsedFITTrack({ ...variables }, signal),
+];
+
+export type GetParsedGPXTrackPathParams = {
+  path: string;
+};
+
+export type GetParsedGPXTrackError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetParsedGPXTrackVariables = {
+  pathParams: GetParsedGPXTrackPathParams;
+} & TracksAppContext["fetcherOptions"];
+
+export const fetchGetParsedGPXTrack = (
+  variables: GetParsedGPXTrackVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersBuildGetParsedGpxFileResponse,
+    GetParsedGPXTrackError,
+    undefined,
+    {},
+    {},
+    GetParsedGPXTrackPathParams
+  >({
+    url: "/v1/tracks/{path}/parsed/gpx",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export const getParsedGpxTrackQuery = (
+  variables: GetParsedGPXTrackVariables,
+): [
+  reactQuery.QueryKey,
+  ({
+    signal,
+  }: {
+    signal?: AbortSignal;
+  }) => Promise<Schemas.HttphandlersBuildGetParsedGpxFileResponse>,
+] => [
+  queryKeyFn({
+    path: "/v1/tracks/{path}/parsed/gpx",
+    operationId: "getParsedGPXTrack",
+    variables,
+  }),
+  async ({ signal }: { signal?: AbortSignal }) =>
+    fetchGetParsedGPXTrack({ ...variables }, signal),
+];
+
 export type GetTrackRecordsPathParams = {
   path: string;
 };
@@ -139,6 +233,16 @@ export type QueryOperation =
       path: "/v1/tracks/{path}";
       operationId: "getTrackSummaryByPath";
       variables: GetTrackSummaryByPathVariables;
+    }
+  | {
+      path: "/v1/tracks/{path}/parsed/fit";
+      operationId: "getParsedFITTrack";
+      variables: GetParsedFITTrackVariables;
+    }
+  | {
+      path: "/v1/tracks/{path}/parsed/gpx";
+      operationId: "getParsedGPXTrack";
+      variables: GetParsedGPXTrackVariables;
     }
   | {
       path: "/v1/tracks/{path}/records";

@@ -17,6 +17,7 @@ export type DomainFitFileSummary = {
    * @format date-time
    */
   endTime: string;
+  geoFileType: "FIT" | "GPX";
   hash: string;
   name: string;
   /**
@@ -37,8 +38,20 @@ export type DomainRecord = {
   timestamp: string;
 };
 
+export type FitFile = Record<string, any>;
+
+export type GpxGPX = Record<string, any>;
+
 export type HttphandlersBuildGetAllSummariesResponse = {
   trackSummaries: DomainFitFileSummary[];
+};
+
+export type HttphandlersBuildGetParsedFitFileResponse = {
+  file: FitFile;
+};
+
+export type HttphandlersBuildGetParsedGpxFileResponse = {
+  file: GpxGPX;
 };
 
 export type HttphandlersBuildGetTrackDetailResponse = {

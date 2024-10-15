@@ -167,6 +167,7 @@ func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitF
 
 	return NewFitFileSummary(
 			name,
+			GeoFileTypeFIT,
 			hash,
 			activity.Records[0].Timestamp,
 			activity.Records[len(activity.Records)-1].Timestamp,

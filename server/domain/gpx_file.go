@@ -26,11 +26,9 @@ func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitF
 	bounds := gpxFile.Bounds()
 	movingData := gpxFile.MovingData()
 
-	// d1 := gpxFile.TimeBounds().EndTime.Sub(gpxFile.TimeBounds().StartTime)
-	// TODO: use moving time/stopped time
-
 	return &FitFileSummary{
 		Name:          filepath.Base(name),
+		Type:          GeoFileTypeGPX,
 		Hash:          hash,
 		StartTime:     gpxFile.TimeBounds().StartTime,
 		EndTime:       gpxFile.TimeBounds().EndTime,
@@ -42,12 +40,6 @@ func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitF
 			LongMin: bounds.MinLongitude,
 			LongMax: bounds.MaxLongitude,
 		},
-		// DeviceManufacturer string                  `json:"deviceManufacturer" required:"true"`
-		// DeviceProduct      string                  `json:"deviceProduct" required:"true"`
-		// TotalDistance      float64                 `json:"totalDistance" required:"true"`
-		// ActivityBounds     *ActivityBounds         `json:"activityBounds" required:"true"`
-		// NearbyObjects      []*GeographicMapElement `json:"nearbyObjects" required:"true" nullable:"false"`
-
 	}, nil
 
 }
@@ -75,7 +67,7 @@ func (g GpxParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 	for _, segment := range track.Segments {
 		for _, point := range segment.Points {
 			var distanceFromLastPointKm float64
-			if prevPoint == nil {
+			if prevPoint != nil {
 				distanceFromLastPointKm = point.Distance3D(prevPoint)
 			}
 

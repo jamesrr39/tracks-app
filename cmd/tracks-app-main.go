@@ -174,6 +174,8 @@ func createAPIRouter(fitDAL *dal.FitDAL) (*openapi.Collector, *chirouter.Wrapper
 		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
 		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
 		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
+		openapix.Get(r, "/tracks/{path}/parsed/gpx", httphandlers.BuildGetParsedGpxFile(fitDAL))
+		openapix.Get(r, "/tracks/{path}/parsed/fit", httphandlers.BuildGetParsedFitFile(fitDAL))
 	})
 
 	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)
