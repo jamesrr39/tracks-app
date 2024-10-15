@@ -30,11 +30,11 @@ func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitF
 	// TODO: use moving time/stopped time
 
 	return &FitFileSummary{
-		Name:               filepath.Base(name),
-		Hash:               hash,
-		StartTime:          gpxFile.TimeBounds().StartTime,
-		EndTime:            gpxFile.TimeBounds().EndTime,
-		DeviceManufacturer: gpxFile.Creator, DeviceProduct: gpxFile.Creator,
+		Name:          filepath.Base(name),
+		Hash:          hash,
+		StartTime:     gpxFile.TimeBounds().StartTime,
+		EndTime:       gpxFile.TimeBounds().EndTime,
+		Device:        gpxFile.Creator,
 		TotalDistance: movingData.MovingDistance + movingData.StoppedDistance,
 		ActivityBounds: &ActivityBounds{
 			LatMin:  bounds.MinLatitude,

@@ -12,8 +12,7 @@ export type DomainActivityBounds = {
 
 export type DomainFitFileSummary = {
   activityBounds: DomainActivityBounds;
-  deviceManufacturer: string;
-  deviceProduct: string;
+  device: string;
   /**
    * @format date-time
    */

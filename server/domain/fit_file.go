@@ -3,6 +3,7 @@ package domain
 import (
 	"io"
 	"math"
+	"strings"
 
 	"github.com/jamesrr39/go-errorsx"
 	"github.com/tormoder/fit"
@@ -153,13 +154,23 @@ func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitF
 		return nil, errorsx.Wrap(err)
 	}
 
+	var deviceFragments []string
+
+	manufacturer := file.FileId.Manufacturer.String()
+	productName := file.FileId.ProductName
+	if manufacturer != "" {
+		deviceFragments = append(deviceFragments, manufacturer)
+	}
+	if productName != "" {
+		deviceFragments = append(deviceFragments, productName)
+	}
+
 	return NewFitFileSummary(
 			name,
 			hash,
 			activity.Records[0].Timestamp,
 			activity.Records[len(activity.Records)-1].Timestamp,
-			file.FileId.Manufacturer.String(),
-			file.FileId.ProductName,
+			strings.Join(deviceFragments, " "),
 			distanceScaled,
 			activityBounds,
 			// nearbyObjects,

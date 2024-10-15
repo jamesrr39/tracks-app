@@ -80,9 +80,7 @@ components:
       properties:
         activityBounds:
           $ref: '#/components/schemas/DomainActivityBounds'
-        deviceManufacturer:
-          type: string
-        deviceProduct:
+        device:
           type: string
         endTime:
           format: date-time
@@ -101,8 +99,7 @@ components:
       - hash
       - startTime
       - endTime
-      - deviceManufacturer
-      - deviceProduct
+      - device
       - totalDistance
       - activityBounds
       type: object

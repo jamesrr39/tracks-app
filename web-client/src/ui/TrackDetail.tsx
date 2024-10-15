@@ -39,8 +39,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
     endTime,
     startTime,
     // nearbyObjects,
-    deviceManufacturer,
-    deviceProduct,
+    device,
   } = trackSummary;
 
   const durationMillis =
@@ -56,11 +55,9 @@ export default function TrackDetail(props: { params: { id: string } }) {
         {(totalDistance / 1000).toFixed(2)}km in{" "}
         {formatDuration(durationMillis / 1000)}
       </div>
-      {(deviceManufacturer || deviceProduct) && (
+      {device && (
         <div>
-          <p>
-            Recorded with {deviceManufacturer} {deviceProduct}
-          </p>
+          <p>Recorded with {device}</p>
         </div>
       )}
       <div>
