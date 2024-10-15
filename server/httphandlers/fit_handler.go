@@ -3,8 +3,10 @@ package httphandlers
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"os"
 
+	"github.com/jamesrr39/go-errorsx"
 	openapix "github.com/jamesrr39/go-openapix"
 	"github.com/jamesrr39/tracks-app/server/dal"
 	"github.com/jamesrr39/tracks-app/server/domain"
@@ -34,7 +36,7 @@ func BuildGetAllSummaries(fitDAL *dal.FitDAL) *nethttp.Handler {
 }
 
 type BuildGetTrackSummaryRequest struct {
-	RelativePath string `path:"path"`
+	EscapedRelativePath string `path:"path"`
 }
 
 type BuildGetTrackSummaryResponse struct {
@@ -48,8 +50,17 @@ func BuildGetTrackSummary(fitDAL *dal.FitDAL) *nethttp.Handler {
 			Tags: []string{TagTracks},
 		},
 		func(ctx context.Context, input *BuildGetTrackSummaryRequest, output *BuildGetTrackSummaryResponse) error {
-			summary, err := fitDAL.Get(input.RelativePath)
+			relativePath, err := url.PathUnescape(input.EscapedRelativePath)
 			if err != nil {
+				return status.Wrap(err, http.StatusInternalServerError)
+			}
+
+			summary, err := fitDAL.GetSummary(relativePath)
+			if err != nil {
+				println(input.EscapedRelativePath, relativePath)
+				e := err.(*errorsx.Err)
+
+				println(errorsx.ErrWithStack(e).Error())
 				if os.IsNotExist(err) {
 					return status.Wrap(err, http.StatusNotFound)
 				}
@@ -57,7 +68,7 @@ func BuildGetTrackSummary(fitDAL *dal.FitDAL) *nethttp.Handler {
 				return status.Wrap(err, http.StatusInternalServerError)
 			}
 
-			output.TrackSummary = summary.FitFileSummary
+			output.TrackSummary = summary
 			return nil
 		},
 	)
@@ -73,12 +84,12 @@ type BuildGetTrackDetailResponse struct {
 
 func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {
 	return openapix.MustCreateOpenapiEndpoint(
-		"Get Track Record",
+		"Get Track Records",
 		&openapix.HandlerOptions{
 			Tags: []string{TagTracks},
 		},
 		func(ctx context.Context, input *BuildGetTrackDetailRequest, output *BuildGetTrackDetailResponse) error {
-			track, err := fitDAL.Get(input.RelativeFilePath)
+			records, err := fitDAL.GetRecords(input.RelativeFilePath)
 			if err != nil {
 				if os.IsNotExist(err) {
 					return status.Wrap(err, http.StatusNotFound)
@@ -86,7 +97,7 @@ func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {
 				return status.Wrap(err, http.StatusInternalServerError)
 			}
 
-			output.Records = track.Records
+			output.Records = records
 			return nil
 		},
 	)

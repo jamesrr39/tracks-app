@@ -37,7 +37,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
     totalDistance,
     endTime,
     startTime,
-    nearbyObjects,
+    // nearbyObjects,
     deviceManufacturer,
     deviceProduct,
   } = trackSummary;
@@ -64,11 +64,11 @@ export default function TrackDetail(props: { params: { id: string } }) {
       )}
       <div>
         <ul>
-          {nearbyObjects.map((object) => (
+          {/* {nearbyObjects.map((object) => (
             <li>
               {object.tags.name} ({object.tags.place})
             </li>
-          ))}
+          ))} */}
         </ul>
       </div>
       <Map fetcherProps={mapFetch} trackSummary={trackSummary} />

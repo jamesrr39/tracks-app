@@ -1,32 +1,26 @@
 package domain
 
 import (
-	"fmt"
 	"io"
 	"math"
 
+	"github.com/jamesrr39/go-errorsx"
 	"github.com/tormoder/fit"
 )
 
-type FitFile struct {
-	*FitFileSummary `json:"summary"`
-	Records         []*Record `json:"records"`
-}
+var _ FileParser = FitParser{}
 
-func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher NearbyObjectsFetcher) (*FitFile, error) {
+type FitParser struct{}
+
+func (p FitParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 	decodedFile, err := fit.Decode(reader)
 	if nil != err {
-		return nil, err
-	}
-
-	summary, err := newSummaryFromDecodedFitFile(name, hash, decodedFile, nearbyObjectsFetcher)
-	if nil != err {
-		return nil, err
+		return nil, errorsx.Wrap(err)
 	}
 
 	activity, err := decodedFile.Activity()
 	if nil != err {
-		return nil, fmt.Errorf("failed to get activity for %s. Error: %s", name, err)
+		return nil, errorsx.Wrap(err)
 	}
 
 	// parse all records
@@ -53,7 +47,7 @@ func NewFitFile(name string, hash Hash, reader io.Reader, nearbyObjectsFetcher N
 		records = append(records, record)
 	}
 
-	return &FitFile{FitFileSummary: summary, Records: records}, nil
+	return records, nil
 }
 
 // TODO: replace in Go 1.10
@@ -64,39 +58,105 @@ func round(n float64) int {
 	return int(math.Floor(n - 0.5))
 }
 
-func (f *FitFile) GetLaps(incrementMetres int) []*Lap {
-	nextIncrement := incrementMetres
-	laps := []*Lap{}
+// func (f *FitFile) GetLaps(incrementMetres int) []*Lap {
+// 	nextIncrement := incrementMetres
+// 	laps := []*Lap{}
 
-	amountOfRecords := len(f.Records)
-	if amountOfRecords == 0 {
-		return laps
+// 	amountOfRecords := len(f.Records)
+// 	if amountOfRecords == 0 {
+// 		return laps
+// 	}
+
+// 	thisLap := &Lap{StartTimestamp: f.Records[0].Timestamp, StartAltitude: f.Records[0].Altitude}
+// 	lastLap := &Lap{}
+
+// 	lastIndex := amountOfRecords - 1
+// 	for index, record := range f.Records {
+// 		if record.Distance < nextIncrement && (index != lastIndex) {
+// 			// nothing special about this record
+// 			continue
+// 		}
+
+// 		distanceInLap := record.Distance - lastLap.CumulativeDistanceMetres
+
+// 		thisLap.EndTimestamp = record.Timestamp
+// 		thisLap.CumulativeDistanceMetres = record.Distance
+// 		thisLap.DistanceInLapMetres = distanceInLap
+// 		thisLap.EndAltitude = record.Altitude
+
+// 		laps = append(laps, thisLap)
+
+// 		lastLap = thisLap
+// 		thisLap = &Lap{StartTimestamp: record.Timestamp, StartAltitude: record.Altitude}
+
+// 		nextIncrement += incrementMetres
+// 	}
+
+// 	return laps
+// }
+
+func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitFileSummary, errorsx.Error) {
+	file, err := fit.Decode(reader)
+	if nil != err {
+		return nil, errorsx.Wrap(err)
 	}
 
-	thisLap := &Lap{StartTimestamp: f.Records[0].Timestamp, StartAltitude: f.Records[0].Altitude}
-	lastLap := &Lap{}
+	summary, err := newSummaryFromDecodedFitFile(name, hash, file)
+	if nil != err {
+		return nil, errorsx.Wrap(err)
+	}
 
-	lastIndex := amountOfRecords - 1
-	for index, record := range f.Records {
-		if record.Distance < nextIncrement && (index != lastIndex) {
-			// nothing special about this record
+	return summary, nil
+}
+
+func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitFileSummary, error) {
+	// sport, err := file.Sport() // TODO include sport?
+
+	activity, err := file.Activity()
+	if nil != err {
+		return nil, err
+	}
+
+	if len(activity.Records) < 1 {
+		return nil, err
+	}
+
+	var distanceScaled float64
+	for recordIndex := len(activity.Records) - 1; recordIndex >= 0; recordIndex-- {
+		record := activity.Records[recordIndex]
+		if math.IsNaN(record.GetDistanceScaled()) {
 			continue
 		}
 
-		distanceInLap := record.Distance - lastLap.CumulativeDistanceMetres
-
-		thisLap.EndTimestamp = record.Timestamp
-		thisLap.CumulativeDistanceMetres = record.Distance
-		thisLap.DistanceInLapMetres = distanceInLap
-		thisLap.EndAltitude = record.Altitude
-
-		laps = append(laps, thisLap)
-
-		lastLap = thisLap
-		thisLap = &Lap{StartTimestamp: record.Timestamp, StartAltitude: record.Altitude}
-
-		nextIncrement += incrementMetres
+		distanceScaled = record.GetDistanceScaled()
+		break
 	}
 
-	return laps
+	// nearbyObjects := []*GeographicMapElement{}
+	// activityBounds, err := ActivityBoundsFromFitActivity(activity)
+	// if err == nil {
+	// 	nearbyObjects, err = nearbyObjectsFetcher.Fetch(activityBounds)
+	// 	if nil != err {
+	// 		return nil, err
+	// 	}
+	// }
+
+	activityBounds, err := ActivityBoundsFromFitActivity(activity)
+	if err != nil {
+		return nil, errorsx.Wrap(err)
+	}
+
+	return NewFitFileSummary(
+			name,
+			hash,
+			activity.Records[0].Timestamp,
+			activity.Records[len(activity.Records)-1].Timestamp,
+			file.FileId.Manufacturer.String(),
+			file.FileId.ProductName,
+			distanceScaled,
+			activityBounds,
+			// nearbyObjects,
+		),
+		nil
+
 }

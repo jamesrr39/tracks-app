@@ -12,7 +12,7 @@ func Test_RebuildCachesFromRootDir_and_GetAllSummariesInCache(t *testing.T) {
 	err := fs.Mkdir("/activities", 0700)
 	require.Nil(t, err)
 
-	fitDAL := &FitDAL{fs: fs, rootDir: "/activities", summaryCache: newFitCache(), cachesDir: "/caches"}
+	fitDAL := &FitDAL{fs: fs, rootDir: "/activities", summaryCache: newFitCache(nil), cachesDir: "/caches"}
 
 	err = fitDAL.RebuildCachesFromRootDir()
 	require.Nil(t, err)
