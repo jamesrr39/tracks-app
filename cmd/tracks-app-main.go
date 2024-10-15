@@ -192,23 +192,6 @@ func mustCheckFileExists(pmtilesMapFilePath string) {
 
 func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wrapper, *openapi.Collector) {
 
-	// apiSchema := &openapi.Collector{}
-	// apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
-	// apiSchema.Reflector().SpecEns().Info.WithDescription("REST API definitions for Tracks App")
-
-	// serverDesc := "API server"
-
-	// apiSchema.Reflector().SpecEns().Info.Version = AppVersion
-	// apiSchema.Reflector().Spec.Servers = append(apiSchema.Reflector().Spec.Servers, openapi3.Server{
-	// 	URL:         "/api",
-	// 	Description: &serverDesc,
-	// })
-
-	// // Setup request decoder and validator.
-	// validatorFactory := jsonschema.NewFactory(apiSchema, apiSchema)
-	// decoderFactory := request.NewDecoderFactory()
-	// decoderFactory.ApplyDefaults = true
-	// decoderFactory.SetDecoderFunc(rest.ParamInPath, chirouter.PathToURLValues)
 	mustCheckFileExists(pmtilesMapFilePath)
 
 	apiSchema, apiRouter := createAPIRouter(fitDAL)
@@ -230,20 +213,6 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 			"/docs"),
 		)
 	})
-
-	// apiRouter := chirouter.NewWrapper(chi.NewRouter())
-	// apiRouter.Use(
-	// 	nethttp.OpenAPIMiddleware(apiSchema),          // Documentation collector.
-	// 	request.DecoderMiddleware(decoderFactory),     // Request decoder setup.
-	// 	request.ValidatorMiddleware(validatorFactory), // Request validator setup.
-	// 	response.EncoderMiddleware,                    // Response encoder setup.
-	// )
-
-	// apiRouter.Route("/v1", func(r chi.Router) {
-	// 	openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
-	// 	openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
-	// 	openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
-	// })
 
 	rootRouter.Mount("/api", apiRouter)
 
