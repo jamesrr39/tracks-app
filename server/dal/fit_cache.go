@@ -7,16 +7,16 @@ import (
 	"github.com/jamesrr39/tracks-app/server/domain"
 )
 
-type cacheMapType map[domain.Hash]*domain.FitFileSummary
+type cacheMapType map[domain.Hash]*domain.GeoFileSummary
 
 // fitFileSummaryCache maintains a cache of fit file properties
 type fitFileSummaryCache struct {
 	cacheMap            cacheMapType
-	cacheByRelativePath map[string]*domain.FitFileSummary
+	cacheByRelativePath map[string]*domain.GeoFileSummary
 	mu                  sync.RWMutex
 }
 
-func newFitCache(fitFileSummaries []*domain.FitFileSummary) *fitFileSummaryCache {
+func newFitCache(fitFileSummaries []*domain.GeoFileSummary) *fitFileSummaryCache {
 	cache := &fitFileSummaryCache{
 		mu: sync.RWMutex{},
 	}
@@ -26,9 +26,9 @@ func newFitCache(fitFileSummaries []*domain.FitFileSummary) *fitFileSummaryCache
 	return cache
 }
 
-func (c *fitFileSummaryCache) rebuildCache(fitFileSummaries []*domain.FitFileSummary) {
+func (c *fitFileSummaryCache) rebuildCache(fitFileSummaries []*domain.GeoFileSummary) {
 	newByHashMap := make(cacheMapType)
-	newByRelativePathMap := make(map[string]*domain.FitFileSummary)
+	newByRelativePathMap := make(map[string]*domain.GeoFileSummary)
 
 	for _, summary := range fitFileSummaries {
 		newByHashMap[summary.Hash] = summary
@@ -40,8 +40,8 @@ func (c *fitFileSummaryCache) rebuildCache(fitFileSummaries []*domain.FitFileSum
 	c.mu.Unlock()
 }
 
-func (c *fitFileSummaryCache) getAll() []*domain.FitFileSummary {
-	fitFileSummaries := []*domain.FitFileSummary{}
+func (c *fitFileSummaryCache) getAll() []*domain.GeoFileSummary {
+	fitFileSummaries := []*domain.GeoFileSummary{}
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	for _, v := range c.cacheMap {
@@ -51,7 +51,7 @@ func (c *fitFileSummaryCache) getAll() []*domain.FitFileSummary {
 }
 
 // os.ErrNotExist if not present
-func (c *fitFileSummaryCache) GetByRelativePath(relativePath string) (*domain.FitFileSummary, error) {
+func (c *fitFileSummaryCache) GetByRelativePath(relativePath string) (*domain.GeoFileSummary, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 

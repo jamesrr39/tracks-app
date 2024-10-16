@@ -8,7 +8,7 @@ import (
 )
 
 type FileParser interface {
-	ParseSummary(relativeFilePath string, hash Hash, reader io.Reader) (*FitFileSummary, errorsx.Error)
+	ParseSummary(relativeFilePath string, hash Hash, reader io.Reader) (*GeoFileSummary, errorsx.Error)
 	ParseRecords(reader io.Reader) ([]*Record, errorsx.Error)
 	// TODO: ParseLaps?
 }
@@ -20,9 +20,8 @@ const (
 	GeoFileTypeGPX GeoFileType = "GPX"
 )
 
-// FitFileSummary is a summary of a fit file
-// TODO: rename to more generic (e.g. TrackFileSummary)
-type FitFileSummary struct {
+// GeoFileSummary is a summary of a fit file
+type GeoFileSummary struct {
 	Name           string          `json:"name" required:"true"`
 	Type           GeoFileType     `json:"geoFileType" required:"true" enum:"FIT,GPX"`
 	Hash           Hash            `json:"hash" required:"true"`
@@ -34,7 +33,7 @@ type FitFileSummary struct {
 	// NearbyObjects      []*GeographicMapElement `json:"nearbyObjects" required:"true" nullable:"false"`
 }
 
-// NewFitFileSummary creates a new FitFileSummary
-func NewFitFileSummary(name string, geoFileType GeoFileType, hash Hash, startTime, endTime time.Time, device string, totalDistance float64, activityBounds *ActivityBounds) *FitFileSummary {
-	return &FitFileSummary{name, geoFileType, hash, startTime, endTime, device, totalDistance, activityBounds}
+// NewGeoFileSummary creates a new FitFileSummary
+func NewGeoFileSummary(name string, geoFileType GeoFileType, hash Hash, startTime, endTime time.Time, device string, totalDistance float64, activityBounds *ActivityBounds) *GeoFileSummary {
+	return &GeoFileSummary{name, geoFileType, hash, startTime, endTime, device, totalDistance, activityBounds}
 }

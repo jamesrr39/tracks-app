@@ -103,7 +103,7 @@ func round(n float64) int {
 // 	return laps
 // }
 
-func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitFileSummary, errorsx.Error) {
+func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoFileSummary, errorsx.Error) {
 	file, err := fit.Decode(reader)
 	if nil != err {
 		return nil, errorsx.Wrap(err)
@@ -117,7 +117,7 @@ func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitF
 	return summary, nil
 }
 
-func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitFileSummary, error) {
+func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*GeoFileSummary, error) {
 	// sport, err := file.Sport() // TODO include sport?
 
 	activity, err := file.Activity()
@@ -165,7 +165,7 @@ func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*FitF
 		deviceFragments = append(deviceFragments, productName)
 	}
 
-	return NewFitFileSummary(
+	return NewGeoFileSummary(
 			name,
 			GeoFileTypeFIT,
 			hash,

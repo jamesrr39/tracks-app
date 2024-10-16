@@ -40,13 +40,13 @@ func NewFitDALAndScan(rootDir, cachesDir string, nearbyObjectsFetcher domain.Nea
 
 // GetAllSummariesInCache gets all the tracks currently in the cache
 // To rebuild the cache, call ScanRootDir
-func (d *FitDAL) GetAllSummariesInCache() []*domain.FitFileSummary {
+func (d *FitDAL) GetAllSummariesInCache() []*domain.GeoFileSummary {
 	return d.summaryCache.getAll()
 }
 
 // RebuildCachesFromRootDir rebuilds the cache from the rootDir
 func (d *FitDAL) RebuildCachesFromRootDir() error {
-	fitFileSummaries := []*domain.FitFileSummary{}
+	fitFileSummaries := []*domain.GeoFileSummary{}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -173,7 +173,7 @@ func (d *FitDAL) GetRecords(relativeFilePath string) ([]*domain.Record, errorsx.
 }
 
 // Get gets a parsed fit file. Returns os.ErrNotExist if file not found
-func (d *FitDAL) GetSummary(relativeFilePath string) (*domain.FitFileSummary, errorsx.Error) {
+func (d *FitDAL) GetSummary(relativeFilePath string) (*domain.GeoFileSummary, errorsx.Error) {
 	if dirtraversal.IsTryingToTraverseUp(relativeFilePath) {
 		return nil, errorsx.Errorf("../ not allowed in filepath")
 	}
@@ -186,7 +186,7 @@ func (d *FitDAL) GetSummary(relativeFilePath string) (*domain.FitFileSummary, er
 	return summary, nil
 }
 
-func (d *FitDAL) persistFitFileSummary(hash domain.Hash, fitFile *domain.FitFileSummary) error {
+func (d *FitDAL) persistFitFileSummary(hash domain.Hash, fitFile *domain.GeoFileSummary) error {
 	filePath := filepath.Join(d.cachesDir, string(hash))
 	_, err := d.fs.Stat(filePath)
 	if nil != err {

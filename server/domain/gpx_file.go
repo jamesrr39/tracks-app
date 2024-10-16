@@ -13,7 +13,7 @@ var _ FileParser = GpxParser{}
 
 type GpxParser struct{}
 
-func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitFileSummary, errorsx.Error) {
+func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoFileSummary, errorsx.Error) {
 	gpxFile, err := gpx.Parse(reader)
 	if err != nil {
 		return nil, errorsx.Wrap(err)
@@ -26,21 +26,21 @@ func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*FitF
 	bounds := gpxFile.Bounds()
 	movingData := gpxFile.MovingData()
 
-	return &FitFileSummary{
-		Name:          filepath.Base(name),
-		Type:          GeoFileTypeGPX,
-		Hash:          hash,
-		StartTime:     gpxFile.TimeBounds().StartTime,
-		EndTime:       gpxFile.TimeBounds().EndTime,
-		Device:        gpxFile.Creator,
-		TotalDistance: movingData.MovingDistance + movingData.StoppedDistance,
-		ActivityBounds: &ActivityBounds{
+	return NewGeoFileSummary(
+		filepath.Base(name),
+		GeoFileTypeGPX,
+		hash,
+		gpxFile.TimeBounds().StartTime,
+		gpxFile.TimeBounds().EndTime,
+		gpxFile.Creator,
+		movingData.MovingDistance+movingData.StoppedDistance,
+		&ActivityBounds{
 			LatMin:  bounds.MinLatitude,
 			LatMax:  bounds.MaxLatitude,
 			LongMin: bounds.MinLongitude,
 			LongMax: bounds.MaxLongitude,
 		},
-	}, nil
+	), nil
 
 }
 
