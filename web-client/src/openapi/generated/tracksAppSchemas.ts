@@ -10,7 +10,7 @@ export type DomainActivityBounds = {
   longMin: number;
 };
 
-export type DomainFitFileSummary = {
+export type DomainGeoFileSummary = {
   activityBounds: DomainActivityBounds;
   device: string;
   /**
@@ -20,6 +20,7 @@ export type DomainFitFileSummary = {
   geoFileType: "FIT" | "GPX";
   hash: string;
   name: string;
+  relativeFilePath: string;
   /**
    * @format date-time
    */
@@ -43,7 +44,7 @@ export type FitFile = Record<string, any>;
 export type GpxGPX = Record<string, any>;
 
 export type HttphandlersBuildGetAllSummariesResponse = {
-  trackSummaries: DomainFitFileSummary[];
+  trackSummaries: DomainGeoFileSummary[];
 };
 
 export type HttphandlersBuildGetParsedFitFileResponse = {
@@ -59,5 +60,5 @@ export type HttphandlersBuildGetTrackDetailResponse = {
 };
 
 export type HttphandlersBuildGetTrackSummaryResponse = {
-  trackSummary: DomainFitFileSummary;
+  trackSummary: DomainGeoFileSummary;
 };

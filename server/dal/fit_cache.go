@@ -32,7 +32,7 @@ func (c *fitFileSummaryCache) rebuildCache(fitFileSummaries []*domain.GeoFileSum
 
 	for _, summary := range fitFileSummaries {
 		newByHashMap[summary.Hash] = summary
-		newByRelativePathMap[summary.Name] = summary
+		newByRelativePathMap[summary.RelativeFilePath] = summary
 	}
 	c.mu.Lock()
 	c.cacheMap = newByHashMap

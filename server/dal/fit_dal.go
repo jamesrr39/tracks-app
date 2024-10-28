@@ -178,6 +178,7 @@ func (d *FitDAL) GetSummary(relativeFilePath string) (*domain.GeoFileSummary, er
 		return nil, errorsx.Errorf("../ not allowed in filepath")
 	}
 
+	// filepath.Join(d.rootDir,
 	summary, err := d.summaryCache.GetByRelativePath(relativeFilePath)
 	if err != nil {
 		return nil, errorsx.Wrap(err, "relativeFilePath", relativeFilePath)

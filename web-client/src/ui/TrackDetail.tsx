@@ -10,11 +10,11 @@ import Loading from "./Loading";
 import { MaplibreGLMap } from "./MaplibreGLMap";
 import { formatDuration } from "../util/time";
 import {
-  DomainFitFileSummary,
+  DomainGeoFileSummary,
   HttphandlersBuildGetTrackDetailResponse,
 } from "../openapi/generated/tracksAppSchemas";
 
-function getTypeLinkName(geoFileType: DomainFitFileSummary["geoFileType"]) {
+function getTypeLinkName(geoFileType: DomainGeoFileSummary["geoFileType"]) {
   switch (geoFileType) {
     case "FIT":
       return "fit";
@@ -101,7 +101,7 @@ type MapProps = {
     HttphandlersBuildGetTrackDetailResponse,
     GetTrackRecordsError
   >;
-  trackSummary: DomainFitFileSummary;
+  trackSummary: DomainGeoFileSummary;
 };
 
 const Map = (props: MapProps) => {

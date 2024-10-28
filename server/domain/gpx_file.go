@@ -3,7 +3,6 @@ package domain
 import (
 	"io"
 	"math"
-	"path/filepath"
 
 	"github.com/jamesrr39/go-errorsx"
 	"github.com/tkrajina/gpxgo/gpx"
@@ -13,7 +12,7 @@ var _ FileParser = GpxParser{}
 
 type GpxParser struct{}
 
-func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoFileSummary, errorsx.Error) {
+func (g GpxParser) ParseSummary(relativeFilePath string, hash Hash, reader io.Reader) (*GeoFileSummary, errorsx.Error) {
 	gpxFile, err := gpx.Parse(reader)
 	if err != nil {
 		return nil, errorsx.Wrap(err)
@@ -23,11 +22,15 @@ func (g GpxParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoF
 		return nil, errorsx.Wrap(errorsx.Errorf("unsupported number of tracks in GPX file"), "tracks", len(gpxFile.Tracks))
 	}
 
+	track := gpxFile.Tracks[0]
+
 	bounds := gpxFile.Bounds()
 	movingData := gpxFile.MovingData()
 
 	return NewGeoFileSummary(
-		filepath.Base(name),
+		// filepath.Base(relativeFilePath),
+		track.Name,
+		relativeFilePath,
 		GeoFileTypeGPX,
 		hash,
 		gpxFile.TimeBounds().StartTime,

@@ -3,7 +3,6 @@ package httphandlers
 import (
 	"context"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/jamesrr39/go-errorsx"
@@ -38,7 +37,7 @@ func BuildGetAllSummaries(fitDAL *dal.FitDAL) *nethttp.Handler {
 }
 
 type BuildGetTrackSummaryRequest struct {
-	EscapedRelativePath string `path:"path"`
+	RelativePath string `path:"path" unescape:"true"`
 }
 
 type BuildGetTrackSummaryResponse struct {
@@ -52,18 +51,10 @@ func BuildGetTrackSummary(fitDAL *dal.FitDAL) *nethttp.Handler {
 			Tags: []string{TagTracks},
 		},
 		func(ctx context.Context, input *BuildGetTrackSummaryRequest, output *BuildGetTrackSummaryResponse) error {
-			relativePath, err := url.PathUnescape(input.EscapedRelativePath)
+			summary, err := fitDAL.GetSummary(input.RelativePath)
 			if err != nil {
-				return status.Wrap(err, http.StatusInternalServerError)
-			}
-
-			summary, err := fitDAL.GetSummary(relativePath)
-			if err != nil {
-				println(input.EscapedRelativePath, relativePath)
-				e := err.(*errorsx.Err)
-
-				println(errorsx.ErrWithStack(e).Error())
-				if os.IsNotExist(err) {
+				e := errorsx.Cause(err)
+				if os.IsNotExist(e) {
 					return status.Wrap(err, http.StatusNotFound)
 				}
 
@@ -77,7 +68,7 @@ func BuildGetTrackSummary(fitDAL *dal.FitDAL) *nethttp.Handler {
 }
 
 type BuildGetTrackDetailRequest struct {
-	RelativeFilePath string `path:"path"`
+	RelativeFilePath string `path:"path" unescape:"true"`
 }
 
 type BuildGetTrackDetailResponse struct {
@@ -93,7 +84,8 @@ func BuildGetTrackRecords(fitDAL *dal.FitDAL) *nethttp.Handler {
 		func(ctx context.Context, input *BuildGetTrackDetailRequest, output *BuildGetTrackDetailResponse) error {
 			records, err := fitDAL.GetRecords(input.RelativeFilePath)
 			if err != nil {
-				if os.IsNotExist(err) {
+				e := errorsx.Cause(err)
+				if os.IsNotExist(e) {
 					return status.Wrap(err, http.StatusNotFound)
 				}
 				return status.Wrap(err, http.StatusInternalServerError)
@@ -110,7 +102,7 @@ type BuildGetParsedGpxFileResponse struct {
 }
 
 type BuildGetParsedGpxFileRequest struct {
-	RelativeFilePath string `path:"path"`
+	RelativeFilePath string `path:"path" unescape:"true"`
 }
 
 func BuildGetParsedGpxFile(fitDAL *dal.FitDAL) *nethttp.Handler {
@@ -139,7 +131,7 @@ type BuildGetParsedFitFileResponse struct {
 }
 
 type BuildGetParsedFitFileRequest struct {
-	RelativeFilePath string `path:"path"`
+	RelativeFilePath string `path:"path" unescape:"true"`
 }
 
 func BuildGetParsedFitFile(fitDAL *dal.FitDAL) *nethttp.Handler {

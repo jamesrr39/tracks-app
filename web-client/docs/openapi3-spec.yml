@@ -114,7 +114,7 @@ components:
       - longMin
       - longMax
       type: object
-    DomainFitFileSummary:
+    DomainGeoFileSummary:
       properties:
         activityBounds:
           $ref: '#/components/schemas/DomainActivityBounds'
@@ -132,6 +132,8 @@ components:
           type: string
         name:
           type: string
+        relativeFilePath:
+          type: string
         startTime:
           format: date-time
           type: string
@@ -139,6 +141,7 @@ components:
           type: number
       required:
       - name
+      - relativeFilePath
       - geoFileType
       - hash
       - startTime
@@ -176,7 +179,7 @@ components:
       properties:
         trackSummaries:
           items:
-            $ref: '#/components/schemas/DomainFitFileSummary'
+            $ref: '#/components/schemas/DomainGeoFileSummary'
           type: array
       required:
       - trackSummaries
@@ -207,7 +210,7 @@ components:
     HttphandlersBuildGetTrackSummaryResponse:
       properties:
         trackSummary:
-          $ref: '#/components/schemas/DomainFitFileSummary'
+          $ref: '#/components/schemas/DomainGeoFileSummary'
       required:
       - trackSummary
       type: object

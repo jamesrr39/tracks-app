@@ -8,6 +8,15 @@ const styles = {
   dataTag: {
     background: "grey",
     margin: "10px",
+    padding: "5px",
+    borderRadius: "5px",
+  },
+  list: {
+    listStyleType: "none",
+  },
+  listItem: {
+    margin: "20px",
+    backgroundColor: "lightgrey",
   },
 };
 
@@ -29,10 +38,10 @@ export default function TracksGallery() {
   console.log(data);
   return (
     <div>
-      <ul>
+      <ul style={styles.list}>
         {data.trackSummaries.map((track, idx) => (
-          <li key={idx}>
-            <a href={`/tracks/${encodeURIComponent(track.name)}`}>
+          <li style={styles.listItem} key={idx}>
+            <a href={`/tracks/${encodeURIComponent(track.relativeFilePath)}`}>
               {track.name}
             </a>
             <div

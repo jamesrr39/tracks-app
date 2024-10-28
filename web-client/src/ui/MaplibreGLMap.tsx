@@ -59,7 +59,6 @@ export function MaplibreGLMap(props: Props) {
         return;
       }
 
-      console.log("hh", h);
       const centerLat =
         (props.initialBbox.latMax + props.initialBbox.latMin) / 2;
       const centerLon =

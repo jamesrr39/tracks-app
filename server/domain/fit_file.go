@@ -3,6 +3,7 @@ package domain
 import (
 	"io"
 	"math"
+	"path/filepath"
 	"strings"
 
 	"github.com/jamesrr39/go-errorsx"
@@ -117,7 +118,7 @@ func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoF
 	return summary, nil
 }
 
-func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*GeoFileSummary, error) {
+func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File) (*GeoFileSummary, error) {
 	// sport, err := file.Sport() // TODO include sport?
 
 	activity, err := file.Activity()
@@ -166,7 +167,8 @@ func newSummaryFromDecodedFitFile(name string, hash Hash, file *fit.File) (*GeoF
 	}
 
 	return NewGeoFileSummary(
-			name,
+			filepath.Base(relativePath),
+			relativePath,
 			GeoFileTypeFIT,
 			hash,
 			activity.Records[0].Timestamp,
