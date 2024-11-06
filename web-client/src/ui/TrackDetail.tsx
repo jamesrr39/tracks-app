@@ -46,6 +46,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
 
   const {
     name,
+    relativeFilePath,
     totalDistance,
     endTime,
     startTime,
@@ -57,7 +58,6 @@ export default function TrackDetail(props: { params: { id: string } }) {
   const durationMillis =
     new Date(endTime).getTime() - new Date(startTime).getTime();
 
-  console.log("track props", props);
   return (
     <>
       <div>
@@ -76,8 +76,15 @@ export default function TrackDetail(props: { params: { id: string } }) {
         <a
           target="_blank"
           href={`/api/v1/tracks/${encodeURIComponent(
-            name
+            relativeFilePath
           )}/parsed/${getTypeLinkName(geoFileType)}`}
+        >
+          Parsed
+        </a>{" "}
+        |{" "}
+        <a
+          target="_blank"
+          href={`/api/v1/tracks/${encodeURIComponent(relativeFilePath)}/raw`}
         >
           Raw
         </a>
