@@ -1,13 +1,14 @@
-import maplibregl from "maplibre-gl";
+import maplibregl, { Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as pmtiles from "pmtiles";
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
-  DomainActivityBounds,
+  DomainGeoFileSummary,
   DomainRecord,
 } from "../openapi/generated/tracksAppSchemas";
 
 import ProtomapLayers from "protomaps-themes-base";
+import { formatShortDuration, getDurationSeconds } from "../util/time";
 
 const AVAILABLE_MAP_THEMES = ["light", "dark", "white", "grayscale", "black"];
 
@@ -34,8 +35,9 @@ const styles = {
 // https://docs.maptiler.com/react/maplibre-gl-js/how-to-use-maplibre-gl-js/
 
 type Props = {
-  initialBbox: DomainActivityBounds;
+  // initialBbox: DomainActivityBounds;
   trackRecords: DomainRecord[];
+  trackSummary: DomainGeoFileSummary;
 };
 
 function getRoute(
@@ -88,7 +90,9 @@ export function MaplibreGLMap(props: Props) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map>(null);
 
-  const coordinates = props.trackRecords.map((record) => {
+  const { trackRecords, trackSummary } = props;
+
+  const coordinates = trackRecords.map((record) => {
     return [record.posLong, record.posLat];
   });
 
@@ -107,10 +111,9 @@ export function MaplibreGLMap(props: Props) {
         return;
       }
 
-      const centerLat =
-        (props.initialBbox.latMax + props.initialBbox.latMin) / 2;
-      const centerLon =
-        (props.initialBbox.longMax + props.initialBbox.longMin) / 2;
+      const { activityBounds: initialBbox } = trackSummary;
+      const centerLat = (initialBbox.latMax + initialBbox.latMin) / 2;
+      const centerLon = (initialBbox.longMax + initialBbox.longMin) / 2;
 
       const maplibreMap = new maplibregl.Map({
         container: mapContainer.current,
@@ -137,6 +140,8 @@ export function MaplibreGLMap(props: Props) {
         const route = getRoute(coordinates, routeColor);
         maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
         maplibreMap.addLayer(route.layer);
+
+        addMarkers(maplibreMap);
       });
     });
   }, []);
@@ -147,8 +152,8 @@ export function MaplibreGLMap(props: Props) {
       return;
     }
 
-    maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
-    maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
+    // maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
+    // maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
 
     maplibreMap.setStyle({
       version: 8,
@@ -164,9 +169,11 @@ export function MaplibreGLMap(props: Props) {
       layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
     });
 
-    const route = getRoute(coordinates, routeColor);
-    maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-    maplibreMap.addLayer(route.layer);
+    // const route = getRoute(coordinates, routeColor);
+    // maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+    // maplibreMap.addLayer(route.layer);
+
+    changeRouteColor(routeColor);
   };
 
   const changeRouteColor = (selectedColor: string) => {
@@ -175,12 +182,78 @@ export function MaplibreGLMap(props: Props) {
       return;
     }
 
-    maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
-    maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
+    if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
+      maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
+      maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
+    }
 
     const route = getRoute(coordinates, selectedColor);
     maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
     maplibreMap.addLayer(route.layer);
+  };
+
+  const addMarkers = (maplibreMap: maplibregl.Map) => {
+    const totalDistanceMetres = trackRecords[trackRecords.length - 1].distance;
+    console.log("eval addmarkers");
+    if (totalDistanceMetres < 1000) {
+      return;
+    }
+
+    for (
+      let targetDistance = 1000;
+      targetDistance < totalDistanceMetres;
+      targetDistance += 1000
+    ) {
+      const closestMatchIdx = binarySearch(trackRecords.length, (currIdx) => {
+        const currDistance = trackRecords[currIdx].distance;
+
+        if (currDistance === targetDistance) {
+          return BinarySearchResult.EXACT_MATCH;
+        }
+
+        if (currDistance > targetDistance) {
+          return BinarySearchResult.GO_LOWER;
+        }
+
+        return BinarySearchResult.GO_HIGHER;
+      });
+
+      const closestRecord = trackRecords[closestMatchIdx];
+      const { startTime } = trackSummary;
+      const durationDisplay = formatShortDuration(
+        getDurationSeconds({ startTime, endTime: closestRecord.timestamp })
+      );
+      const marker = new Marker();
+      marker.setLngLat([closestRecord.posLong, closestRecord.posLat]);
+
+      const iconEl = document.createElement("div");
+      iconEl.style.marginBottom = "30px";
+
+      const textEl = document.createElement("div");
+      textEl.style.backgroundColor = "white";
+      textEl.style.opacity = "0.5";
+      textEl.style.padding = "5px";
+      textEl.style.borderRadius = "8px";
+      textEl.innerText = `${targetDistance / 1000}km`;
+      textEl.appendChild(document.createElement("br"));
+      textEl.append(durationDisplay);
+
+      const svgContainerEl = document.createElement("div");
+      svgContainerEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+    </svg>`;
+
+      iconEl.appendChild(textEl);
+      iconEl.appendChild(svgContainerEl);
+
+      const markerEl = marker.getElement();
+      markerEl.innerHTML = "";
+      markerEl.appendChild(iconEl);
+
+      console.log("marker", marker);
+
+      marker.addTo(maplibreMap);
+    }
   };
 
   return (
@@ -217,4 +290,46 @@ export function MaplibreGLMap(props: Props) {
       <div ref={mapContainer} style={styles.map} />
     </div>
   );
+}
+
+enum BinarySearchResult {
+  EXACT_MATCH,
+  GO_HIGHER,
+  GO_LOWER,
+}
+
+type ClosestMatchIdx = number;
+
+function binarySearch(
+  listLen: number,
+  evalFunc: (idx: number) => BinarySearchResult
+): ClosestMatchIdx {
+  let lowerIdx = 0;
+  let higherIdx = listLen - 1;
+
+  const MAX_ITERATIONS = 1000 * 1000;
+  for (let i = 0; i < MAX_ITERATIONS; i++) {
+    const thisIterationIdx = lowerIdx + Math.floor((higherIdx - lowerIdx) / 2);
+
+    const result = evalFunc(thisIterationIdx);
+
+    switch (result) {
+      case BinarySearchResult.EXACT_MATCH:
+        return thisIterationIdx;
+      case BinarySearchResult.GO_HIGHER:
+        if (lowerIdx === thisIterationIdx) {
+          return thisIterationIdx;
+        }
+        lowerIdx = thisIterationIdx;
+        break;
+      case BinarySearchResult.GO_LOWER:
+        if (higherIdx === thisIterationIdx) {
+          return thisIterationIdx;
+        }
+        higherIdx = thisIterationIdx;
+        break;
+    }
+  }
+
+  throw new Error("max iterations reached");
 }

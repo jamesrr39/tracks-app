@@ -124,7 +124,7 @@ const Map = (props: MapProps) => {
 
   return (
     <MaplibreGLMap
-      initialBbox={props.trackSummary.activityBounds}
+      trackSummary={props.trackSummary}
       trackRecords={data.records}
     />
   );
