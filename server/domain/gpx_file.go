@@ -74,7 +74,7 @@ func (g GpxParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 				distanceFromLastPointKm = point.Distance3D(prevPoint)
 			}
 
-			cumulativeDistanceMetres += distanceFromLastPointKm / 1000
+			cumulativeDistanceMetres += distanceFromLastPointKm
 
 			var altitude *float64
 			if point.Elevation.NotNull() {
@@ -91,7 +91,9 @@ func (g GpxParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 			}
 
 			records = append(records, &record)
-			prevPoint = &point
+			// copy data
+			p := point
+			prevPoint = &p
 		}
 
 	}
