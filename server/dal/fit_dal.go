@@ -260,3 +260,17 @@ func (d *FitDAL) GetParsedFitFile(relativeFilePath string) (*fit.File, errorsx.E
 
 	return fitFile, nil
 }
+
+func (d *FitDAL) GetRawFile(relativeFilePath string) (io.ReadCloser, errorsx.Error) {
+	if dirtraversal.IsTryingToTraverseUp(relativeFilePath) {
+		return nil, errorsx.Errorf("../ not allowed in filepath")
+	}
+
+	_, err := d.summaryCache.GetByRelativePath(relativeFilePath)
+	if err != nil {
+		return nil, errorsx.Wrap(err)
+	}
+
+	f, err := d.fs.Open(filepath.Join(d.rootDir, relativeFilePath))
+	return f, errorsx.Wrap(err)
+}

@@ -31,8 +31,16 @@ export type DomainGeoFileSummary = {
 export type DomainRecord = {
   altitude: number | null;
   distance: number;
+  /**
+   * @minimum 0
+   */
+  heartRate: number;
   posLat: number;
   posLong: number;
+  /**
+   * @minimum 0
+   */
+  power: number;
   /**
    * @format date-time
    */

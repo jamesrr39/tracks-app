@@ -35,7 +35,10 @@ export default function TracksGallery() {
     return <Loading />;
   }
 
-  console.log(data);
+  data.trackSummaries.sort((a, b) => {
+    return a.endTime < b.endTime ? 1 : -1;
+  });
+
   return (
     <div>
       <ul style={styles.list}>

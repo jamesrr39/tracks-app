@@ -18,19 +18,17 @@ const NotFound = () => (
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div>
-        <LocationProvider>
-          <ErrorBoundary>
-            <Router>
-              <TracksGallery path="/" />
-              {/* Alternative dedicated route component for better TS support */}
-              <Route path="/tracks/:id" component={TrackDetail} />
-              {/* `default` prop indicates a fallback route. Useful for 404 pages */}
-              <NotFound default />
-            </Router>
-          </ErrorBoundary>
-        </LocationProvider>
-      </div>
+      <LocationProvider>
+        <ErrorBoundary>
+          <Router>
+            <TracksGallery path="/" />
+            {/* Alternative dedicated route component for better TS support */}
+            <Route path="/tracks/:id" component={TrackDetail} />
+            {/* `default` prop indicates a fallback route. Useful for 404 pages */}
+            <NotFound default />
+          </Router>
+        </ErrorBoundary>
+      </LocationProvider>
     </QueryClientProvider>
   );
 }

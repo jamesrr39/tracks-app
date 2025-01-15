@@ -157,10 +157,16 @@ components:
           type: number
         distance:
           type: integer
+        heartRate:
+          minimum: 0
+          type: integer
         posLat:
           type: number
         posLong:
           type: number
+        power:
+          minimum: 0
+          type: integer
         timestamp:
           format: date-time
           type: string
@@ -170,6 +176,8 @@ components:
       - posLong
       - distance
       - altitude
+      - power
+      - heartRate
       type: object
     FitFile:
       type: object

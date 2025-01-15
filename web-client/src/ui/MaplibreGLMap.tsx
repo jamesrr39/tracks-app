@@ -9,6 +9,7 @@ import {
 
 import ProtomapLayers from "protomaps-themes-base";
 import { formatShortDuration, getDurationSeconds } from "../util/time";
+import { binarySearch, BinarySearchResult } from "../util/binary_search";
 
 const AVAILABLE_MAP_THEMES = ["light", "dark", "white", "grayscale", "black"];
 
@@ -35,7 +36,6 @@ const styles = {
 // https://docs.maptiler.com/react/maplibre-gl-js/how-to-use-maplibre-gl-js/
 
 type Props = {
-  // initialBbox: DomainActivityBounds;
   trackRecords: DomainRecord[];
   trackSummary: DomainGeoFileSummary;
 };
@@ -194,7 +194,7 @@ export function MaplibreGLMap(props: Props) {
 
   const addMarkers = (maplibreMap: maplibregl.Map) => {
     const totalDistanceMetres = trackRecords[trackRecords.length - 1].distance;
-    console.log("eval addmarkers");
+
     if (totalDistanceMetres < 1000) {
       return;
     }
@@ -250,8 +250,6 @@ export function MaplibreGLMap(props: Props) {
       markerEl.innerHTML = "";
       markerEl.appendChild(iconEl);
 
-      console.log("marker", marker);
-
       marker.addTo(maplibreMap);
     }
   };
@@ -290,46 +288,4 @@ export function MaplibreGLMap(props: Props) {
       <div ref={mapContainer} style={styles.map} />
     </div>
   );
-}
-
-enum BinarySearchResult {
-  EXACT_MATCH,
-  GO_HIGHER,
-  GO_LOWER,
-}
-
-type ClosestMatchIdx = number;
-
-function binarySearch(
-  listLen: number,
-  evalFunc: (idx: number) => BinarySearchResult
-): ClosestMatchIdx {
-  let lowerIdx = 0;
-  let higherIdx = listLen - 1;
-
-  const MAX_ITERATIONS = 1000 * 1000;
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const thisIterationIdx = lowerIdx + Math.floor((higherIdx - lowerIdx) / 2);
-
-    const result = evalFunc(thisIterationIdx);
-
-    switch (result) {
-      case BinarySearchResult.EXACT_MATCH:
-        return thisIterationIdx;
-      case BinarySearchResult.GO_HIGHER:
-        if (lowerIdx === thisIterationIdx) {
-          return thisIterationIdx;
-        }
-        lowerIdx = thisIterationIdx;
-        break;
-      case BinarySearchResult.GO_LOWER:
-        if (higherIdx === thisIterationIdx) {
-          return thisIterationIdx;
-        }
-        higherIdx = thisIterationIdx;
-        break;
-    }
-  }
-
-  throw new Error("max iterations reached");
 }

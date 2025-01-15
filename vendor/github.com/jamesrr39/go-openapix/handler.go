@@ -21,8 +21,9 @@ type HandlerSecurity struct {
 }
 
 type HandlerOptions struct {
-	Tags     []string
-	Security *HandlerSecurity
+	Tags        []string
+	Security    *HandlerSecurity
+	ContentType string
 }
 
 // MustCreateOpenapiEndpoint creates an openapi endpoint. It panics on error.
@@ -56,6 +57,13 @@ func MustCreateOpenapiEndpoint[Req any, Resp any](title string, opts *HandlerOpt
 			return nil
 		})
 		handlerOptions = append(handlerOptions, securityHandlerOption)
+	}
+
+	if opts.ContentType != "" {
+		handlerOptions = append(handlerOptions, nethttp.AnnotateOpenAPIOperation(func(oc openapi.OperationContext) error {
+			oc.AddRespStructure(nil, openapi.WithContentType(opts.ContentType))
+			return nil
+		}))
 	}
 
 	handlerDoc.Input = new(Req)

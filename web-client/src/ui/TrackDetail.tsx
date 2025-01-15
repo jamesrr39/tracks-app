@@ -13,6 +13,7 @@ import {
   DomainGeoFileSummary,
   HttphandlersBuildGetTrackDetailResponse,
 } from "../openapi/generated/tracksAppSchemas";
+import TrackChart from "./TrackChart";
 
 function getTypeLinkName(geoFileType: DomainGeoFileSummary["geoFileType"]) {
   switch (geoFileType) {
@@ -123,9 +124,15 @@ const Map = (props: MapProps) => {
   }
 
   return (
-    <MaplibreGLMap
-      trackSummary={props.trackSummary}
-      trackRecords={data.records}
-    />
+    <div>
+      <TrackChart
+        trackSummary={props.trackSummary}
+        trackRecords={data.records}
+      />
+      <MaplibreGLMap
+        trackSummary={props.trackSummary}
+        trackRecords={data.records}
+      />
+    </div>
   );
 };

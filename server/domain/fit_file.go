@@ -2,6 +2,7 @@ package domain
 
 import (
 	"io"
+	"log"
 	"math"
 	"path/filepath"
 	"strings"
@@ -28,6 +29,9 @@ func (p FitParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 	// parse all records
 	records := []*Record{}
 	for _, activityRecord := range activity.Records {
+
+		log.Printf("rec start: %d, %d\n", activityRecord.Power, activityRecord.HeartRate)
+
 		// todo handle activityRecord.PositionLat.Invalid ?
 		if activityRecord.PositionLat.Invalid() || activityRecord.PositionLong.Invalid() {
 			// skip (we are not interested in records without a position)
@@ -46,13 +50,16 @@ func (p FitParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 			altitude = &altitudeFromTrack
 		}
 
-		record := NewRecord(
-			activityRecord.Timestamp,
-			activityRecord.PositionLat.Degrees(),
-			activityRecord.PositionLong.Degrees(),
-			round(distanceScaled),
-			altitude,
-		)
+		record := &Record{
+			Timestamp:    activityRecord.Timestamp,
+			PositionLat:  activityRecord.PositionLat.Degrees(),
+			PositionLong: activityRecord.PositionLong.Degrees(),
+			Distance:     round(distanceScaled),
+			Altitude:     altitude,
+			Power:        activityRecord.Power,
+			HeartRate:    activityRecord.HeartRate,
+		}
+
 		records = append(records, record)
 	}
 

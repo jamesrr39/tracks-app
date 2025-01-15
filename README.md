@@ -21,3 +21,6 @@ For production and docker builds, see the Makefile.
 
 https://til.simonwillison.net/gis/pmtiles
 https://github.com/protomaps/basemaps-assets
+
+https://github.com/danielgtaylor/huma
+https://goa.design/

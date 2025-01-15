@@ -8,8 +8,6 @@ type Record struct {
 	PositionLong float64   `json:"posLong" required:"true"`
 	Distance     int       `json:"distance" required:"true"`
 	Altitude     *float64  `json:"altitude" required:"true"`
-}
-
-func NewRecord(timestamp time.Time, posLat, posLong float64, distance int, altitude *float64) *Record {
-	return &Record{Timestamp: timestamp, PositionLat: posLat, PositionLong: posLong, Distance: distance, Altitude: altitude}
+	Power        uint16    `json:"power" required:"true"`
+	HeartRate    uint8     `json:"heartRate" required:"true"`
 }
