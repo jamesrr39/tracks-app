@@ -58,6 +58,10 @@ export default function TrackDetail(props: { params: { id: string } }) {
 
   const durationMillis =
     new Date(endTime).getTime() - new Date(startTime).getTime();
+  const durationSeconds = durationMillis / 1000;
+  const durationHours = durationSeconds / (60*60);
+
+  const distanceKm = totalDistance / 1000;
 
   return (
     <>
@@ -65,14 +69,18 @@ export default function TrackDetail(props: { params: { id: string } }) {
         <h1>{name}</h1>
       </div>
       <div>
-        {(totalDistance / 1000).toFixed(2)}km in{" "}
-        {formatDuration(durationMillis / 1000)}
+        {(distanceKm).toFixed(2)}km in{" "}
+        {formatDuration(durationSeconds)}
       </div>
       {device && (
         <div>
           <p>Recorded with {device}</p>
         </div>
       )}
+      <div>
+        <p>Average pace: {formatDuration(Math.round((durationSeconds) / (distanceKm)))} per kilometer</p>
+        <p>Average speed: {(distanceKm / durationHours).toFixed(2)}kmh</p>
+      </div>
       <div>
         <a
           target="_blank"
