@@ -21,15 +21,13 @@ const ROUTE_LAYER_SOURCE_ID = "route";
 
 const styles = {
   mapWrapper: {
-    position: "relative",
-    width: "100%",
+    display: 'flex',
+    flexDirection: 'column',
     height:
       "calc(100vh - 77px)" /* calculate height of the screen minus the heading */,
   },
   map: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
+    flexGrow: 1,
   },
 };
 
@@ -256,36 +254,56 @@ export function MaplibreGLMap(props: Props) {
 
   return (
     <div style={styles.mapWrapper}>
-      <div>
-        <select
-          name="map theme"
-          onChange={(event) => {
-            const { value } = event.currentTarget;
-
-            changeMapTheme(value);
-          }}
-        >
-          {AVAILABLE_MAP_THEMES.map((theme) => (
-            <option value={theme}>{theme}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label>
-          Route color
-          <input
-            type="color"
-            name="route color"
-            value={routeColor}
-            onChange={(event) => {
-              const { value } = event.currentTarget;
-              setRouteColor(value);
-              changeRouteColor(value);
-            }}
-          />
-        </label>
-      </div>
+      <Controls
+        changeMapTheme={changeMapTheme}
+        routeColor={routeColor}
+        onRouteColorChange={(value) => {
+          setRouteColor(value)
+          changeRouteColor(value);
+        }}
+      />
       <div ref={mapContainer} style={styles.map} />
     </div>
   );
+}
+
+type ControlsProps = {
+  changeMapTheme: (value: string) => void
+  routeColor: string
+  onRouteColorChange: (value: string) => void
+}
+
+function Controls({changeMapTheme, routeColor, onRouteColorChange}: ControlsProps) {
+  return (
+    <div>
+      <div>
+          <select
+            name="map theme"
+            onChange={(event) => {
+              const { value } = event.currentTarget;
+
+              changeMapTheme(value);
+            }}
+          >
+            {AVAILABLE_MAP_THEMES.map((theme) => (
+              <option value={theme}>{theme}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>
+            Route color
+            <input
+              type="color"
+              name="route color"
+              value={routeColor}
+              onChange={(event) => {
+                const { value } = event.currentTarget;
+                onRouteColorChange(value);
+              }}
+            />
+          </label>
+        </div>
+    </div>
+  )
 }
