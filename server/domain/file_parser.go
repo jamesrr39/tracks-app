@@ -31,10 +31,11 @@ type GeoFileSummary struct {
 	Device           string          `json:"device" required:"true"`
 	TotalDistance    float64         `json:"totalDistance" required:"true"`
 	ActivityBounds   *ActivityBounds `json:"activityBounds" required:"true"`
+	ActivityType     string          `json:"activityType" required:"true"` // fit.ActivityType
 	// NearbyObjects      []*GeographicMapElement `json:"nearbyObjects" required:"true" nullable:"false"`
 }
 
 // NewGeoFileSummary creates a new FitFileSummary
-func NewGeoFileSummary(name, relativeFilePath string, geoFileType GeoFileType, hash Hash, startTime, endTime time.Time, device string, totalDistance float64, activityBounds *ActivityBounds) *GeoFileSummary {
-	return &GeoFileSummary{name, relativeFilePath, geoFileType, hash, startTime, endTime, device, totalDistance, activityBounds}
+func NewGeoFileSummary(name, relativeFilePath string, geoFileType GeoFileType, hash Hash, startTime, endTime time.Time, device string, totalDistance float64, activityBounds *ActivityBounds, ActivityType string) *GeoFileSummary {
+	return &GeoFileSummary{name, relativeFilePath, geoFileType, hash, startTime, endTime, device, totalDistance, activityBounds, ActivityType}
 }

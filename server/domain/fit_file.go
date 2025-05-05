@@ -29,9 +29,6 @@ func (p FitParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 	// parse all records
 	records := []*Record{}
 	for _, activityRecord := range activity.Records {
-
-		log.Printf("rec start: %d, %d\n", activityRecord.Power, activityRecord.HeartRate)
-
 		// todo handle activityRecord.PositionLat.Invalid ?
 		if activityRecord.PositionLat.Invalid() || activityRecord.PositionLong.Invalid() {
 			// skip (we are not interested in records without a position)
@@ -50,14 +47,27 @@ func (p FitParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 			altitude = &altitudeFromTrack
 		}
 
+		zeroUint16 := uint16(0)
+
+		var power *uint16 = &zeroUint16
+		if activityRecord.Power == 0 {
+			power = &activityRecord.Power
+		}
+
+		zeroUint8 := uint8(0)
+		var heartRate *uint8 = &zeroUint8
+		if activityRecord.HeartRate == 0 {
+			heartRate = &activityRecord.HeartRate
+		}
+
 		record := &Record{
 			Timestamp:    activityRecord.Timestamp,
 			PositionLat:  activityRecord.PositionLat.Degrees(),
 			PositionLong: activityRecord.PositionLong.Degrees(),
 			Distance:     round(distanceScaled),
 			Altitude:     altitude,
-			Power:        activityRecord.Power,
-			HeartRate:    activityRecord.HeartRate,
+			Power:        power,
+			HeartRate:    heartRate,
 		}
 
 		records = append(records, record)
@@ -74,43 +84,6 @@ func round(n float64) int {
 	return int(math.Floor(n - 0.5))
 }
 
-// func (f *FitFile) GetLaps(incrementMetres int) []*Lap {
-// 	nextIncrement := incrementMetres
-// 	laps := []*Lap{}
-
-// 	amountOfRecords := len(f.Records)
-// 	if amountOfRecords == 0 {
-// 		return laps
-// 	}
-
-// 	thisLap := &Lap{StartTimestamp: f.Records[0].Timestamp, StartAltitude: f.Records[0].Altitude}
-// 	lastLap := &Lap{}
-
-// 	lastIndex := amountOfRecords - 1
-// 	for index, record := range f.Records {
-// 		if record.Distance < nextIncrement && (index != lastIndex) {
-// 			// nothing special about this record
-// 			continue
-// 		}
-
-// 		distanceInLap := record.Distance - lastLap.CumulativeDistanceMetres
-
-// 		thisLap.EndTimestamp = record.Timestamp
-// 		thisLap.CumulativeDistanceMetres = record.Distance
-// 		thisLap.DistanceInLapMetres = distanceInLap
-// 		thisLap.EndAltitude = record.Altitude
-
-// 		laps = append(laps, thisLap)
-
-// 		lastLap = thisLap
-// 		thisLap = &Lap{StartTimestamp: record.Timestamp, StartAltitude: record.Altitude}
-
-// 		nextIncrement += incrementMetres
-// 	}
-
-// 	return laps
-// }
-
 func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoFileSummary, errorsx.Error) {
 	file, err := fit.Decode(reader)
 	if nil != err {
@@ -125,16 +98,19 @@ func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoF
 	return summary, nil
 }
 
-func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File) (*GeoFileSummary, error) {
+func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File) (*GeoFileSummary, errorsx.Error) {
 	// sport, err := file.Sport() // TODO include sport?
+	// if nil != err {
+	// 	return nil, err
+	// }
 
 	activity, err := file.Activity()
 	if nil != err {
-		return nil, err
+		return nil, errorsx.Wrap(err)
 	}
 
 	if len(activity.Records) < 1 {
-		return nil, err
+		return nil, errorsx.Wrap(err)
 	}
 
 	var distanceScaled float64
@@ -172,6 +148,19 @@ func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File
 	if productName != "" {
 		deviceFragments = append(deviceFragments, productName)
 	}
+	log.Printf("product: %#v :: %#v :: %#v\n", file.FileId.GetProduct(), activity.DeviceInfos, file.FileId)
+	for _, dv := range activity.DeviceInfos {
+		log.Printf("info: %#v\n", dv)
+	}
+
+	var sport string
+	for _, session := range activity.Sessions {
+		if sport != "" && session.Sport.String() != sport {
+			return nil, errorsx.Errorf("multiple sports not supported. first: %q, second %q", sport, session.Sport.String())
+		}
+
+		sport = session.Sport.String()
+	}
 
 	return NewGeoFileSummary(
 			filepath.Base(relativePath),
@@ -184,6 +173,7 @@ func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File
 			distanceScaled,
 			activityBounds,
 			// nearbyObjects,
+			sport,
 		),
 		nil
 

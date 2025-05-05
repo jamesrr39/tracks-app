@@ -53,6 +53,10 @@ func MustCheckNonNullArrays(definitionMap map[string]openapi3.SchemaOrRef) {
 			continue
 		}
 
+		if definition.Schema.Type == nil {
+			panic("no definition for " + name)
+		}
+
 		schemaType := *definition.Schema.Type
 		switch schemaType {
 		case openapi3.SchemaTypeArray:

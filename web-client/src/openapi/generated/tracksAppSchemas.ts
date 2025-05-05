@@ -12,6 +12,7 @@ export type DomainActivityBounds = {
 
 export type DomainGeoFileSummary = {
   activityBounds: DomainActivityBounds;
+  activityType: string;
   device: string;
   /**
    * @format date-time
@@ -34,13 +35,13 @@ export type DomainRecord = {
   /**
    * @minimum 0
    */
-  heartRate: number;
+  heartRate?: number | null;
   posLat: number;
   posLong: number;
   /**
    * @minimum 0
    */
-  power: number;
+  power: number | null;
   /**
    * @format date-time
    */

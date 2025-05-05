@@ -118,6 +118,8 @@ components:
       properties:
         activityBounds:
           $ref: '#/components/schemas/DomainActivityBounds'
+        activityType:
+          type: string
         device:
           type: string
         endTime:
@@ -149,6 +151,7 @@ components:
       - device
       - totalDistance
       - activityBounds
+      - activityType
       type: object
     DomainRecord:
       properties:
@@ -159,6 +162,7 @@ components:
           type: integer
         heartRate:
           minimum: 0
+          nullable: true
           type: integer
         posLat:
           type: number
@@ -166,6 +170,7 @@ components:
           type: number
         power:
           minimum: 0
+          nullable: true
           type: integer
         timestamp:
           format: date-time
@@ -177,7 +182,6 @@ components:
       - distance
       - altitude
       - power
-      - heartRate
       type: object
     FitFile:
       type: object

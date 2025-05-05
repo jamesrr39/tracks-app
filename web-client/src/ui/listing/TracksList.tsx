@@ -1,8 +1,6 @@
-import { useGetAllTrackSummaries } from "../openapi/generated/tracksAppComponents";
-import { formatDistance } from "../util/distance";
-import { formatDuration, getDurationSeconds } from "../util/time";
-import Error from "./Error";
-import Loading from "./Loading";
+import { DomainGeoFileSummary } from "../../openapi/generated/tracksAppSchemas";
+import { formatDistance } from "../../util/distance";
+import { formatDuration, getDurationSeconds } from "../../util/time";
 
 const styles = {
   dataTag: {
@@ -20,30 +18,17 @@ const styles = {
   },
 };
 
-export default function TracksGallery() {
-  const { error, isLoading, data } = useGetAllTrackSummaries({});
+type Props = {
+    trackSummaries: DomainGeoFileSummary[]
+}
 
-  if (error) {
-    return <Error error={error} />;
-  }
-
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  if (!data) {
-    return <Loading />;
-  }
-
-  data.trackSummaries.sort((a, b) => {
-    return a.endTime < b.endTime ? 1 : -1;
-  });
-
+export default function TracksListing({trackSummaries}: Props) {
   return (
     <div>
       <ul style={styles.list}>
-        {data.trackSummaries.map((track, idx) => (
+        {trackSummaries.map((track, idx) => (
           <li style={styles.listItem} key={idx}>
+            {track.activityType}
             <a href={`/tracks/${encodeURIComponent(track.relativeFilePath)}`}>
               {track.name}
             </a>
@@ -63,7 +48,6 @@ export default function TracksGallery() {
           </li>
         ))}
       </ul>
-      {data.trackSummaries.length === 0 && <p>No tracks found</p>}
     </div>
   );
 }

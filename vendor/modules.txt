@@ -48,6 +48,7 @@ github.com/jamesrr39/go-errorsx
 github.com/jamesrr39/go-openapix
 # github.com/jamesrr39/goutil v0.0.0-20240329225739-244c41ec945f
 ## explicit; go 1.18
+github.com/jamesrr39/goutil/algorithms
 github.com/jamesrr39/goutil/dirtraversal
 github.com/jamesrr39/goutil/httpextra
 github.com/jamesrr39/goutil/userextra

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
-	"reflect"
 	"strings"
 
 	"github.com/swaggest/openapi-go"
@@ -21,9 +19,8 @@ type HandlerSecurity struct {
 }
 
 type HandlerOptions struct {
-	Tags        []string
-	Security    *HandlerSecurity
-	ContentType string
+	Tags     []string
+	Security *HandlerSecurity
 }
 
 // MustCreateOpenapiEndpoint creates an openapi endpoint. It panics on error.
@@ -59,45 +56,11 @@ func MustCreateOpenapiEndpoint[Req any, Resp any](title string, opts *HandlerOpt
 		handlerOptions = append(handlerOptions, securityHandlerOption)
 	}
 
-	if opts.ContentType != "" {
-		handlerOptions = append(handlerOptions, nethttp.AnnotateOpenAPIOperation(func(oc openapi.OperationContext) error {
-			oc.AddRespStructure(nil, openapi.WithContentType(opts.ContentType))
-			return nil
-		}))
-	}
-
 	handlerDoc.Input = new(Req)
 	handlerDoc.Output = new(Resp)
 
-	const escapeTagName = "unescape"
-
-	handlerDoc.Interactor = usecase.NewInteractor(
+	handlerDoc.Interactor = usecase.NewInteractor[*Req, Resp](
 		func(ctx context.Context, input *Req, output *Resp) error {
-			v := reflect.TypeOf(*input)
-
-			for i := 0; i < v.NumField(); i++ {
-				field := v.Field(i)
-				println(field.Name)
-				if field.Tag.Get("path") != "" {
-					escapeTag := field.Tag.Get(escapeTagName)
-					switch escapeTag {
-					case "true":
-						inputVal := reflect.ValueOf(*input)
-						fieldVal := inputVal.Field(i)
-						escapedPath, err := url.PathUnescape(fieldVal.String())
-						if err != nil {
-							return fmt.Errorf("error escaping field '%s'. Error: %s", field.Name, err)
-						}
-						reflect.Indirect(reflect.ValueOf(input)).FieldByName(field.Name).SetString(escapedPath)
-						//  .SetString(escapedPath)
-					case "", "false":
-						// do nothing
-					default:
-						return fmt.Errorf("didn't understand value for '%s' tag on field %s", escapeTagName, field.Name)
-					}
-				}
-			}
-
 			return handler(ctx, input, output)
 		})
 

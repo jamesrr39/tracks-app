@@ -1,10 +1,16 @@
 import "./app.css";
 import TrackDetail from "./ui/TrackDetail";
-import TracksGallery from "./ui/TracksGallery";
+import TracksGallery from "./ui/listing/TracksGallery";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary, LocationProvider, Route, Router } from "preact-iso";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    }
+  }
+});
 
 const NotFound = () => (
   <div>

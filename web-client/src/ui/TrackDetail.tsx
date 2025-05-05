@@ -125,11 +125,11 @@ const Map = (props: MapProps) => {
 
   return (
     <div>
-      <TrackChart
+      <MaplibreGLMap
         trackSummary={props.trackSummary}
         trackRecords={data.records}
       />
-      <MaplibreGLMap
+      <TrackChart
         trackSummary={props.trackSummary}
         trackRecords={data.records}
       />

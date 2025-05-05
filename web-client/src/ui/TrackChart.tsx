@@ -53,7 +53,7 @@ function TrackChart({ trackSummary, trackRecords }: Props) {
     string
   >["datasets"] = [
     {
-      label: "Pace",
+      label: "Pace (min/km)",
       data: newDataArray(),
       fill: true,
       borderColor: "rgb(75, 192, 192)",
@@ -113,7 +113,7 @@ function TrackChart({ trackSummary, trackRecords }: Props) {
       ? calculatePace(previousRecord, closestRecord)
       : 0;
     datasets[0].data.push(pace);
-    datasets[1].data.push(closestRecord.heartRate);
+    closestRecord.heartRate && datasets[1].data.push(closestRecord.heartRate);
 
     previousRecord = closestRecord;
   }

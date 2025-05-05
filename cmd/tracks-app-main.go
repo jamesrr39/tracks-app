@@ -93,7 +93,7 @@ func setupServe() {
 	unexpandedCachesDir := cmd.Flag("caches-dir", "directory to store the caches in").Default("~/.cache/github.com/jamesrr39/tracks-app").String()
 	addr := cmd.Flag("addr", "address and port to serve on. ':8090' = to everyone on port 8090. 'localhost:8090' = to only localhost on 8090").Default("localhost:8090").String()
 	overpassApiBaseURL := cmd.Flag("overpass-api-base-url", "Supply a URL for your own instance of the Overpass API server, if you prefer to use your own.").Default(overpass.DefaultOverpassAPIBaseURL).String()
-	pmtilesMapFilePath := cmd.Flag("pmtiles-file-path", "").Required().String()
+	pmtilesMapFilePath := cmd.Flag("pmtiles-file-path", "https://demo-bucket.protomaps.com/v4.pmtiles").Required().String()
 
 	cmd.Action(func(pc *kingpin.ParseContext) error {
 
@@ -122,7 +122,7 @@ func setupServe() {
 
 		r.Mount("/", httphandlers.NewClientHandler())
 
-		slog.Info("attempting to broadcast", "address", *addr)
+		slog.Info("attempting to broadcast", "address", "http://"+*addr)
 
 		server := &http.Server{
 			Addr:           *addr,
@@ -176,6 +176,7 @@ func createAPIRouter(fitDAL *dal.FitDAL) (*openapi.Collector, *chirouter.Wrapper
 		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
 		openapix.Get(r, "/tracks/{path}/parsed/gpx", httphandlers.BuildGetParsedGpxFile(fitDAL))
 		openapix.Get(r, "/tracks/{path}/parsed/fit", httphandlers.BuildGetParsedFitFile(fitDAL))
+		openapix.Get(r, "/tracks/{path}/raw", httphandlers.BuildGetRawFile(fitDAL))
 	})
 
 	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)

@@ -8,6 +8,6 @@ type Record struct {
 	PositionLong float64   `json:"posLong" required:"true"`
 	Distance     int       `json:"distance" required:"true"`
 	Altitude     *float64  `json:"altitude" required:"true"`
-	Power        uint16    `json:"power" required:"true"`
-	HeartRate    uint8     `json:"heartRate" required:"true"`
+	Power        *uint16   `json:"power" required:"true"`
+	HeartRate    *uint8    `json:"heartRate"`
 }

@@ -43,6 +43,7 @@ func (g GpxParser) ParseSummary(relativeFilePath string, hash Hash, reader io.Re
 			LongMin: bounds.MinLongitude,
 			LongMax: bounds.MaxLongitude,
 		},
+		track.Type,
 	), nil
 
 }
