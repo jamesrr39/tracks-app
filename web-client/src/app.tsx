@@ -1,5 +1,5 @@
 import "./app.css";
-import TrackDetail from "./ui/TrackDetail";
+import TrackDetail from "./ui/detail/TrackDetail";
 import TracksGallery from "./ui/listing/TracksGallery";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary, LocationProvider, Route, Router } from "preact-iso";

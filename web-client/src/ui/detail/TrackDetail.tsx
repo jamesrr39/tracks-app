@@ -3,28 +3,18 @@ import {
   GetTrackRecordsError,
   useGetTrackRecords,
   useGetTrackSummaryByPath,
-} from "../openapi/generated/tracksAppComponents";
+} from "../../openapi/generated/tracksAppComponents";
 
-import Error from "./Error";
-import Loading from "./Loading";
-import { MaplibreGLMap } from "./MaplibreGLMap";
-import { formatDuration } from "../util/time";
+import Error from "../Error";
+import Loading from "../Loading";
+import { MaplibreGLMap } from "../MaplibreGLMap";
+import { formatDuration } from "../../util/time";
 import {
   DomainGeoFileSummary,
   HttphandlersBuildGetTrackDetailResponse,
-} from "../openapi/generated/tracksAppSchemas";
+} from "../../openapi/generated/tracksAppSchemas";
 import TrackChart from "./TrackChart";
-
-function getTypeLinkName(geoFileType: DomainGeoFileSummary["geoFileType"]) {
-  switch (geoFileType) {
-    case "FIT":
-      return "fit";
-    case "GPX":
-      return "gpx";
-    default:
-      throw new TypeError(`didn't recognise file type "${geoFileType}"`);
-  }
-}
+import TrackDetailSummary from "./TrackDetailSummary";
 
 export default function TrackDetail(props: { params: { id: string } }) {
   const reactQueryOpts = {
@@ -47,37 +37,28 @@ export default function TrackDetail(props: { params: { id: string } }) {
 
   const {
     name,
-    relativeFilePath,
-    totalDistance,
-    endTime,
-    startTime,
     // nearbyObjects,
-    geoFileType,
     device,
   } = trackSummary;
 
-  const durationMillis =
-    new Date(endTime).getTime() - new Date(startTime).getTime();
-  const durationSeconds = durationMillis / 1000;
-  const durationHours = durationSeconds / (60*60);
 
-  const distanceKm = totalDistance / 1000;
 
   return (
     <>
       <div>
         <h1>{name}</h1>
       </div>
-      <div>
+      {/* <div>
         {(distanceKm).toFixed(2)}km in{" "}
         {formatDuration(durationSeconds)}
-      </div>
+      </div> */}
       {device && (
         <div>
           <p>Recorded with {device}</p>
         </div>
       )}
-      <div>
+      <TrackDetailSummary trackSummary={trackSummary} />
+      {/* <div>
         <p>Average pace: {formatDuration(Math.round((durationSeconds) / (distanceKm)))} per kilometer</p>
         <p>Average speed: {(distanceKm / durationHours).toFixed(2)}kmh</p>
       </div>
@@ -97,7 +78,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
         >
           Raw
         </a>
-      </div>
+      </div> */}
       <div>
         <ul>
           {/* {nearbyObjects.map((object) => (

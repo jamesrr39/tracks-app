@@ -1,7 +1,7 @@
 import {
   DomainGeoFileSummary,
   DomainRecord,
-} from "../openapi/generated/tracksAppSchemas";
+} from "../../openapi/generated/tracksAppSchemas";
 
 import { Line, Chart } from "react-chartjs-2";
 import {
@@ -17,8 +17,8 @@ import {
   ChartType,
   ChartData,
 } from "chart.js";
-import { formatShortDuration, getDurationSeconds } from "../util/time";
-import { binarySearch, BinarySearchResult } from "../util/binary_search";
+import { formatShortDuration, getDurationSeconds } from "../../util/time";
+import { binarySearch, BinarySearchResult } from "../../util/binary_search";
 //   import { Chart } from 'react-chartjs-2'
 
 ChartJS.register(
