@@ -39,6 +39,7 @@ function TracksListingTable({trackSummaries}: Props) {
                             <td>
                                 {formatDuration(getDurationSeconds(trackSummary))}
                             </td>
+                            <td>{trackSummary.device}</td>
                         </tr>
                     );
                 })}

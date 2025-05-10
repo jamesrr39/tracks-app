@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"math"
@@ -148,6 +149,7 @@ func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File
 	if productName != "" {
 		deviceFragments = append(deviceFragments, productName)
 	}
+	deviceFragments = append(deviceFragments, fmt.Sprintf("%d", file.FileId.Product))
 	log.Printf("product: %#v :: %#v :: %#v\n", file.FileId.GetProduct(), activity.DeviceInfos, file.FileId)
 	for _, dv := range activity.DeviceInfos {
 		log.Printf("info: %#v\n", dv)

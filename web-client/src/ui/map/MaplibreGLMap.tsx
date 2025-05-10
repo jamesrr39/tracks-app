@@ -5,15 +5,13 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import {
   DomainGeoFileSummary,
   DomainRecord,
-} from "../openapi/generated/tracksAppSchemas";
+} from "../../openapi/generated/tracksAppSchemas";
 
 import ProtomapLayers from "protomaps-themes-base";
-import { formatShortDuration, getDurationSeconds } from "../util/time";
-import { binarySearch, BinarySearchResult } from "../util/binary_search";
-
-const AVAILABLE_MAP_THEMES = ["light", "dark", "white", "grayscale", "black"];
-
-type MapTheme = (typeof AVAILABLE_MAP_THEMES)[number];
+import { formatShortDuration, getDurationSeconds } from "../../util/time";
+import { binarySearch, BinarySearchResult } from "../../util/binary_search";
+import { MapTheme } from "./MapThemes";
+import Controls from "./Controls";
 
 const DEFAULT_THEME: MapTheme = "light";
 
@@ -84,7 +82,7 @@ const p = new pmtiles.PMTiles(PMTILES_URL);
 protocol.add(p);
 
 export function MaplibreGLMap(props: Props) {
-  const [routeColor, setRouteColor] = useState("#999999");
+  const [routeColor, setRouteColor] = useState("#f66151");
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map>(null);
 
@@ -150,9 +148,6 @@ export function MaplibreGLMap(props: Props) {
       return;
     }
 
-    // maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
-    // maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
-
     maplibreMap.setStyle({
       version: 8,
       glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
@@ -166,10 +161,6 @@ export function MaplibreGLMap(props: Props) {
       },
       layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
     });
-
-    // const route = getRoute(coordinates, routeColor);
-    // maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-    // maplibreMap.addLayer(route.layer);
 
     changeRouteColor(routeColor);
   };
@@ -257,7 +248,7 @@ export function MaplibreGLMap(props: Props) {
       <Controls
         changeMapTheme={changeMapTheme}
         routeColor={routeColor}
-        onRouteColorChange={(value) => {
+        onRouteColorChange={(value: string) => {
           setRouteColor(value)
           changeRouteColor(value);
         }}
@@ -265,45 +256,4 @@ export function MaplibreGLMap(props: Props) {
       <div ref={mapContainer} style={styles.map} />
     </div>
   );
-}
-
-type ControlsProps = {
-  changeMapTheme: (value: string) => void
-  routeColor: string
-  onRouteColorChange: (value: string) => void
-}
-
-function Controls({changeMapTheme, routeColor, onRouteColorChange}: ControlsProps) {
-  return (
-    <div>
-      <div>
-          <select
-            name="map theme"
-            onChange={(event) => {
-              const { value } = event.currentTarget;
-
-              changeMapTheme(value);
-            }}
-          >
-            {AVAILABLE_MAP_THEMES.map((theme) => (
-              <option value={theme}>{theme}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>
-            Route color
-            <input
-              type="color"
-              name="route color"
-              value={routeColor}
-              onChange={(event) => {
-                const { value } = event.currentTarget;
-                onRouteColorChange(value);
-              }}
-            />
-          </label>
-        </div>
-    </div>
-  )
 }

@@ -34,7 +34,9 @@ const RAW_RUNTIME_STATE =
           ["@preact/preset-vite", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.9.0"],\
           ["@tanstack/react-query", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.51.21"],\
           ["@types/babel__core", "npm:7.20.5"],\
+          ["@types/bootstrap", "npm:5.2.10"],\
           ["babel-plugin-transform-hook-names", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:1.0.2"],\
+          ["bootstrap", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.6"],\
           ["chart.js", "npm:4.4.6"],\
           ["maplibre-gl", "npm:4.6.0"],\
           ["pmtiles", "npm:3.0.7"],\
@@ -911,6 +913,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@popperjs/core", [\
+      ["npm:2.11.8", {\
+        "packageLocation": "./.yarn/berry/cache/@popperjs-core-npm-2.11.8-f1692e11a0-10c0.zip/node_modules/@popperjs/core/",\
+        "packageDependencies": [\
+          ["@popperjs/core", "npm:2.11.8"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@preact/compat", [\
       ["npm:17.1.2", {\
         "packageLocation": "./.yarn/berry/cache/@preact-compat-npm-17.1.2-15242eb632-10c0.zip/node_modules/@preact/compat/",\
@@ -1440,6 +1451,16 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@types/bootstrap", [\
+      ["npm:5.2.10", {\
+        "packageLocation": "./.yarn/berry/cache/@types-bootstrap-npm-5.2.10-d5d4ae4dbf-10c0.zip/node_modules/@types/bootstrap/",\
+        "packageDependencies": [\
+          ["@types/bootstrap", "npm:5.2.10"],\
+          ["@popperjs/core", "npm:2.11.8"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@types/estree", [\
       ["npm:1.0.5", {\
         "packageLocation": "./.yarn/berry/cache/@types-estree-npm-1.0.5-5b7faed3b4-10c0.zip/node_modules/@types/estree/",\
@@ -1755,6 +1776,28 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/berry/cache/boolbase-npm-1.0.0-965fe9af6d-10c0.zip/node_modules/boolbase/",\
         "packageDependencies": [\
           ["boolbase", "npm:1.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["bootstrap", [\
+      ["npm:5.3.6", {\
+        "packageLocation": "./.yarn/berry/cache/bootstrap-npm-5.3.6-b8161f1c8a-10c0.zip/node_modules/bootstrap/",\
+        "packageDependencies": [\
+          ["bootstrap", "npm:5.3.6"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.6", {\
+        "packageLocation": "./.yarn/__virtual__/bootstrap-virtual-55f9331fd2/0/berry/cache/bootstrap-npm-5.3.6-b8161f1c8a-10c0.zip/node_modules/bootstrap/",\
+        "packageDependencies": [\
+          ["bootstrap", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.6"],\
+          ["@popperjs/core", null],\
+          ["@types/popperjs__core", null]\
+        ],\
+        "packagePeers": [\
+          "@popperjs/core",\
+          "@types/popperjs__core"\
         ],\
         "linkType": "HARD"\
       }]\
@@ -4895,7 +4938,9 @@ const RAW_RUNTIME_STATE =
           ["@preact/preset-vite", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.9.0"],\
           ["@tanstack/react-query", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.51.21"],\
           ["@types/babel__core", "npm:7.20.5"],\
+          ["@types/bootstrap", "npm:5.2.10"],\
           ["babel-plugin-transform-hook-names", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:1.0.2"],\
+          ["bootstrap", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.6"],\
           ["chart.js", "npm:4.4.6"],\
           ["maplibre-gl", "npm:4.6.0"],\
           ["pmtiles", "npm:3.0.7"],\

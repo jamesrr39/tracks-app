@@ -26,6 +26,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <LocationProvider>
         <ErrorBoundary>
+          <div className="container">
           <Router>
             <TracksGallery path="/" />
             {/* Alternative dedicated route component for better TS support */}
@@ -33,6 +34,7 @@ export function App() {
             {/* `default` prop indicates a fallback route. Useful for 404 pages */}
             <NotFound default />
           </Router>
+          </div>
         </ErrorBoundary>
       </LocationProvider>
     </QueryClientProvider>

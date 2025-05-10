@@ -7,8 +7,7 @@ import {
 
 import Error from "../Error";
 import Loading from "../Loading";
-import { MaplibreGLMap } from "../MaplibreGLMap";
-import { formatDuration } from "../../util/time";
+import { MaplibreGLMap } from "../map/MaplibreGLMap";
 import {
   DomainGeoFileSummary,
   HttphandlersBuildGetTrackDetailResponse,
@@ -48,37 +47,14 @@ export default function TrackDetail(props: { params: { id: string } }) {
       <div>
         <h1>{name}</h1>
       </div>
-      {/* <div>
-        {(distanceKm).toFixed(2)}km in{" "}
-        {formatDuration(durationSeconds)}
-      </div> */}
       {device && (
         <div>
           <p>Recorded with {device}</p>
         </div>
       )}
+      <div style={{borderBottom: '1px solid #DEDDDA'}}>
       <TrackDetailSummary trackSummary={trackSummary} />
-      {/* <div>
-        <p>Average pace: {formatDuration(Math.round((durationSeconds) / (distanceKm)))} per kilometer</p>
-        <p>Average speed: {(distanceKm / durationHours).toFixed(2)}kmh</p>
       </div>
-      <div>
-        <a
-          target="_blank"
-          href={`/api/v1/tracks/${encodeURIComponent(
-            relativeFilePath
-          )}/parsed/${getTypeLinkName(geoFileType)}`}
-        >
-          Parsed
-        </a>{" "}
-        |{" "}
-        <a
-          target="_blank"
-          href={`/api/v1/tracks/${encodeURIComponent(relativeFilePath)}/raw`}
-        >
-          Raw
-        </a>
-      </div> */}
       <div>
         <ul>
           {/* {nearbyObjects.map((object) => (

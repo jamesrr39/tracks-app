@@ -3,7 +3,7 @@ import {
   DomainRecord,
 } from "../../openapi/generated/tracksAppSchemas";
 
-import { Line, Chart } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,13 +13,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartDataset,
-  ChartType,
   ChartData,
 } from "chart.js";
 import { formatShortDuration, getDurationSeconds } from "../../util/time";
 import { binarySearch, BinarySearchResult } from "../../util/binary_search";
-//   import { Chart } from 'react-chartjs-2'
 
 ChartJS.register(
   CategoryScale,
