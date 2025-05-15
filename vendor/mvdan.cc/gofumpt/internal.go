@@ -13,9 +13,10 @@ import (
 	"bytes"
 	"go/ast"
 	"go/parser"
-	"go/printer"
 	"go/token"
 	"strings"
+
+	"mvdan.cc/gofumpt/internal/govendor/go/printer"
 )
 
 // parse parses src, which was read from the named file,
@@ -137,7 +138,7 @@ func format(
 	if indent == 0 && hasSpace {
 		indent = 1
 	}
-	for i := 0; i < indent; i++ {
+	for range indent {
 		res = append(res, '\t')
 	}
 

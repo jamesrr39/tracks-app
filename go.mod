@@ -1,6 +1,8 @@
 module github.com/jamesrr39/tracks-app
 
-go 1.21.4
+go 1.23.0
+
+toolchain go1.23.1
 
 require (
 	github.com/boltdb/bolt v1.3.1
@@ -23,31 +25,31 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v1.2.1 // indirect
+	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20210208195552-ff826a37aa15 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/client9/misspell v0.3.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/gordonklaus/ineffassign v0.0.0-20210914165742-4cc7213b9bc8 // indirect
-	github.com/kisielk/errcheck v1.6.1 // indirect
-	github.com/mdempsky/unconvert v0.0.0-20230125054757-2661c2c99a9b // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/gordonklaus/ineffassign v0.1.0 // indirect
+	github.com/kisielk/errcheck v1.9.0 // indirect
+	github.com/mdempsky/unconvert v0.0.0-20250216222326-4a038b3d31f5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v3 v3.1.0 // indirect
 	github.com/swaggest/form/v5 v5.1.1 // indirect
 	github.com/swaggest/jsonschema-go v0.3.72 // indirect
 	github.com/swaggest/refl v1.3.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/exp/typeparams v0.0.0-20221208152030-732eee02a75a // indirect
-	golang.org/x/mod v0.19.0 // indirect
-	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
-	golang.org/x/tools v0.23.0 // indirect
+	golang.org/x/exp/typeparams v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
+	golang.org/x/mod v0.24.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/sync v0.14.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/tools v0.33.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	honnef.co/go/tools v0.4.2 // indirect
-	mvdan.cc/gofumpt v0.4.0 // indirect
+	honnef.co/go/tools v0.6.1 // indirect
+	mvdan.cc/gofumpt v0.8.0 // indirect
 )
