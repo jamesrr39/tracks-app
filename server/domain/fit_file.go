@@ -3,12 +3,13 @@ package domain
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"math"
 	"path/filepath"
 	"strings"
 
 	"github.com/jamesrr39/go-errorsx"
+	"github.com/jamesrr39/tracks-app/server/domain/garminproducts"
 	"github.com/tormoder/fit"
 )
 
@@ -100,10 +101,6 @@ func (p FitParser) ParseSummary(name string, hash Hash, reader io.Reader) (*GeoF
 }
 
 func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File) (*GeoFileSummary, errorsx.Error) {
-	// sport, err := file.Sport() // TODO include sport?
-	// if nil != err {
-	// 	return nil, err
-	// }
 
 	activity, err := file.Activity()
 	if nil != err {
@@ -142,17 +139,19 @@ func newSummaryFromDecodedFitFile(relativePath string, hash Hash, file *fit.File
 	var deviceFragments []string
 
 	manufacturer := file.FileId.Manufacturer.String()
-	productName := file.FileId.ProductName
+	productCode := file.FileId.Product
 	if manufacturer != "" {
 		deviceFragments = append(deviceFragments, manufacturer)
 	}
-	if productName != "" {
-		deviceFragments = append(deviceFragments, productName)
-	}
-	deviceFragments = append(deviceFragments, fmt.Sprintf("%d", file.FileId.Product))
-	log.Printf("product: %#v :: %#v :: %#v\n", file.FileId.GetProduct(), activity.DeviceInfos, file.FileId)
-	for _, dv := range activity.DeviceInfos {
-		log.Printf("info: %#v\n", dv)
+
+	if productCode != 0 {
+		product, ok := garminproducts.GarminProductsByCodeMap[productCode]
+		if !ok {
+			slog.Warn("garmin product not found.", "productCode", productCode)
+			deviceFragments = append(deviceFragments, fmt.Sprintf("(device not found, product code: %d)", productCode))
+		} else {
+			deviceFragments = append(deviceFragments, product.Name)
+		}
 	}
 
 	var sport string

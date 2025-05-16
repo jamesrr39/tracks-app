@@ -3,7 +3,7 @@ package garminproducts
 
 type GarminProduct struct {
 	Name string
-	Code int
+	Code uint16
 	Comment string
 }
 
