@@ -47,3 +47,8 @@ generate_openapi_typescript:
 	mkdir -p ${OPENAPI_SPEC_OUTDIR}
 	go run cmd/tracks-app-main.go generate-openapi-spec --output ${OPENAPI_SPEC_OUTDIR}/openapi3-spec.yml
 	cd web-client && mkdir -p src/openapi/generated && rm -f src/openapi/generated/* && yarn generate-openapi
+
+.PHONY: generate_garmin_products_list
+generate_garmin_products_list:
+	mkdir -p server/domain/garminproducts
+	go run scripts/gen-garmin-products-map/gen-garmin-products-map.go --package-name garminproducts --output-file server/domain/garminproducts/garmin_products.go
