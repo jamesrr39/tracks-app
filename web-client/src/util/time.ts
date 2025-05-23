@@ -1,3 +1,5 @@
+import { DomainGeoFileSummary } from "../openapi/generated/tracksAppSchemas";
+
 export function formatDuration(durationSeconds: number): string {
   const hours = Math.floor(durationSeconds / 3600);
   const minutes = Math.floor(durationSeconds / 60) - hours * 60;
@@ -74,4 +76,9 @@ export function getDurationSeconds({
   endTime: string;
 }): number {
   return (new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000;
+}
+
+export function getPaceMinPerKm(trackSummary: DomainGeoFileSummary) {
+  const durationSeconds = getDurationSeconds(trackSummary);
+  return formatDuration(Math.round((durationSeconds) / (trackSummary.totalDistance / 1000)))
 }

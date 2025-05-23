@@ -20,7 +20,8 @@
     "preact-render-to-string": "^6.5.7",
     "protomaps-themes-base": "^3.1.0",
     "react": "npm:@preact/compat@*",
-    "react-chartjs-2": "^5.2.0"
+    "react-chartjs-2": "^5.2.0",
+    "react-select": "^5.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

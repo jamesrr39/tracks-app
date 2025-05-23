@@ -17,6 +17,10 @@ Start webpack client:
 
 For production and docker builds, see the Makefile.
 
+## Openapi
+
+http://localhost:8090/docs/
+
 # Glyphs for PM tiles
 
 https://til.simonwillison.net/gis/pmtiles
