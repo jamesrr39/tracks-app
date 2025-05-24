@@ -1,32 +1,19 @@
 import { useState } from "preact/hooks";
-import { useGetAllTrackSummaries } from "../../openapi/generated/tracksAppComponents";
-import Error from "../Error";
-import Loading from "../Loading";
 import TracksListing from "./TracksList";
 import TracksListingTable from "./TracksListingTable";
 import FilterComponent, { Filter } from "./ListingFilter";
 import { DomainGeoFileSummary } from "../../openapi/generated/tracksAppSchemas";
 
+type Props = {
+  allTrackSummaries: DomainGeoFileSummary[]
+}
 
+function TracksGallery({allTrackSummaries}: Props) {
+  const {activities, devices, dateRange} = getFilterProps(allTrackSummaries);
 
-export default function TracksGallery() {
+  const [filter, setFilter] = useState<Filter>({activities: [], devices: [], dateRange});
+
   const [displayStyle, setDisplayStyle] = useState<'list' | 'table'>("list");
-  const { error, isLoading, data } = useGetAllTrackSummaries({});
-  const [filter, setFilter] = useState<Filter>({activities: [], devices: []});
-
-  if (error) {
-    return <Error error={error} />;
-  }
-
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  if (!data) {
-    return <Loading />;
-  }
-
-  const allTrackSummaries = data.trackSummaries;
 
   const trackSummaries = allTrackSummaries.filter(trackSummary => {
     if (filter.activities.length !== 0) {
@@ -41,14 +28,19 @@ export default function TracksGallery() {
       }
     }
 
+    if (filter.dateRange.start > trackSummary.startTime) {
+      return false;
+    }
+    if (filter.dateRange.end < trackSummary.endTime) {
+      return false;
+    }
+
     return true;
   });
 
   trackSummaries.sort((a, b) => {
     return a.endTime < b.endTime ? 1 : -1;
   });
-
-  const {activities, devices} = getFilterProps(allTrackSummaries);
 
   return (
     <div>
@@ -62,6 +54,7 @@ export default function TracksGallery() {
         <FilterComponent
           activities={activities}
           devices={devices}
+          dateRange={dateRange}
           filter={filter}
           onChange={(filter: Filter) => {
             setFilter(filter);
@@ -78,10 +71,20 @@ export default function TracksGallery() {
 function getFilterProps(trackSummaries: DomainGeoFileSummary[]) {
   const activitiesSet = new Set<string>();
   const devicesSet = new Set<string>();
+  let dateRangeStart = new Date();
+  let dateRangeEnd = new Date('0001-01-01');
 
   trackSummaries.forEach(trackSummary => {
     activitiesSet.add(trackSummary.activityType);
     devicesSet.add(trackSummary.device);
+    const startTime = new Date(trackSummary.startTime);
+    if (startTime < dateRangeStart) {
+      dateRangeStart = startTime;
+    }
+    const endTime = new Date(trackSummary.endTime);
+    if (endTime > dateRangeEnd) {
+      dateRangeEnd = endTime;
+    }
   });
 
   const activities = [...activitiesSet];
@@ -90,7 +93,15 @@ function getFilterProps(trackSummaries: DomainGeoFileSummary[]) {
   activities.sort(stringSort);
   devices.sort(stringSort);
 
-  return {activities, devices}
+  return {
+    activities,
+    devices,
+    dateRange: {start: dateObjToISODate(dateRangeStart), end: dateObjToISODate(dateRangeEnd)}
+  };
+}
+
+function dateObjToISODate(d: Date) {
+  return d.toISOString().split('T')[0]
 }
 
 function stringSort(a: string, b: string) {
@@ -100,3 +111,5 @@ function stringSort(a: string, b: string) {
 
     return a < b ? 1 : -1;
   }
+
+  export default TracksGallery;
