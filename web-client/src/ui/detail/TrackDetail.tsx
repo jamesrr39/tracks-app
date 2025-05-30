@@ -14,6 +14,7 @@ import {
 } from "../../openapi/generated/tracksAppSchemas";
 import TrackChart from "./TrackChart";
 import TrackDetailSummary from "./TrackDetailSummary";
+import Breadcrumb from "../breadcrumb/Breadcrumb";
 
 export default function TrackDetail(props: { params: { id: string } }) {
   const reactQueryOpts = {
@@ -44,6 +45,7 @@ export default function TrackDetail(props: { params: { id: string } }) {
 
   return (
     <>
+      <Breadcrumb pathFragments={["tracks", props.params.id]} />
       <div>
         <h1>{name}</h1>
       </div>

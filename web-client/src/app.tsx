@@ -1,8 +1,9 @@
 import "./app.css";
 import TrackDetail from "./ui/detail/TrackDetail";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ErrorBoundary, LocationProvider, Route, Router } from "preact-iso";
+import { ErrorBoundary, LocationProvider, Route, Router, useLocation } from "preact-iso";
 import TracksGalleryScreen from "./ui/listing/TracksGalleryScreen";
+import { useEffect } from "preact/hooks";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,16 +23,16 @@ const NotFound = () => (
 );
 
 export function App() {
+
   return (
     <QueryClientProvider client={queryClient}>
       <LocationProvider>
         <ErrorBoundary>
           <div className="container">
           <Router>
-            <TracksGalleryScreen path="/" />
-            {/* Alternative dedicated route component for better TS support */}
+            <Route path="/tracks" component={TracksGalleryScreen} />
             <Route path="/tracks/:id" component={TrackDetail} />
-            {/* `default` prop indicates a fallback route. Useful for 404 pages */}
+            <Route path="/" component={() => <Redirect to={"/tracks"} />} />
             <NotFound default />
           </Router>
           </div>
@@ -40,3 +41,11 @@ export function App() {
     </QueryClientProvider>
   );
 }
+
+function Redirect({to}: {to: string}) {
+  const {route} = useLocation();
+
+  useEffect(() => route(to));
+  return null;
+}
+

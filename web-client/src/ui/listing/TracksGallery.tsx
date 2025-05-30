@@ -3,6 +3,7 @@ import TracksListing from "./TracksList";
 import TracksListingTable from "./TracksListingTable";
 import FilterComponent, { Filter } from "./ListingFilter";
 import { DomainGeoFileSummary } from "../../openapi/generated/tracksAppSchemas";
+import Breadcrumb from "../breadcrumb/Breadcrumb";
 
 type Props = {
   allTrackSummaries: DomainGeoFileSummary[]
@@ -44,6 +45,7 @@ function TracksGallery({allTrackSummaries}: Props) {
 
   return (
     <div>
+      <Breadcrumb pathFragments={["tracks"]} />
       <button onClick={event =>{
         event.preventDefault();
         setDisplayStyle(displayStyle => {

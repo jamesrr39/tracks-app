@@ -37,6 +37,7 @@ const RAW_RUNTIME_STATE =
           ["@types/bootstrap", "npm:5.2.10"],\
           ["babel-plugin-transform-hook-names", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:1.0.2"],\
           ["bootstrap", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.6"],\
+          ["bootstrap-icons", "npm:1.13.1"],\
           ["chart.js", "npm:4.4.6"],\
           ["maplibre-gl", "npm:4.6.0"],\
           ["pmtiles", "npm:3.0.7"],\
@@ -2125,6 +2126,15 @@ const RAW_RUNTIME_STATE =
         "packagePeers": [\
           "@popperjs/core",\
           "@types/popperjs__core"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["bootstrap-icons", [\
+      ["npm:1.13.1", {\
+        "packageLocation": "./.yarn/berry/cache/bootstrap-icons-npm-1.13.1-ea10677638-10c0.zip/node_modules/bootstrap-icons/",\
+        "packageDependencies": [\
+          ["bootstrap-icons", "npm:1.13.1"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -5576,6 +5586,7 @@ const RAW_RUNTIME_STATE =
           ["@types/bootstrap", "npm:5.2.10"],\
           ["babel-plugin-transform-hook-names", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:1.0.2"],\
           ["bootstrap", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.3.6"],\
+          ["bootstrap-icons", "npm:1.13.1"],\
           ["chart.js", "npm:4.4.6"],\
           ["maplibre-gl", "npm:4.6.0"],\
           ["pmtiles", "npm:3.0.7"],\
