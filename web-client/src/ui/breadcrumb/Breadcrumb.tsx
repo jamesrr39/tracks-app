@@ -5,7 +5,6 @@ type Props = {
 }
 
 function Breadcrumb({pathFragments}: Props) {
-    console.log('home icon', HomeIcon)
     const fragments = pathFragments.map((fragment, idx) => {
         return {
             title: fragment,
