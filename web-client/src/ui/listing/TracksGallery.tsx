@@ -4,17 +4,29 @@ import TracksListingTable from "./TracksListingTable";
 import FilterComponent, { Filter } from "./ListingFilter";
 import { DomainGeoFileSummary } from "../../openapi/generated/tracksAppSchemas";
 import Breadcrumb from "../breadcrumb/Breadcrumb";
+import ListIcon from 'bootstrap-icons/icons/card-list.svg';
+import TableIcon from 'bootstrap-icons/icons/table.svg';
+import { toLocalDate } from "../DateRangePicker";
+
+const styles = {
+  activeDisplayStyle: {
+    backgroundColor: '#ccc'
+  }
+};
 
 type Props = {
   allTrackSummaries: DomainGeoFileSummary[]
 }
 
 function TracksGallery({allTrackSummaries}: Props) {
-  const {activities, devices, dateRange} = getFilterProps(allTrackSummaries);
+  const {activities, devices, dateRange, distanceRange} = getFilterProps(allTrackSummaries);
 
-  const [filter, setFilter] = useState<Filter>({activities: [], devices: [], dateRange});
+  const [filter, setFilter] = useState<Filter>({activities: [], devices: [], dateRange, distanceRange});
 
   const [displayStyle, setDisplayStyle] = useState<'list' | 'table'>("list");
+
+  const filterStartDate = toLocalDate(new Date(filter.dateRange.start));
+  const filterEndDate = toLocalDate(new Date(filter.dateRange.end));
 
   const trackSummaries = allTrackSummaries.filter(trackSummary => {
     if (filter.activities.length !== 0) {
@@ -29,10 +41,18 @@ function TracksGallery({allTrackSummaries}: Props) {
       }
     }
 
-    if (filter.dateRange.start > trackSummary.startTime) {
+    const trackSummaryStart = toLocalDate(new Date(trackSummary.startTime));
+    const trackSummaryEnd = toLocalDate(new Date(trackSummary.endTime));
+
+    // can compare ISO date strings without converting to other objects
+    if (trackSummaryStart > filterEndDate || trackSummaryEnd < filterStartDate) {
       return false;
     }
-    if (filter.dateRange.end < trackSummary.endTime) {
+
+    if (filter.distanceRange.lowest > trackSummary.totalDistance) {
+      return false;
+    }
+    if (filter.distanceRange.highest < trackSummary.totalDistance) {
       return false;
     }
 
@@ -46,26 +66,44 @@ function TracksGallery({allTrackSummaries}: Props) {
   return (
     <div>
       <Breadcrumb pathFragments={["tracks"]} />
-      <button onClick={event =>{
-        event.preventDefault();
-        setDisplayStyle(displayStyle => {
-          return displayStyle === 'list' ? 'table' : 'list';
-        })
-      }}>Change list style</button>
+
       <div>
         <FilterComponent
           activities={activities}
           devices={devices}
           dateRange={dateRange}
+          distanceRange={distanceRange}
           filter={filter}
           onChange={(filter: Filter) => {
             setFilter(filter);
           }}
         />
       </div>
+      <button
+        title="List"
+        onClick={event =>{
+          event.preventDefault();
+          setDisplayStyle(() => 'list');
+        }}
+        style={displayStyle === 'list' ? styles.activeDisplayStyle : undefined}
+      >
+        <img src={ListIcon}/>
+      </button>
+
+      <button
+        title="Table"
+        onClick={event =>{
+          event.preventDefault();
+          setDisplayStyle(() => 'table');
+        }}
+        style={displayStyle === 'table' ? styles.activeDisplayStyle : undefined}
+      >
+        <img src={TableIcon}/>
+      </button>
+      
       {trackSummaries.length === 0 && <p>No results found</p>}
-      {displayStyle === 'list' && <TracksListing trackSummaries={trackSummaries} />}
-      {displayStyle === 'table' && <TracksListingTable trackSummaries={trackSummaries} />}
+      {displayStyle === 'table' && <TracksListing trackSummaries={trackSummaries} />}
+      {displayStyle === 'list' && <TracksListingTable trackSummaries={trackSummaries} />}
     </div>
   );
 }
@@ -75,6 +113,8 @@ function getFilterProps(trackSummaries: DomainGeoFileSummary[]) {
   const devicesSet = new Set<string>();
   let dateRangeStart = new Date();
   let dateRangeEnd = new Date('0001-01-01');
+  let distanceKmLowest = 10_000_000;
+  let distanceKmHighest = 0;
 
   trackSummaries.forEach(trackSummary => {
     activitiesSet.add(trackSummary.activityType);
@@ -87,6 +127,13 @@ function getFilterProps(trackSummaries: DomainGeoFileSummary[]) {
     if (endTime > dateRangeEnd) {
       dateRangeEnd = endTime;
     }
+
+    if (trackSummary.totalDistance < distanceKmLowest) {
+      distanceKmLowest = trackSummary.totalDistance;
+    }
+    if (trackSummary.totalDistance > distanceKmHighest) {
+      distanceKmHighest = trackSummary.totalDistance;
+    }
   });
 
   const activities = [...activitiesSet];
@@ -98,7 +145,8 @@ function getFilterProps(trackSummaries: DomainGeoFileSummary[]) {
   return {
     activities,
     devices,
-    dateRange: {start: dateObjToISODate(dateRangeStart), end: dateObjToISODate(dateRangeEnd)}
+    dateRange: {start: dateObjToISODate(dateRangeStart), end: dateObjToISODate(dateRangeEnd)},
+    distanceRange: {lowest: distanceKmLowest, highest: distanceKmHighest}
   };
 }
 

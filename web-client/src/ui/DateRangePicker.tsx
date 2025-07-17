@@ -7,6 +7,10 @@ export type DateRange = {
     end: LocalDate
 };
 
+export function toLocalDate(date: Date): LocalDate {
+    return date.toISOString().split("T")[0];
+}
+
 type Props = {
     onChange: (value: DateRange) => void
     dateRange: DateRange
