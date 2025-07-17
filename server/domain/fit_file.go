@@ -52,13 +52,13 @@ func (p FitParser) ParseRecords(reader io.Reader) ([]*Record, errorsx.Error) {
 		zeroUint16 := uint16(0)
 
 		var power *uint16 = &zeroUint16
-		if activityRecord.Power == 0 {
+		if activityRecord.Power != 0 {
 			power = &activityRecord.Power
 		}
 
 		zeroUint8 := uint8(0)
 		var heartRate *uint8 = &zeroUint8
-		if activityRecord.HeartRate == 0 {
+		if activityRecord.HeartRate != 0 {
 			heartRate = &activityRecord.HeartRate
 		}
 
