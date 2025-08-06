@@ -75,7 +75,7 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 
 			file, hash, err := d.openFile(path)
 			if nil != err {
-				slog.Error("couldn't open GeoFile", "path", path, "Error", err)
+				slog.Error("couldn't open GeoFile", "path", path, "Error", errorsx.ErrWithStack(err))
 				return
 			}
 			defer file.Close()
@@ -85,7 +85,7 @@ func (d *FitDAL) RebuildCachesFromRootDir() error {
 
 			fitFileSummary, err := processFuncMethods.ParseSummary(relativeFilePath, hash, file)
 			if nil != err {
-				slog.Error("couldn't parse summary of GeoFile", "path", path, "Error", err)
+				slog.Error("couldn't parse summary of GeoFile", "path", path, "Error", errorsx.ErrWithStack(err))
 				return
 			}
 			mu.Lock()
