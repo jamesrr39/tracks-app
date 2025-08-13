@@ -36,7 +36,12 @@ run_dev_client:
 
 .PHONY: run_dev_server
 run_dev_server:
+	LOCAL_DEV_SERVER_URL=${VITE_DEV_SERVER_ADDR} go run cmd/tracks-app-main.go serve ${LOCALENV_DATA_DIR}
+
+.PHONY: run_dev_server_local_pm_tiles
+run_dev_server_local_pm_tiles:
 	LOCAL_DEV_SERVER_URL=${VITE_DEV_SERVER_ADDR} go run cmd/tracks-app-main.go serve ${LOCALENV_DATA_DIR} --pmtiles-file-path ${PM_TILES_FILEPATH}
+
 
 .PHONY: install
 install: build_prod

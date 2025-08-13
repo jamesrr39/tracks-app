@@ -52,12 +52,16 @@ const (
 	SpecFormatJSONPretty = "jsonpretty"
 )
 
+const (
+	onlinePMTilesUrl = "https://demo-bucket.protomaps.com/v4.pmtiles"
+)
+
 func setupGenerateOpenapiSpec() {
 	cmd := app.Command("generate-openapi-spec", "")
 	format := cmd.Flag("format", "output format").Short('F').Default(SpecFormatYAML).Enum(SpecFormatYAML, SpecFormatJSON, SpecFormatJSONPretty)
 	outputFilePath := cmd.Flag("output", "").Short('O').Default(os.Stdout.Name()).String()
 	cmd.Action(func(pc *kingpin.ParseContext) error {
-		apiSchema, _ := createAPIRouter(&dal.FitDAL{})
+		apiSchema, _ := createAPIRouter(&dal.FitDAL{}, "")
 		spec := apiSchema.Reflector().Spec
 
 		specMarshalFuncMap := map[string]func() ([]byte, error){
@@ -93,7 +97,7 @@ func setupServe() {
 	unexpandedCachesDir := cmd.Flag("caches-dir", "directory to store the caches in").Default("~/.cache/github.com/jamesrr39/tracks-app").String()
 	addr := cmd.Flag("addr", "address and port to serve on. ':8090' = to everyone on port 8090. 'localhost:8090' = to only localhost on 8090").Default("localhost:8090").String()
 	overpassApiBaseURL := cmd.Flag("overpass-api-base-url", "Supply a URL for your own instance of the Overpass API server, if you prefer to use your own.").Default(overpass.DefaultOverpassAPIBaseURL).String()
-	pmtilesMapFilePath := cmd.Flag("pmtiles-file-path", "https://demo-bucket.protomaps.com/v4.pmtiles").Required().String()
+	pmtilesMapFilePath := cmd.Flag("pmtiles-file-path", "").String()
 
 	cmd.Action(func(pc *kingpin.ParseContext) error {
 
@@ -143,7 +147,7 @@ func setupServe() {
 
 const ApiRouterBaseURL = "/api"
 
-func createAPIRouter(fitDAL *dal.FitDAL) (*openapi.Collector, *chirouter.Wrapper) {
+func createAPIRouter(fitDAL *dal.FitDAL, pmtilesFilePath string) (*openapi.Collector, *chirouter.Wrapper) {
 	apiSchema := &openapi.Collector{}
 	apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
 	apiSchema.Reflector().SpecEns().Info.WithDescription("REST API definitions for Tracks App")
@@ -170,7 +174,13 @@ func createAPIRouter(fitDAL *dal.FitDAL) (*openapi.Collector, *chirouter.Wrapper
 		response.EncoderMiddleware,                    // Response encoder setup.
 	)
 
+	pmTilesUrls := []string{onlinePMTilesUrl}
+	if pmtilesFilePath != "" {
+		pmTilesUrls = append(pmTilesUrls, pmtilesFilePath)
+	}
+
 	apiRouter.Route("/v1", func(r chi.Router) {
+		openapix.Get(r, "/info", httphandlers.BuildGetInfo(pmTilesUrls))
 		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
 		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
 		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
@@ -190,14 +200,15 @@ func mustCheckFileExists(pmtilesMapFilePath string) {
 	if err != nil {
 		panic(fmt.Sprintf("Error 'stat'ing PM tiles file path (%s). Error: %s", pmtilesMapFilePath, err))
 	}
-
 }
 
 func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wrapper, *openapi.Collector) {
 
-	mustCheckFileExists(pmtilesMapFilePath)
+	if pmtilesMapFilePath != "" {
+		mustCheckFileExists(pmtilesMapFilePath)
+	}
 
-	apiSchema, apiRouter := createAPIRouter(fitDAL)
+	apiSchema, apiRouter := createAPIRouter(fitDAL, pmtilesMapFilePath)
 
 	rootRouter := chirouter.NewWrapper(chi.NewRouter())
 
