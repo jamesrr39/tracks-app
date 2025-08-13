@@ -9,6 +9,42 @@ import type * as Fetcher from "./tracksAppFetcher";
 import { tracksAppFetch } from "./tracksAppFetcher";
 import type * as Schemas from "./tracksAppSchemas";
 
+export type GetServiceInfoError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetServiceInfoVariables = TracksAppContext["fetcherOptions"];
+
+export const fetchGetServiceInfo = (
+  variables: GetServiceInfoVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersInfoResponse,
+    GetServiceInfoError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/v1/info", method: "get", ...variables, signal });
+
+export const getServiceInfoQuery = (
+  variables: GetServiceInfoVariables,
+): [
+  reactQuery.QueryKey,
+  ({
+    signal,
+  }: {
+    signal?: AbortSignal;
+  }) => Promise<Schemas.HttphandlersInfoResponse>,
+] => [
+  queryKeyFn({
+    path: "/v1/info",
+    operationId: "getServiceInfo",
+    variables,
+  }),
+  async ({ signal }: { signal?: AbortSignal }) =>
+    fetchGetServiceInfo({ ...variables }, signal),
+];
+
 export type GetAllTrackSummariesError = Fetcher.ErrorWrapper<undefined>;
 
 export type GetAllTrackSummariesVariables = TracksAppContext["fetcherOptions"];
@@ -181,6 +217,44 @@ export const getParsedGpxTrackQuery = (
     fetchGetParsedGPXTrack({ ...variables }, signal),
 ];
 
+export type GetRawFilePathParams = {
+  path: string;
+};
+
+export type GetRawFileError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetRawFileVariables = {
+  pathParams: GetRawFilePathParams;
+} & TracksAppContext["fetcherOptions"];
+
+export const fetchGetRawFile = (
+  variables: GetRawFileVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    undefined,
+    GetRawFileError,
+    undefined,
+    {},
+    {},
+    GetRawFilePathParams
+  >({ url: "/v1/tracks/{path}/raw", method: "get", ...variables, signal });
+
+export const getRawFileQuery = (
+  variables: GetRawFileVariables,
+): [
+  reactQuery.QueryKey,
+  ({ signal }: { signal?: AbortSignal }) => Promise<undefined>,
+] => [
+  queryKeyFn({
+    path: "/v1/tracks/{path}/raw",
+    operationId: "getRawFile",
+    variables,
+  }),
+  async ({ signal }: { signal?: AbortSignal }) =>
+    fetchGetRawFile({ ...variables }, signal),
+];
+
 export type GetTrackRecordsPathParams = {
   path: string;
 };
@@ -225,6 +299,11 @@ export const getTrackRecordsQuery = (
 
 export type QueryOperation =
   | {
+      path: "/v1/info";
+      operationId: "getServiceInfo";
+      variables: GetServiceInfoVariables;
+    }
+  | {
       path: "/v1/tracks";
       operationId: "getAllTrackSummaries";
       variables: GetAllTrackSummariesVariables;
@@ -243,6 +322,11 @@ export type QueryOperation =
       path: "/v1/tracks/{path}/parsed/gpx";
       operationId: "getParsedGPXTrack";
       variables: GetParsedGPXTrackVariables;
+    }
+  | {
+      path: "/v1/tracks/{path}/raw";
+      operationId: "getRawFile";
+      variables: GetRawFileVariables;
     }
   | {
       path: "/v1/tracks/{path}/records";

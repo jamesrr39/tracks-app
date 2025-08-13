@@ -9,6 +9,53 @@ import type * as Fetcher from "./tracksAppFetcher";
 import { tracksAppFetch } from "./tracksAppFetcher";
 import type * as Schemas from "./tracksAppSchemas";
 
+export type GetServiceInfoError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetServiceInfoVariables = TracksAppContext["fetcherOptions"];
+
+export const fetchGetServiceInfo = (
+  variables: GetServiceInfoVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersInfoResponse,
+    GetServiceInfoError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/v1/info", method: "get", ...variables, signal });
+
+export const useGetServiceInfo = <TData = Schemas.HttphandlersInfoResponse,>(
+  variables: GetServiceInfoVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      Schemas.HttphandlersInfoResponse,
+      GetServiceInfoError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { fetcherOptions, queryOptions, queryKeyFn } =
+    useTracksAppContext(options);
+  return reactQuery.useQuery<
+    Schemas.HttphandlersInfoResponse,
+    GetServiceInfoError,
+    TData
+  >({
+    queryKey: queryKeyFn({
+      path: "/v1/info",
+      operationId: "getServiceInfo",
+      variables,
+    }),
+    queryFn: ({ signal }) =>
+      fetchGetServiceInfo({ ...fetcherOptions, ...variables }, signal),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type GetAllTrackSummariesError = Fetcher.ErrorWrapper<undefined>;
 
 export type GetAllTrackSummariesVariables = TracksAppContext["fetcherOptions"];
@@ -233,6 +280,51 @@ export const useGetParsedGPXTrack = <
   });
 };
 
+export type GetRawFilePathParams = {
+  path: string;
+};
+
+export type GetRawFileError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetRawFileVariables = {
+  pathParams: GetRawFilePathParams;
+} & TracksAppContext["fetcherOptions"];
+
+export const fetchGetRawFile = (
+  variables: GetRawFileVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    undefined,
+    GetRawFileError,
+    undefined,
+    {},
+    {},
+    GetRawFilePathParams
+  >({ url: "/v1/tracks/{path}/raw", method: "get", ...variables, signal });
+
+export const useGetRawFile = <TData = undefined,>(
+  variables: GetRawFileVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<undefined, GetRawFileError, TData>,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { fetcherOptions, queryOptions, queryKeyFn } =
+    useTracksAppContext(options);
+  return reactQuery.useQuery<undefined, GetRawFileError, TData>({
+    queryKey: queryKeyFn({
+      path: "/v1/tracks/{path}/raw",
+      operationId: "getRawFile",
+      variables,
+    }),
+    queryFn: ({ signal }) =>
+      fetchGetRawFile({ ...fetcherOptions, ...variables }, signal),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type GetTrackRecordsPathParams = {
   path: string;
 };
@@ -290,6 +382,11 @@ export const useGetTrackRecords = <
 
 export type QueryOperation =
   | {
+      path: "/v1/info";
+      operationId: "getServiceInfo";
+      variables: GetServiceInfoVariables;
+    }
+  | {
       path: "/v1/tracks";
       operationId: "getAllTrackSummaries";
       variables: GetAllTrackSummariesVariables;
@@ -308,6 +405,11 @@ export type QueryOperation =
       path: "/v1/tracks/{path}/parsed/gpx";
       operationId: "getParsedGPXTrack";
       variables: GetParsedGPXTrackVariables;
+    }
+  | {
+      path: "/v1/tracks/{path}/raw";
+      operationId: "getRawFile";
+      variables: GetRawFileVariables;
     }
   | {
       path: "/v1/tracks/{path}/records";

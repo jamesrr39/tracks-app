@@ -7,6 +7,17 @@ servers:
 - description: API server
   url: /api
 paths:
+  /v1/info:
+    get:
+      operationId: getServiceInfo
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersInfoResponse'
+          description: OK
+      summary: Get service info
   /v1/tracks:
     get:
       operationId: getAllTrackSummaries
@@ -75,6 +86,21 @@ paths:
                 $ref: '#/components/schemas/HttphandlersBuildGetParsedGpxFileResponse'
           description: OK
       summary: Get parsed GPX track
+      tags:
+      - Tracks
+  /v1/tracks/{path}/raw:
+    get:
+      operationId: getRawFile
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      summary: Get raw file
       tags:
       - Tracks
   /v1/tracks/{path}/records:
@@ -225,4 +251,18 @@ components:
           $ref: '#/components/schemas/DomainGeoFileSummary'
       required:
       - trackSummary
+      type: object
+    HttphandlersInfoResponse:
+      properties:
+        mapOptions:
+          properties:
+            pmTilesSources:
+              items:
+                type: string
+              type: array
+          required:
+          - pmTilesSources
+          type: object
+      required:
+      - mapOptions
       type: object

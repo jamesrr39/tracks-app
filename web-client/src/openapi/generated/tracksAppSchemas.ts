@@ -71,3 +71,9 @@ export type HttphandlersBuildGetTrackDetailResponse = {
 export type HttphandlersBuildGetTrackSummaryResponse = {
   trackSummary: DomainGeoFileSummary;
 };
+
+export type HttphandlersInfoResponse = {
+  mapOptions: {
+    pmTilesSources: string[];
+  };
+};
