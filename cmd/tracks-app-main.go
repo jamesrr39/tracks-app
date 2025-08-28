@@ -174,13 +174,8 @@ func createAPIRouter(fitDAL *dal.FitDAL, pmtilesFilePath string) (*openapi.Colle
 		response.EncoderMiddleware,                    // Response encoder setup.
 	)
 
-	pmTilesUrls := []string{onlinePMTilesUrl}
-	if pmtilesFilePath != "" {
-		pmTilesUrls = append(pmTilesUrls, pmtilesFilePath)
-	}
-
 	apiRouter.Route("/v1", func(r chi.Router) {
-		openapix.Get(r, "/info", httphandlers.BuildGetInfo(pmTilesUrls))
+		openapix.Get(r, "/info", httphandlers.BuildGetInfo(pmtilesFilePath))
 		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
 		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
 		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))

@@ -74,6 +74,11 @@ export type HttphandlersBuildGetTrackSummaryResponse = {
 
 export type HttphandlersInfoResponse = {
   mapOptions: {
-    pmTilesSources: string[];
+    sources: HttphandlersMapSourceType[];
   };
+};
+
+export type HttphandlersMapSourceType = {
+  name?: string;
+  url?: string;
 };

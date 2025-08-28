@@ -256,13 +256,20 @@ components:
       properties:
         mapOptions:
           properties:
-            pmTilesSources:
+            sources:
               items:
-                type: string
+                $ref: '#/components/schemas/HttphandlersMapSourceType'
               type: array
           required:
-          - pmTilesSources
+          - sources
           type: object
       required:
       - mapOptions
+      type: object
+    HttphandlersMapSourceType:
+      properties:
+        name:
+          type: string
+        url:
+          type: string
       type: object
