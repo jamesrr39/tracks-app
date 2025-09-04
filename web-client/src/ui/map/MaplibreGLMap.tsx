@@ -84,7 +84,7 @@ export function MaplibreGLMap(props: Props) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map>(null);
   const { trackRecords, trackSummary } = props;
-  const pmTilesSource = getPMTilesSource(""); // FIXME
+  const pmTilesSource = getPMTilesSource("/map/pmtiles");
 
   const coordinates = trackRecords.map((record) => {
     return [record.posLong, record.posLat];
@@ -121,7 +121,7 @@ export function MaplibreGLMap(props: Props) {
           version: 8,
           glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
           sources: {
-            "pm_tiles_source": {
+            [PMTILES_SOURCE_NAME]: {
               type: "vector",
               url: `pmtiles://${pmTilesSource.url}`,
               attribution:
