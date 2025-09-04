@@ -11,10 +11,12 @@ import { formatShortDuration, getDurationSeconds } from "../../util/time";
 import { binarySearch, BinarySearchResult } from "../../util/binary_search";
 import { MapTheme } from "./MapThemes";
 import Controls from "./Controls";
-import { PMTiles } from "pmtiles";
 import { getPMTilesSource } from "../../context/PMTilesContext";
+import { AppInfoContext } from "../../context/AppInfoContext";
 
 const DEFAULT_THEME: MapTheme = "light";
+
+const DEFAULT_ROUTE_COLOR = "#f66151";
 
 const ROUTE_LAYER_SOURCE_ID = "route";
 
@@ -80,7 +82,7 @@ function getRoute(
 // https://docs.protomaps.com/pmtiles/maplibre#raster-or-terrain-pmtiles
 
 export function MaplibreGLMap(props: Props) {
-  const [routeColor, setRouteColor] = useState("#f66151");
+  const [routeColor, setRouteColor] = useState(DEFAULT_ROUTE_COLOR);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map>(null);
   const { trackRecords, trackSummary } = props;
@@ -89,6 +91,9 @@ export function MaplibreGLMap(props: Props) {
   const coordinates = trackRecords.map((record) => {
     return [record.posLong, record.posLat];
   });
+
+  const appInfoContext = useContext(AppInfoContext);
+  console.log('map sources', appInfoContext?.mapOptions.sources)
 
   useEffect(() => {
     if (map.current) {
