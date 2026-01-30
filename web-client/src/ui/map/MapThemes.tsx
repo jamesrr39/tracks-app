@@ -1,4 +1,4 @@
 
-export const AVAILABLE_MAP_THEMES = ["light", "dark", "white", "grayscale", "black"];
+export const PROTOMAPS_AVAILABLE_MAP_THEMES = ["light", "dark", "white", "grayscale", "black"];
 
-export type MapTheme = (typeof AVAILABLE_MAP_THEMES)[number];
+export type MapTheme = (typeof PROTOMAPS_AVAILABLE_MAP_THEMES)[number];

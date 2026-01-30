@@ -1,4 +1,11 @@
-import { AVAILABLE_MAP_THEMES } from "./MapThemes";
+import { PROTOMAPS_AVAILABLE_MAP_THEMES } from "./MapThemes";
+
+
+const OPENFREEMAP_STYLE_URLS = [
+  "https://tiles.openfreemap.org/styles/liberty",
+  "https://tiles.openfreemap.org/styles/bright",
+  "https://tiles.openfreemap.org/styles/positron"
+]
 
 const styles = {
     label: {
@@ -15,7 +22,7 @@ type Props = {
 function Controls({ changeMapTheme, routeColor, onRouteColorChange }: Props) {
     return (
         <div className="row">
-            <div className="col-sm-3 row">
+            <div className="col-sm-6 row">
                 <label className="col-form-label" style={styles.label}>
                     Map style
                     <select
@@ -27,13 +34,16 @@ function Controls({ changeMapTheme, routeColor, onRouteColorChange }: Props) {
                             changeMapTheme(value);
                         }}
                     >
-                        {AVAILABLE_MAP_THEMES.map((theme) => (
-                            <option value={theme}>{theme}</option>
+                        {PROTOMAPS_AVAILABLE_MAP_THEMES.map((theme) => (
+                            <option value={theme}>Protomaps: {theme}</option>
+                        ))}
+                        {OPENFREEMAP_STYLE_URLS.map((theme) => (
+                            <option value={theme}>OpenFreeMap: {theme}</option>
                         ))}
                     </select>
                 </label>
             </div>
-            <div className="col-sm-3 row">
+            <div className="col-sm-6 row">
                 <label className="col-form-label" style={styles.label}>
                     Route color
                     <input

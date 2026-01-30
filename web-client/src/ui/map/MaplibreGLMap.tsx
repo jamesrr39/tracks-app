@@ -14,11 +14,31 @@ import Controls from "./Controls";
 import { getPMTilesSource } from "../../context/PMTilesContext";
 import { AppInfoContext } from "../../context/AppInfoContext";
 
-const DEFAULT_THEME: MapTheme = "light";
+const DEFAULT_PROTOMAPS_THEME: MapTheme = "light";
 
 const DEFAULT_ROUTE_COLOR = "#f66151";
 
 const ROUTE_LAYER_SOURCE_ID = "route";
+
+const PMTILES_URL = "/map/pmtiles";
+
+function getProtomapsStyle(selectedTheme: string): maplibregl.StyleSpecification {
+  const pmTilesSource = getPMTilesSource(PMTILES_URL);
+
+  return {
+      version: 8,
+      glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
+      sources: {
+        [PMTILES_SOURCE_NAME]: {
+          type: "vector",
+          url: `pmtiles://${pmTilesSource.url}`,
+          attribution:
+            '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+        },
+      },
+      layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
+    }
+}
 
 const styles = {
   mapWrapper: {
@@ -86,7 +106,7 @@ export function MaplibreGLMap(props: Props) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map>(null);
   const { trackRecords, trackSummary } = props;
-  const pmTilesSource = getPMTilesSource("/map/pmtiles");
+  const pmTilesSource = getPMTilesSource(PMTILES_URL);
 
   const coordinates = trackRecords.map((record) => {
     return [record.posLong, record.posLat];
@@ -122,19 +142,20 @@ export function MaplibreGLMap(props: Props) {
         container: mapContainer.current,
         zoom: h.maxZoom - 2,
         center: [centerLon, centerLat],
-        style: {
-          version: 8,
-          glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
-          sources: {
-            [PMTILES_SOURCE_NAME]: {
-              type: "vector",
-              url: `pmtiles://${pmTilesSource.url}`,
-              attribution:
-                '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-            },
-          },
-          layers: ProtomapLayers(PMTILES_SOURCE_NAME, DEFAULT_THEME),
-        },
+            style: 'https://tiles.openfreemap.org/styles/liberty',
+        // style: {
+        //   version: 8,
+        //   glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
+        //   sources: {
+        //     [PMTILES_SOURCE_NAME]: {
+        //       type: "vector",
+        //       url: `pmtiles://${pmTilesSource.url}`,
+        //       attribution:
+        //         '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+        //     },
+        //   },
+        //   layers: ProtomapLayers(PMTILES_SOURCE_NAME, DEFAULT_THEME),
+        // },
       });
       map.current?.remove();
       map.current = maplibreMap;
@@ -159,19 +180,7 @@ export function MaplibreGLMap(props: Props) {
       return;
     }
 
-    maplibreMap.setStyle({
-      version: 8,
-      glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
-      sources: {
-        [PMTILES_SOURCE_NAME]: {
-          type: "vector",
-          url: `pmtiles://${pmTilesSource.url}`,
-          attribution:
-            '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        },
-      },
-      layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
-    });
+    maplibreMap.setStyle(getProtomapsStyle(selectedTheme));
 
     changeRouteColor(routeColor);
   };
@@ -191,6 +200,28 @@ export function MaplibreGLMap(props: Props) {
     maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
     maplibreMap.addLayer(route.layer);
   };
+
+  // const changeMapData = (selectedMapData: MAP_DATA_SOURCE) => {
+  //   const maplibreMap = map.current;
+  //   if (!maplibreMap) {
+  //     return;
+  //   }
+
+  //   if (!pmTilesSource) {
+  //     return;
+  //   }
+
+  //   switch (selectedMapData) {
+  //     case 'protomaps': 
+  //       maplibreMap.setStyle(getProtomapsStyle(DEFAULT_PROTOMAPS_THEME));
+  //       break;
+  //     case 'openfreemaps':
+  //       maplibreMap.setStyle('https://tiles.openfreemap.org/styles/liberty');
+  //       break;
+  //   }
+
+  //   changeRouteColor(routeColor);
+  // }
 
   return (
     <div style={styles.mapWrapper}>
