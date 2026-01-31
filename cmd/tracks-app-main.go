@@ -28,6 +28,7 @@ import (
 	"github.com/jamesrr39/goutil/userextra"
 	"github.com/jamesrr39/tracks-app/server/dal"
 	"github.com/jamesrr39/tracks-app/server/diskcache"
+	"github.com/jamesrr39/tracks-app/server/domain"
 	"github.com/jamesrr39/tracks-app/server/externalservices/overpass"
 	"github.com/jamesrr39/tracks-app/server/httphandlers"
 
@@ -61,7 +62,7 @@ func setupGenerateOpenapiSpec() {
 	format := cmd.Flag("format", "output format").Short('F').Default(SpecFormatYAML).Enum(SpecFormatYAML, SpecFormatJSON, SpecFormatJSONPretty)
 	outputFilePath := cmd.Flag("output", "").Short('O').Default(os.Stdout.Name()).String()
 	cmd.Action(func(pc *kingpin.ParseContext) error {
-		apiSchema, _ := createAPIRouter(&dal.FitDAL{}, "")
+		apiSchema, _ := createAPIRouter(&dal.FitDAL{}, &dal.CustomMapsDAL{}, "")
 		spec := apiSchema.Reflector().Spec
 
 		specMarshalFuncMap := map[string]func() ([]byte, error){
@@ -94,6 +95,7 @@ func setupGenerateOpenapiSpec() {
 func setupServe() {
 	cmd := app.Command("serve", "")
 	rootDir := cmd.Arg("rootDir", "directory that all tracks can be found under").Required().String()
+	customMapsBasePath := cmd.Flag("custom-maps-dir", "directory that custom maps can be found under").Default("").String()
 	unexpandedCachesDir := cmd.Flag("caches-dir", "directory to store the caches in").Default("~/.cache/github.com/jamesrr39/tracks-app").String()
 	addr := cmd.Flag("addr", "address and port to serve on. ':8090' = to everyone on port 8090. 'localhost:8090' = to only localhost on 8090").Default("localhost:8090").String()
 	overpassApiBaseURL := cmd.Flag("overpass-api-base-url", "Supply a URL for your own instance of the Overpass API server, if you prefer to use your own.").Default(overpass.DefaultOverpassAPIBaseURL).String()
@@ -122,7 +124,15 @@ func setupServe() {
 			return errorsx.ErrWithStack(errorsx.Wrap(err, "root directory", *rootDir))
 		}
 
-		r, _ := createRouter(fitDAL, *pmtilesMapFilePath)
+		customMapsDAL := &dal.CustomMapsDAL{Maps: []domain.CustomMapMetadata{}}
+		if *customMapsBasePath != "" {
+			customMapsDAL, err = dal.NewCustomMapsDALAndScan(*customMapsBasePath)
+			if err != nil {
+				return errorsx.ErrWithStack(errorsx.Wrap(err, "customMapsBasePath", *customMapsBasePath))
+			}
+		}
+
+		r, _ := createRouter(fitDAL, customMapsDAL, *pmtilesMapFilePath)
 
 		r.Mount("/", httphandlers.NewClientHandler())
 
@@ -147,7 +157,7 @@ func setupServe() {
 
 const ApiRouterBaseURL = "/api"
 
-func createAPIRouter(fitDAL *dal.FitDAL, pmtilesFilePath string) (*openapi.Collector, *chirouter.Wrapper) {
+func createAPIRouter(fitDAL *dal.FitDAL, customMapsDAL *dal.CustomMapsDAL, pmtilesFilePath string) (*openapi.Collector, *chirouter.Wrapper) {
 	apiSchema := &openapi.Collector{}
 	apiSchema.Reflector().SpecEns().Info.Title = "Tracks"
 	apiSchema.Reflector().SpecEns().Info.WithDescription("REST API definitions for Tracks App")
@@ -182,6 +192,7 @@ func createAPIRouter(fitDAL *dal.FitDAL, pmtilesFilePath string) (*openapi.Colle
 		openapix.Get(r, "/tracks/{path}/parsed/gpx", httphandlers.BuildGetParsedGpxFile(fitDAL))
 		openapix.Get(r, "/tracks/{path}/parsed/fit", httphandlers.BuildGetParsedFitFile(fitDAL))
 		openapix.Get(r, "/tracks/{path}/raw", httphandlers.BuildGetRawFile(fitDAL))
+		openapix.Get(r, "/custom-maps", httphandlers.BuildGetCustomMaps(customMapsDAL))
 	})
 
 	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)
@@ -197,13 +208,13 @@ func mustCheckFileExists(pmtilesMapFilePath string) {
 	}
 }
 
-func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wrapper, *openapi.Collector) {
+func createRouter(fitDAL *dal.FitDAL, customMapsDAL *dal.CustomMapsDAL, pmtilesMapFilePath string) (*chirouter.Wrapper, *openapi.Collector) {
 
 	if pmtilesMapFilePath != "" {
 		mustCheckFileExists(pmtilesMapFilePath)
 	}
 
-	apiSchema, apiRouter := createAPIRouter(fitDAL, pmtilesMapFilePath)
+	apiSchema, apiRouter := createAPIRouter(fitDAL, customMapsDAL, pmtilesMapFilePath)
 
 	rootRouter := chirouter.NewWrapper(chi.NewRouter())
 
@@ -228,6 +239,7 @@ func createRouter(fitDAL *dal.FitDAL, pmtilesMapFilePath string) (*chirouter.Wra
 	rootRouter.Route("/map", func(r chi.Router) {
 		r.Handle("/pmtiles-basemap-assets/fonts/*", http.StripPrefix("/map/pmtiles-basemap-assets/fonts/", httphandlers.BuildGetPMTilesBasemapAssets()))
 		r.Get("/pmtiles", httphandlers.BuildGetPMTilesMapData(pmtilesMapFilePath))
+		r.Get(fmt.Sprintf("%s/{encodedName}", httphandlers.CustomMapBasePath), httphandlers.BuildGetCustomMap(customMapsDAL))
 	})
 
 	return rootRouter, apiSchema
