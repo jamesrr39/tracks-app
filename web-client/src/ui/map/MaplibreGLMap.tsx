@@ -185,6 +185,7 @@ export function MaplibreGLMap(props: Props) {
     if (!selectedTheme) {
       throw new Error(`no theme found for selectedThemeName "${selectedThemeName}"`);
     }
+    console.log('setting style', selectedTheme)
     maplibreMap.setStyle((selectedTheme.specification));
 
     changeRouteColor(routeColor);
@@ -258,10 +259,10 @@ function createMapChoices(customMaps: HttphandlersGetCustomMapsResponse['customM
             type: 'image',
             url: customMap.link,
             coordinates: [
-              [customMap.bounds.maxLat, customMap.bounds.minLon],
-              [customMap.bounds.maxLat, customMap.bounds.maxLon],
-              [customMap.bounds.minLat, customMap.bounds.maxLon],
-              [customMap.bounds.minLat, customMap.bounds.minLon],
+              [customMap.bounds.minLon, customMap.bounds.maxLat],
+              [customMap.bounds.maxLon, customMap.bounds.maxLat],
+              [customMap.bounds.maxLon, customMap.bounds.minLat],
+              [customMap.bounds.minLon, customMap.bounds.minLat],
             ]
           }
         },
@@ -272,7 +273,7 @@ function createMapChoices(customMaps: HttphandlersGetCustomMapsResponse['customM
             type: 'raster',
             source: 'overlay-image',
             paint: {
-              'raster-opacity': 0.5
+              'raster-opacity': 0.8
             }
           }
         ]
