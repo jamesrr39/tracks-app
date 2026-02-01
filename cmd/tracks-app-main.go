@@ -239,7 +239,7 @@ func createRouter(fitDAL *dal.FitDAL, customMapsDAL *dal.CustomMapsDAL, pmtilesM
 	rootRouter.Route("/map", func(r chi.Router) {
 		r.Handle("/pmtiles-basemap-assets/fonts/*", http.StripPrefix("/map/pmtiles-basemap-assets/fonts/", httphandlers.BuildGetPMTilesBasemapAssets()))
 		r.Get("/pmtiles", httphandlers.BuildGetPMTilesMapData(pmtilesMapFilePath))
-		r.Get(fmt.Sprintf("%s/{encodedName}", httphandlers.CustomMapBasePath), httphandlers.BuildGetCustomMap(customMapsDAL))
+		r.Get("/custom-map/{encodedName}", httphandlers.BuildGetCustomMap(customMapsDAL))
 	})
 
 	return rootRouter, apiSchema

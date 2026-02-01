@@ -37,7 +37,7 @@ func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL) *nethttp.Handler {
 						Bounds:          customMap.Bounds,
 						ReferencePoints: customMap.ReferencePoints,
 					},
-					Link: fmt.Sprintf("/map/%s/%s", CustomMapBasePath, url.PathEscape(customMap.Name)),
+					Link: fmt.Sprintf("/map/custom-map/%s", url.PathEscape(customMap.Name)),
 				}
 
 				output.CustomMaps = append(output.CustomMaps, m)
@@ -47,8 +47,6 @@ func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL) *nethttp.Handler {
 		},
 	)
 }
-
-const CustomMapBasePath = "/custom-map"
 
 func BuildGetCustomMap(customMapsDAL *dal.CustomMapsDAL) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
