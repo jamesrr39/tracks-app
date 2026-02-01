@@ -10,6 +10,18 @@ export type DomainActivityBounds = {
   longMin: number;
 };
 
+export type DomainBounds = {
+  maxLat: number;
+  maxLon: number;
+  minLat: number;
+  minLon: number;
+};
+
+export type DomainGPSLocation = {
+  lat: number;
+  lon: number;
+};
+
 export type DomainGeoFileSummary = {
   activityBounds: DomainActivityBounds;
   activityType: string;
@@ -29,6 +41,11 @@ export type DomainGeoFileSummary = {
   totalDistance: number;
 };
 
+export type DomainPoint = {
+  x: number;
+  y: number;
+};
+
 export type DomainRecord = {
   altitude: number | null;
   distance: number;
@@ -46,6 +63,11 @@ export type DomainRecord = {
    * @format date-time
    */
   timestamp: string;
+};
+
+export type DomainReferencePoint = {
+  imageCoords: DomainPoint;
+  location: DomainGPSLocation;
 };
 
 export type FitFile = Record<string, any>;
@@ -70,6 +92,17 @@ export type HttphandlersBuildGetTrackDetailResponse = {
 
 export type HttphandlersBuildGetTrackSummaryResponse = {
   trackSummary: DomainGeoFileSummary;
+};
+
+export type HttphandlersCustomMap = {
+  bounds: DomainBounds;
+  link: string;
+  name: string;
+  referencePoints: DomainReferencePoint[];
+};
+
+export type HttphandlersGetCustomMapsResponse = {
+  customMaps: HttphandlersCustomMap[];
 };
 
 export type HttphandlersInfoResponse = {

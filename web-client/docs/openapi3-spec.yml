@@ -7,6 +7,17 @@ servers:
 - description: API server
   url: /api
 paths:
+  /v1/custom-maps:
+    get:
+      operationId: getCustomMaps
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersGetCustomMapsResponse'
+          description: OK
+      summary: Get custom maps
   /v1/info:
     get:
       operationId: getServiceInfo
@@ -140,6 +151,32 @@ components:
       - longMin
       - longMax
       type: object
+    DomainBounds:
+      properties:
+        maxLat:
+          type: number
+        maxLon:
+          type: number
+        minLat:
+          type: number
+        minLon:
+          type: number
+      required:
+      - minLat
+      - maxLat
+      - minLon
+      - maxLon
+      type: object
+    DomainGPSLocation:
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+      required:
+      - lat
+      - lon
+      type: object
     DomainGeoFileSummary:
       properties:
         activityBounds:
@@ -179,6 +216,16 @@ components:
       - activityBounds
       - activityType
       type: object
+    DomainPoint:
+      properties:
+        x:
+          type: number
+        "y":
+          type: number
+      required:
+      - x
+      - "y"
+      type: object
     DomainRecord:
       properties:
         altitude:
@@ -208,6 +255,16 @@ components:
       - distance
       - altitude
       - power
+      type: object
+    DomainReferencePoint:
+      properties:
+        imageCoords:
+          $ref: '#/components/schemas/DomainPoint'
+        location:
+          $ref: '#/components/schemas/DomainGPSLocation'
+      required:
+      - imageCoords
+      - location
       type: object
     FitFile:
       type: object
@@ -251,6 +308,33 @@ components:
           $ref: '#/components/schemas/DomainGeoFileSummary'
       required:
       - trackSummary
+      type: object
+    HttphandlersCustomMap:
+      properties:
+        bounds:
+          $ref: '#/components/schemas/DomainBounds'
+        link:
+          type: string
+        name:
+          type: string
+        referencePoints:
+          items:
+            $ref: '#/components/schemas/DomainReferencePoint'
+          type: array
+      required:
+      - name
+      - bounds
+      - referencePoints
+      - link
+      type: object
+    HttphandlersGetCustomMapsResponse:
+      properties:
+        customMaps:
+          items:
+            $ref: '#/components/schemas/HttphandlersCustomMap'
+          type: array
+      required:
+      - customMaps
       type: object
     HttphandlersInfoResponse:
       properties:

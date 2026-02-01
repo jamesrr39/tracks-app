@@ -1,20 +1,28 @@
 import maplibregl, { Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   DomainGeoFileSummary,
   DomainRecord,
 } from "../../openapi/generated/tracksAppSchemas";
-
+import { layers, namedFlavor } from '@protomaps/basemaps';
 import ProtomapLayers from "protomaps-themes-base";
 import { formatShortDuration, getDurationSeconds } from "../../util/time";
 import { binarySearch, BinarySearchResult } from "../../util/binary_search";
-import { MapTheme } from "./MapThemes";
-import Controls from "./Controls";
+import { ProtomapsMapTheme, PROTOMAPS_AVAILABLE_MAP_THEMES } from "./MapThemes";
+import Controls, { MapChoice } from "./Controls";
 import { getPMTilesSource } from "../../context/PMTilesContext";
 import { AppInfoContext } from "../../context/AppInfoContext";
+import { useGetCustomMaps } from "../../openapi/generated/tracksAppComponents";
+import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
 
-const DEFAULT_PROTOMAPS_THEME: MapTheme = "light";
+const OPENFREEMAP_STYLES = [
+  {name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty"},
+  {name: 'Bright', url: "https://tiles.openfreemap.org/styles/bright"},
+  {name: 'Positron', url: "https://tiles.openfreemap.org/styles/positron"},
+];
+
+const DEFAULT_PROTOMAPS_THEME: ProtomapsMapTheme = "light";
 
 const DEFAULT_ROUTE_COLOR = "#f66151";
 
@@ -22,8 +30,10 @@ const ROUTE_LAYER_SOURCE_ID = "route";
 
 const PMTILES_URL = "/map/pmtiles";
 
-function getProtomapsStyle(selectedTheme: string): maplibregl.StyleSpecification {
+function getProtomapsStyle(selectedTheme: ProtomapsMapTheme): maplibregl.StyleSpecification {
   const pmTilesSource = getPMTilesSource(PMTILES_URL);
+
+  console.log('selectedTheme', selectedTheme)
 
   return {
       version: 8,
@@ -36,7 +46,8 @@ function getProtomapsStyle(selectedTheme: string): maplibregl.StyleSpecification
             '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
         },
       },
-      layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
+      // layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
+      layers: layers(PMTILES_SOURCE_NAME, namedFlavor(selectedTheme), {lang: "en"})
     }
 }
 
@@ -114,6 +125,9 @@ export function MaplibreGLMap(props: Props) {
 
   const appInfoContext = useContext(AppInfoContext);
   console.log('map sources', appInfoContext?.mapOptions.sources)
+  const {data: customMapsResponse, isLoading, error} = useGetCustomMaps({})
+
+  const mapThemes = useMemo(() => createMapChoices(customMapsResponse?.customMaps || []), [customMapsResponse])
 
   useEffect(() => {
     if (map.current) {
@@ -143,19 +157,6 @@ export function MaplibreGLMap(props: Props) {
         zoom: h.maxZoom - 2,
         center: [centerLon, centerLat],
             style: 'https://tiles.openfreemap.org/styles/liberty',
-        // style: {
-        //   version: 8,
-        //   glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
-        //   sources: {
-        //     [PMTILES_SOURCE_NAME]: {
-        //       type: "vector",
-        //       url: `pmtiles://${pmTilesSource.url}`,
-        //       attribution:
-        //         '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        //     },
-        //   },
-        //   layers: ProtomapLayers(PMTILES_SOURCE_NAME, DEFAULT_THEME),
-        // },
       });
       map.current?.remove();
       map.current = maplibreMap;
@@ -168,9 +169,9 @@ export function MaplibreGLMap(props: Props) {
         addMarkers(maplibreMap, trackSummary, trackRecords);
       });
     });
-  }, []);
+  }, [map, mapContainer, pmTilesSource]);
 
-  const changeMapTheme = (selectedTheme: string) => {
+  const changeMapTheme = (selectedThemeName: string) => {
     const maplibreMap = map.current;
     if (!maplibreMap) {
       return;
@@ -180,7 +181,11 @@ export function MaplibreGLMap(props: Props) {
       return;
     }
 
-    maplibreMap.setStyle(getProtomapsStyle(selectedTheme));
+    const selectedTheme = mapThemes.find(theme => theme.name === selectedThemeName);
+    if (!selectedTheme) {
+      throw new Error(`no theme found for selectedThemeName "${selectedThemeName}"`);
+    }
+    maplibreMap.setStyle((selectedTheme.specification));
 
     changeRouteColor(routeColor);
   };
@@ -201,27 +206,17 @@ export function MaplibreGLMap(props: Props) {
     maplibreMap.addLayer(route.layer);
   };
 
-  // const changeMapData = (selectedMapData: MAP_DATA_SOURCE) => {
-  //   const maplibreMap = map.current;
-  //   if (!maplibreMap) {
-  //     return;
-  //   }
+  if (error) {
+    return <p>Error</p>
+  }
 
-  //   if (!pmTilesSource) {
-  //     return;
-  //   }
+  if (isLoading) {
+    return <p>Loading...</p>
+  }
 
-  //   switch (selectedMapData) {
-  //     case 'protomaps': 
-  //       maplibreMap.setStyle(getProtomapsStyle(DEFAULT_PROTOMAPS_THEME));
-  //       break;
-  //     case 'openfreemaps':
-  //       maplibreMap.setStyle('https://tiles.openfreemap.org/styles/liberty');
-  //       break;
-  //   }
-
-  //   changeRouteColor(routeColor);
-  // }
+  if (!customMapsResponse) {
+    return null;
+  }
 
   return (
     <div style={styles.mapWrapper}>
@@ -232,10 +227,61 @@ export function MaplibreGLMap(props: Props) {
           setRouteColor(value)
           changeRouteColor(value);
         }}
+        maps={mapThemes}
       />
       <div ref={mapContainer} style={styles.map} />
     </div>
   );
+}
+
+function createMapChoices(customMaps: HttphandlersGetCustomMapsResponse['customMaps']) {
+
+  const mapChoices: MapChoice[] = []
+  PROTOMAPS_AVAILABLE_MAP_THEMES.map(theme => {
+    mapChoices.push({
+      name: `Protomaps - ${theme}`,
+      specification: getProtomapsStyle(theme)
+    });
+  }); // TODO don't add protomaps choice if no protomaps source
+  OPENFREEMAP_STYLES.map(openFreeMapStyle => {
+    mapChoices.push({
+      name: `OpenFreeMap - ${openFreeMapStyle.name}`,
+      specification: openFreeMapStyle.url,
+    })
+  })
+  customMaps.map(customMap => {
+    mapChoices.push({
+      name: `Custom map - ${customMap.name}`,
+      specification: {
+        sources: {
+          "overlay-image": {
+            type: 'image',
+            url: customMap.link,
+            coordinates: [
+              [customMap.bounds.maxLat, customMap.bounds.minLon],
+              [customMap.bounds.maxLat, customMap.bounds.maxLon],
+              [customMap.bounds.minLat, customMap.bounds.maxLon],
+              [customMap.bounds.minLat, customMap.bounds.minLon],
+            ]
+          }
+        },
+        version: 8,
+        layers: [
+          {
+            id: 'overlay',
+            type: 'raster',
+            source: 'overlay-image',
+            paint: {
+              'raster-opacity': 0.5
+            }
+          }
+        ]
+      } // TODO layer as well?
+    })
+  })
+
+  return mapChoices;
+
 }
 
 const addMarkers = (maplibreMap: maplibregl.Map, trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {

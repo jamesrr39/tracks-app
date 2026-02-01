@@ -1000,6 +1000,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@protomaps/basemaps@npm:^5.7.0":
+  version: 5.7.0
+  resolution: "@protomaps/basemaps@npm:5.7.0"
+  bin:
+    generate_style: src/cli.ts
+  checksum: 10c0/196649732fe8c4e77fca7610a13ce79a58004a4c5d2d75fe939f2c0232c8d34511788f5f567fdf8a262883cdf79aa0782a14c5b65be56b782f52f184dc63542c
+  languageName: node
+  linkType: hard
+
 "@rollup/pluginutils@npm:^4.1.1, @rollup/pluginutils@npm:^4.2.1":
   version: 4.2.1
   resolution: "@rollup/pluginutils@npm:4.2.1"
@@ -4707,6 +4716,7 @@ __metadata:
     "@openapi-codegen/cli": "npm:^2.0.2"
     "@openapi-codegen/typescript": "npm:^8.0.2"
     "@preact/preset-vite": "npm:^2.8.3"
+    "@protomaps/basemaps": "npm:^5.7.0"
     "@tanstack/react-query": "npm:^5.51.21"
     "@types/babel__core": "npm:^7"
     "@types/bootstrap": "npm:^5"

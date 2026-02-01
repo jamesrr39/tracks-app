@@ -21,29 +21,8 @@ type GetCustomMapsResponse struct {
 
 type CustomMap struct {
 	domain.CustomMapMetadata
-	// Name            string                  `json:"name"` // Taken from filename
-	// Bounds          domain.Bounds           `json:"bounds" nullable:"false" required:"true"`
-	// ReferencePoints []domain.ReferencePoint `json:"referencePoints" nullable:"false" required:"true"`
-	Link string `json:"link"`
+	Link string `json:"link" required:"true"`
 }
-
-// type Bounds struct {
-// 	MinLatitude  float64 `json:"minLatitude"`
-// 	MaxLatitude  float64 `json:"maxLatitude"`
-// 	MinLongitude float64 `json:"minLongitude"`
-// 	MaxLongitude float64 `json:"maxLongitude"`
-// }
-
-// type ImageCoords struct {
-// 	X int `json:"x"`
-// 	Y int `json:"y"`
-// }
-
-// type ReferencePoint struct {
-// 	// imageCoords imageCoords
-// 	ImageCoords ImageCoords `json:"imageCoords"` // top-left of image = 0,0
-// 	Location    Location    `json:"location"`
-// }
 
 func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL) *nethttp.Handler {
 	return openapix.MustCreateOpenapiEndpoint(

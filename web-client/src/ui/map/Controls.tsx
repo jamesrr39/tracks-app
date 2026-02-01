@@ -1,3 +1,4 @@
+import { HttphandlersCustomMap } from "../../openapi/generated/tracksAppSchemas";
 import { PROTOMAPS_AVAILABLE_MAP_THEMES } from "./MapThemes";
 
 
@@ -16,10 +17,17 @@ const styles = {
 type Props = {
     changeMapTheme: (value: string) => void
     routeColor: string
-    onRouteColorChange: (value: string) => void
+    onRouteColorChange: (value: string) => void,
+    // customMaps: HttphandlersCustomMap[]
+    maps: MapChoice[]
 }
 
-function Controls({ changeMapTheme, routeColor, onRouteColorChange }: Props) {
+export type MapChoice = {
+    name: string,
+    specification: maplibregl.StyleSpecification | string // if string, should be a URL to the style definition
+}
+
+function Controls({ changeMapTheme, routeColor, onRouteColorChange, maps }: Props) {
     return (
         <div className="row">
             <div className="col-sm-6 row">
@@ -34,12 +42,16 @@ function Controls({ changeMapTheme, routeColor, onRouteColorChange }: Props) {
                             changeMapTheme(value);
                         }}
                     >
-                        {PROTOMAPS_AVAILABLE_MAP_THEMES.map((theme) => (
+                        {maps.map(map => <option value={map.name}>{map.name}</option>)}
+                        {/* {PROTOMAPS_AVAILABLE_MAP_THEMES.map((theme) => (
                             <option value={theme}>Protomaps: {theme}</option>
                         ))}
                         {OPENFREEMAP_STYLE_URLS.map((theme) => (
                             <option value={theme}>OpenFreeMap: {theme}</option>
                         ))}
+                        {maps.map(customMap => (
+                            <option value={customMap.name}>Custom map: {customMap.name}</option>
+                        ))} */}
                     </select>
                 </label>
             </div>

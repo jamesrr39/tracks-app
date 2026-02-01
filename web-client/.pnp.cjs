@@ -32,6 +32,7 @@ const RAW_RUNTIME_STATE =
           ["@openapi-codegen/cli", "npm:2.0.2"],\
           ["@openapi-codegen/typescript", "npm:8.0.2"],\
           ["@preact/preset-vite", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.9.0"],\
+          ["@protomaps/basemaps", "npm:5.7.0"],\
           ["@tanstack/react-query", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.51.21"],\
           ["@types/babel__core", "npm:7.20.5"],\
           ["@types/bootstrap", "npm:5.2.10"],\
@@ -1337,6 +1338,15 @@ const RAW_RUNTIME_STATE =
           "@types/vite",\
           "preact",\
           "vite"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@protomaps/basemaps", [\
+      ["npm:5.7.0", {\
+        "packageLocation": "./.yarn/berry/cache/@protomaps-basemaps-npm-5.7.0-beddea9339-10c0.zip/node_modules/@protomaps/basemaps/",\
+        "packageDependencies": [\
+          ["@protomaps/basemaps", "npm:5.7.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -5581,6 +5591,7 @@ const RAW_RUNTIME_STATE =
           ["@openapi-codegen/cli", "npm:2.0.2"],\
           ["@openapi-codegen/typescript", "npm:8.0.2"],\
           ["@preact/preset-vite", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:2.9.0"],\
+          ["@protomaps/basemaps", "npm:5.7.0"],\
           ["@tanstack/react-query", "virtual:9c02daebcfe9b0a9ebf908146fe59551e75e92469383ca971f7a96d4638bb2d1be3ac3725f87071db094da7fcbab266c6e22c023b019cda5b194dd331ae83670#npm:5.51.21"],\
           ["@types/babel__core", "npm:7.20.5"],\
           ["@types/bootstrap", "npm:5.2.10"],\

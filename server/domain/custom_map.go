@@ -8,26 +8,26 @@ import (
 const CustomMapMetadataFileSuffix = ".custom_map_metadata.json"
 
 type CustomMapMetadata struct {
-	Name            string           `json:"name"` // Taken from filename
+	Name            string           `json:"name" required:"true"` // Taken from filename
 	Bounds          Bounds           `json:"bounds" nullable:"false" required:"true"`
 	ReferencePoints []ReferencePoint `json:"referencePoints" nullable:"false" required:"true"`
 }
 
 type Bounds struct {
-	MinLatitude  float64 `json:"minLat"`
-	MaxLatitude  float64 `json:"maxLat"`
-	MinLongitude float64 `json:"minLon"`
-	MaxLongitude float64 `json:"maxLon"`
+	MinLatitude  float64 `json:"minLat" required:"true"`
+	MaxLatitude  float64 `json:"maxLat" required:"true"`
+	MinLongitude float64 `json:"minLon" required:"true"`
+	MaxLongitude float64 `json:"maxLon" required:"true"`
 }
 
 type ReferencePoint struct {
-	ImageCoords Point       `json:"imageCoords"` // top-left of image = 0,0
-	Location    GPSLocation `json:"location"`
+	ImageCoords Point       `json:"imageCoords" required:"true"` // top-left of image = 0,0
+	Location    GPSLocation `json:"location" required:"true"`
 }
 
 type GPSLocation struct {
-	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
+	Lat float64 `json:"lat" required:"true"`
+	Lon float64 `json:"lon" required:"true"`
 }
 
 func (metadata CustomMapMetadata) CalculateMapBounds(img image.Rectangle) Bounds {
@@ -55,8 +55,8 @@ func (metadata CustomMapMetadata) CalculateMapBounds(img image.Rectangle) Bounds
 }
 
 type Point struct {
-	X float64
-	Y float64
+	X float64 `json:"x" required:"true"`
+	Y float64 `json:"y" required:"true"`
 }
 
 // CalculateGPSBounds calculates the GPS bounding box of an image given two reference points
