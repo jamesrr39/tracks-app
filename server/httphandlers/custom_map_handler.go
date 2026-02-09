@@ -2,7 +2,6 @@ package httphandlers
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -15,16 +14,22 @@ import (
 	"github.com/swaggest/rest/nethttp"
 )
 
+type mapSourceType struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
 type GetCustomMapsResponse struct {
-	CustomMaps []CustomMap `json:"customMaps" nullable:"false" required:"true"`
+	PMTiles     []mapSourceType `json:"pmTiles" nullable:"false" required:"true"`
+	OpenFreeMap []mapSourceType `json:"openFreeMap" nullable:"false" required:"true"`
+	CustomMaps  []CustomMap     `json:"customMaps" nullable:"false" required:"true"`
 }
 
 type CustomMap struct {
 	domain.CustomMapMetadata
-	Link string `json:"link" required:"true"`
 }
 
-func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL) *nethttp.Handler {
+func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL, pmtilesUrl string) *nethttp.Handler {
 	return openapix.MustCreateOpenapiEndpoint(
 		"Get custom maps",
 		&openapix.HandlerOptions{},
@@ -37,10 +42,21 @@ func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL) *nethttp.Handler {
 						Bounds:          customMap.Bounds,
 						ReferencePoints: customMap.ReferencePoints,
 					},
-					Link: fmt.Sprintf("/map/custom-map/%s", url.PathEscape(customMap.Name)),
 				}
 
 				output.CustomMaps = append(output.CustomMaps, m)
+			}
+
+			output.OpenFreeMap = append(output.OpenFreeMap, []mapSourceType{
+				{Name: "OpenFreeMap - Positron", URL: "https://tiles.openfreemap.org/styles/positron"},
+				{Name: "OpenFreeMap - Bright", URL: "https://tiles.openfreemap.org/styles/bright"},
+				{Name: "OpenFreeMap - Liberty", URL: "https://tiles.openfreemap.org/styles/liberty"},
+			}...)
+
+			if pmtilesUrl != "" {
+				output.PMTiles = append(output.PMTiles, mapSourceType{
+					Name: "Promomaps", URL: pmtilesUrl,
+				})
 			}
 
 			return nil

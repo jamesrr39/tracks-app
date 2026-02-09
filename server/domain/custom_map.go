@@ -32,24 +32,10 @@ type GPSLocation struct {
 
 func (metadata CustomMapMetadata) CalculateMapBounds(img image.Rectangle) Bounds {
 	imgSize := Point{X: float64(img.Max.X), Y: float64(img.Max.Y)}
-	imgPt1 := Point{
-		X: float64(metadata.ReferencePoints[0].ImageCoords.X),
-		Y: float64(metadata.ReferencePoints[0].ImageCoords.Y),
-	}
-	imgPt2 := Point{
-		X: float64(metadata.ReferencePoints[1].ImageCoords.X),
-		Y: float64(metadata.ReferencePoints[1].ImageCoords.Y),
-	}
+	imgPt1 := metadata.ReferencePoints[0].ImageCoords
+	imgPt2 := metadata.ReferencePoints[1].ImageCoords
 	gpsPt1 := metadata.ReferencePoints[0].Location
 	gpsPt2 := metadata.ReferencePoints[1].Location
-	// gpsPt1 := GPS{
-	// 	Lat: metadata.ReferencePoints[0].Location.Lat,
-	// 	Lon: metadata.ReferencePoints[0].Location.Lon,
-	// }
-	// gpsPt2 := GPS{
-	// 	Lat: metadata.ReferencePoints[1].Location.Lat,
-	// 	Lon: metadata.ReferencePoints[1].Location.Lon,
-	// }
 
 	return CalculateGPSBounds(imgSize, imgPt1, imgPt2, gpsPt1, gpsPt2)
 }

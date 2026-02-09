@@ -36,8 +36,8 @@ import (
 )
 
 var (
-	AppVersion = "dev"
-	app        *kingpin.Application
+	version = "dev"
+	app     *kingpin.Application
 )
 
 func main() {
@@ -164,7 +164,7 @@ func createAPIRouter(fitDAL *dal.FitDAL, customMapsDAL *dal.CustomMapsDAL, pmtil
 
 	serverDesc := "API server"
 
-	apiSchema.Reflector().SpecEns().Info.Version = AppVersion
+	apiSchema.Reflector().SpecEns().Info.Version = version
 	apiSchema.Reflector().Spec.Servers = append(apiSchema.Reflector().Spec.Servers, openapi3.Server{
 		URL:         "/api",
 		Description: &serverDesc,
@@ -185,14 +185,14 @@ func createAPIRouter(fitDAL *dal.FitDAL, customMapsDAL *dal.CustomMapsDAL, pmtil
 	)
 
 	apiRouter.Route("/v1", func(r chi.Router) {
-		openapix.Get(r, "/info", httphandlers.BuildGetInfo(pmtilesFilePath))
+		openapix.Get(r, "/info", httphandlers.BuildGetInfo(version))
 		openapix.Get(r, "/tracks", httphandlers.BuildGetAllSummaries(fitDAL))
 		openapix.Get(r, "/tracks/{path}", httphandlers.BuildGetTrackSummary(fitDAL))
 		openapix.Get(r, "/tracks/{path}/records", httphandlers.BuildGetTrackRecords(fitDAL))
 		openapix.Get(r, "/tracks/{path}/parsed/gpx", httphandlers.BuildGetParsedGpxFile(fitDAL))
 		openapix.Get(r, "/tracks/{path}/parsed/fit", httphandlers.BuildGetParsedFitFile(fitDAL))
 		openapix.Get(r, "/tracks/{path}/raw", httphandlers.BuildGetRawFile(fitDAL))
-		openapix.Get(r, "/custom-maps", httphandlers.BuildGetCustomMaps(customMapsDAL))
+		openapix.Get(r, "/maps", httphandlers.BuildGetCustomMaps(customMapsDAL, pmtilesFilePath))
 	})
 
 	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)
