@@ -29,9 +29,9 @@ type CustomMap struct {
 	domain.CustomMapMetadata
 }
 
-func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL, pmtilesUrl string) *nethttp.Handler {
+func BuildGetMaps(customMapsDAL *dal.CustomMapsDAL, pmtilesUrl string) *nethttp.Handler {
 	return openapix.MustCreateOpenapiEndpoint(
-		"Get custom maps",
+		"Get maps",
 		&openapix.HandlerOptions{},
 		func(ctx context.Context, input *EmptyStruct, output *GetCustomMapsResponse) error {
 			output.CustomMaps = []CustomMap{}
@@ -52,6 +52,8 @@ func BuildGetCustomMaps(customMapsDAL *dal.CustomMapsDAL, pmtilesUrl string) *ne
 				{Name: "OpenFreeMap - Bright", URL: "https://tiles.openfreemap.org/styles/bright"},
 				{Name: "OpenFreeMap - Liberty", URL: "https://tiles.openfreemap.org/styles/liberty"},
 			}...)
+
+			output.PMTiles = []mapSourceType{}
 
 			if pmtilesUrl != "" {
 				output.PMTiles = append(output.PMTiles, mapSourceType{

@@ -7,17 +7,6 @@ servers:
 - description: API server
   url: /api
 paths:
-  /v1/custom-maps:
-    get:
-      operationId: getCustomMaps
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HttphandlersGetCustomMapsResponse'
-          description: OK
-      summary: Get custom maps
   /v1/info:
     get:
       operationId: getServiceInfo
@@ -29,6 +18,17 @@ paths:
                 $ref: '#/components/schemas/HttphandlersInfoResponse'
           description: OK
       summary: Get service info
+  /v1/maps:
+    get:
+      operationId: getMaps
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersGetCustomMapsResponse'
+          description: OK
+      summary: Get maps
   /v1/tracks:
     get:
       operationId: getAllTrackSummaries
@@ -313,8 +313,6 @@ components:
       properties:
         bounds:
           $ref: '#/components/schemas/DomainBounds'
-        link:
-          type: string
         name:
           type: string
         referencePoints:
@@ -325,7 +323,6 @@ components:
       - name
       - bounds
       - referencePoints
-      - link
       type: object
     HttphandlersGetCustomMapsResponse:
       properties:
@@ -333,22 +330,25 @@ components:
           items:
             $ref: '#/components/schemas/HttphandlersCustomMap'
           type: array
+        openFreeMap:
+          items:
+            $ref: '#/components/schemas/HttphandlersMapSourceType'
+          type: array
+        pmTiles:
+          items:
+            $ref: '#/components/schemas/HttphandlersMapSourceType'
+          type: array
       required:
+      - pmTiles
+      - openFreeMap
       - customMaps
       type: object
     HttphandlersInfoResponse:
       properties:
-        mapOptions:
-          properties:
-            sources:
-              items:
-                $ref: '#/components/schemas/HttphandlersMapSourceType'
-              type: array
-          required:
-          - sources
-          type: object
+        version:
+          type: string
       required:
-      - mapOptions
+      - version
       type: object
     HttphandlersMapSourceType:
       properties:

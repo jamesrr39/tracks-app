@@ -192,7 +192,7 @@ func createAPIRouter(fitDAL *dal.FitDAL, customMapsDAL *dal.CustomMapsDAL, pmtil
 		openapix.Get(r, "/tracks/{path}/parsed/gpx", httphandlers.BuildGetParsedGpxFile(fitDAL))
 		openapix.Get(r, "/tracks/{path}/parsed/fit", httphandlers.BuildGetParsedFitFile(fitDAL))
 		openapix.Get(r, "/tracks/{path}/raw", httphandlers.BuildGetRawFile(fitDAL))
-		openapix.Get(r, "/maps", httphandlers.BuildGetCustomMaps(customMapsDAL, pmtilesFilePath))
+		openapix.Get(r, "/maps", httphandlers.BuildGetMaps(customMapsDAL, pmtilesFilePath))
 	})
 
 	openapix.MustCheckNonNullArrays(apiSchema.Reflector().Spec.Components.Schemas.MapOfSchemaOrRefValues)

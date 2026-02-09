@@ -9,55 +9,6 @@ import type * as Fetcher from "./tracksAppFetcher";
 import { tracksAppFetch } from "./tracksAppFetcher";
 import type * as Schemas from "./tracksAppSchemas";
 
-export type GetCustomMapsError = Fetcher.ErrorWrapper<undefined>;
-
-export type GetCustomMapsVariables = TracksAppContext["fetcherOptions"];
-
-export const fetchGetCustomMaps = (
-  variables: GetCustomMapsVariables,
-  signal?: AbortSignal,
-) =>
-  tracksAppFetch<
-    Schemas.HttphandlersGetCustomMapsResponse,
-    GetCustomMapsError,
-    undefined,
-    {},
-    {},
-    {}
-  >({ url: "/v1/custom-maps", method: "get", ...variables, signal });
-
-export const useGetCustomMaps = <
-  TData = Schemas.HttphandlersGetCustomMapsResponse,
->(
-  variables: GetCustomMapsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      Schemas.HttphandlersGetCustomMapsResponse,
-      GetCustomMapsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { fetcherOptions, queryOptions, queryKeyFn } =
-    useTracksAppContext(options);
-  return reactQuery.useQuery<
-    Schemas.HttphandlersGetCustomMapsResponse,
-    GetCustomMapsError,
-    TData
-  >({
-    queryKey: queryKeyFn({
-      path: "/v1/custom-maps",
-      operationId: "getCustomMaps",
-      variables,
-    }),
-    queryFn: ({ signal }) =>
-      fetchGetCustomMaps({ ...fetcherOptions, ...variables }, signal),
-    ...options,
-    ...queryOptions,
-  });
-};
-
 export type GetServiceInfoError = Fetcher.ErrorWrapper<undefined>;
 
 export type GetServiceInfoVariables = TracksAppContext["fetcherOptions"];
@@ -100,6 +51,53 @@ export const useGetServiceInfo = <TData = Schemas.HttphandlersInfoResponse,>(
     }),
     queryFn: ({ signal }) =>
       fetchGetServiceInfo({ ...fetcherOptions, ...variables }, signal),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GetMapsError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetMapsVariables = TracksAppContext["fetcherOptions"];
+
+export const fetchGetMaps = (
+  variables: GetMapsVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersGetCustomMapsResponse,
+    GetMapsError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/v1/maps", method: "get", ...variables, signal });
+
+export const useGetMaps = <TData = Schemas.HttphandlersGetCustomMapsResponse,>(
+  variables: GetMapsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      Schemas.HttphandlersGetCustomMapsResponse,
+      GetMapsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { fetcherOptions, queryOptions, queryKeyFn } =
+    useTracksAppContext(options);
+  return reactQuery.useQuery<
+    Schemas.HttphandlersGetCustomMapsResponse,
+    GetMapsError,
+    TData
+  >({
+    queryKey: queryKeyFn({
+      path: "/v1/maps",
+      operationId: "getMaps",
+      variables,
+    }),
+    queryFn: ({ signal }) =>
+      fetchGetMaps({ ...fetcherOptions, ...variables }, signal),
     ...options,
     ...queryOptions,
   });
@@ -431,14 +429,14 @@ export const useGetTrackRecords = <
 
 export type QueryOperation =
   | {
-      path: "/v1/custom-maps";
-      operationId: "getCustomMaps";
-      variables: GetCustomMapsVariables;
-    }
-  | {
       path: "/v1/info";
       operationId: "getServiceInfo";
       variables: GetServiceInfoVariables;
+    }
+  | {
+      path: "/v1/maps";
+      operationId: "getMaps";
+      variables: GetMapsVariables;
     }
   | {
       path: "/v1/tracks";

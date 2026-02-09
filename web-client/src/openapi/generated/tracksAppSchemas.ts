@@ -96,19 +96,18 @@ export type HttphandlersBuildGetTrackSummaryResponse = {
 
 export type HttphandlersCustomMap = {
   bounds: DomainBounds;
-  link: string;
   name: string;
   referencePoints: DomainReferencePoint[];
 };
 
 export type HttphandlersGetCustomMapsResponse = {
   customMaps: HttphandlersCustomMap[];
+  openFreeMap: HttphandlersMapSourceType[];
+  pmTiles: HttphandlersMapSourceType[];
 };
 
 export type HttphandlersInfoResponse = {
-  mapOptions: {
-    sources: HttphandlersMapSourceType[];
-  };
+  version: string;
 };
 
 export type HttphandlersMapSourceType = {

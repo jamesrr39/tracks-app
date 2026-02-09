@@ -9,42 +9,6 @@ import type * as Fetcher from "./tracksAppFetcher";
 import { tracksAppFetch } from "./tracksAppFetcher";
 import type * as Schemas from "./tracksAppSchemas";
 
-export type GetCustomMapsError = Fetcher.ErrorWrapper<undefined>;
-
-export type GetCustomMapsVariables = TracksAppContext["fetcherOptions"];
-
-export const fetchGetCustomMaps = (
-  variables: GetCustomMapsVariables,
-  signal?: AbortSignal,
-) =>
-  tracksAppFetch<
-    Schemas.HttphandlersGetCustomMapsResponse,
-    GetCustomMapsError,
-    undefined,
-    {},
-    {},
-    {}
-  >({ url: "/v1/custom-maps", method: "get", ...variables, signal });
-
-export const getCustomMapsQuery = (
-  variables: GetCustomMapsVariables,
-): [
-  reactQuery.QueryKey,
-  ({
-    signal,
-  }: {
-    signal?: AbortSignal;
-  }) => Promise<Schemas.HttphandlersGetCustomMapsResponse>,
-] => [
-  queryKeyFn({
-    path: "/v1/custom-maps",
-    operationId: "getCustomMaps",
-    variables,
-  }),
-  async ({ signal }: { signal?: AbortSignal }) =>
-    fetchGetCustomMaps({ ...variables }, signal),
-];
-
 export type GetServiceInfoError = Fetcher.ErrorWrapper<undefined>;
 
 export type GetServiceInfoVariables = TracksAppContext["fetcherOptions"];
@@ -79,6 +43,42 @@ export const getServiceInfoQuery = (
   }),
   async ({ signal }: { signal?: AbortSignal }) =>
     fetchGetServiceInfo({ ...variables }, signal),
+];
+
+export type GetMapsError = Fetcher.ErrorWrapper<undefined>;
+
+export type GetMapsVariables = TracksAppContext["fetcherOptions"];
+
+export const fetchGetMaps = (
+  variables: GetMapsVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersGetCustomMapsResponse,
+    GetMapsError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/v1/maps", method: "get", ...variables, signal });
+
+export const getMapsQuery = (
+  variables: GetMapsVariables,
+): [
+  reactQuery.QueryKey,
+  ({
+    signal,
+  }: {
+    signal?: AbortSignal;
+  }) => Promise<Schemas.HttphandlersGetCustomMapsResponse>,
+] => [
+  queryKeyFn({
+    path: "/v1/maps",
+    operationId: "getMaps",
+    variables,
+  }),
+  async ({ signal }: { signal?: AbortSignal }) =>
+    fetchGetMaps({ ...variables }, signal),
 ];
 
 export type GetAllTrackSummariesError = Fetcher.ErrorWrapper<undefined>;
@@ -335,14 +335,14 @@ export const getTrackRecordsQuery = (
 
 export type QueryOperation =
   | {
-      path: "/v1/custom-maps";
-      operationId: "getCustomMaps";
-      variables: GetCustomMapsVariables;
-    }
-  | {
       path: "/v1/info";
       operationId: "getServiceInfo";
       variables: GetServiceInfoVariables;
+    }
+  | {
+      path: "/v1/maps";
+      operationId: "getMaps";
+      variables: GetMapsVariables;
     }
   | {
       path: "/v1/tracks";

@@ -13,8 +13,8 @@ import { ProtomapsMapTheme, PROTOMAPS_AVAILABLE_MAP_THEMES } from "./MapThemes";
 import Controls, { MapChoice } from "./Controls";
 import { getPMTilesSource } from "../../context/PMTilesContext";
 import { AppInfoContext } from "../../context/AppInfoContext";
-import { useGetCustomMaps } from "../../openapi/generated/tracksAppComponents";
 import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
+import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
 
 const OPENFREEMAP_STYLES = [
   {name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty"},
@@ -123,11 +123,10 @@ export function MaplibreGLMap(props: Props) {
     return [record.posLong, record.posLat];
   });
 
-  const appInfoContext = useContext(AppInfoContext);
-  console.log('map sources', appInfoContext?.mapOptions.sources)
-  const {data: customMapsResponse, isLoading, error} = useGetCustomMaps({})
+  const {data: mapsResponse, isLoading, error} = useGetMaps({})
 
-  const mapThemes = useMemo(() => createMapChoices(customMapsResponse?.customMaps || []), [customMapsResponse])
+
+  const mapThemes = useMemo(() => createMapChoices(mapsResponse?.customMaps || []), [mapsResponse])
 
   useEffect(() => {
     if (map.current) {
@@ -168,6 +167,10 @@ export function MaplibreGLMap(props: Props) {
 
         addMarkers(maplibreMap, trackSummary, trackRecords);
       });
+
+      maplibreMap.on("click", (event) => {
+        console.log("click", event.lngLat)
+      })
     });
   }, [map, mapContainer, pmTilesSource]);
 
@@ -215,7 +218,7 @@ export function MaplibreGLMap(props: Props) {
     return <p>Loading...</p>
   }
 
-  if (!customMapsResponse) {
+  if (!mapsResponse) {
     return null;
   }
 
@@ -257,7 +260,7 @@ function createMapChoices(customMaps: HttphandlersGetCustomMapsResponse['customM
         sources: {
           "overlay-image": {
             type: 'image',
-            url: customMap.link,
+            url: `maps/custom-map/${encodeURI(customMap.name)}`,
             coordinates: [
               [customMap.bounds.minLon, customMap.bounds.maxLat],
               [customMap.bounds.maxLon, customMap.bounds.maxLat],
