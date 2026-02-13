@@ -111,6 +111,6 @@ export type HttphandlersInfoResponse = {
 };
 
 export type HttphandlersMapSourceType = {
-  name?: string;
-  url?: string;
+  name: string;
+  url: string;
 };

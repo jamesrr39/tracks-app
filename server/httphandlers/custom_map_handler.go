@@ -15,8 +15,8 @@ import (
 )
 
 type mapSourceType struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
+	Name string `json:"name" required:"true"`
+	URL  string `json:"url" required:"true"`
 }
 
 type GetCustomMapsResponse struct {

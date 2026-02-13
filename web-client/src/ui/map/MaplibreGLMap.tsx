@@ -126,18 +126,10 @@ export function MaplibreGLMap(props: Props) {
   const {data: mapsResponse, isLoading, error} = useGetMaps({})
 
 
-  const mapThemes = useMemo(() => createMapChoices(mapsResponse?.customMaps || []), [mapsResponse])
+  const mapThemes = useMemo(() => createMapChoices(mapsResponse), [mapsResponse])
 
   useEffect(() => {
-    if (map.current) {
-      return; // stops map from intializing more than once
-    }
-
-    if (!mapContainer.current) {
-      return;
-    }
-
-    if (!pmTilesSource) {
+    if (map.current || !mapContainer.current || !pmTilesSource) {
       return;
     }
 
@@ -176,11 +168,7 @@ export function MaplibreGLMap(props: Props) {
 
   const changeMapTheme = (selectedThemeName: string) => {
     const maplibreMap = map.current;
-    if (!maplibreMap) {
-      return;
-    }
-
-    if (!pmTilesSource) {
+    if (!maplibreMap || !pmTilesSource || !mapThemes) {
       return;
     }
 
@@ -231,20 +219,23 @@ export function MaplibreGLMap(props: Props) {
           setRouteColor(value)
           changeRouteColor(value);
         }}
-        maps={mapThemes}
+        maps={mapThemes || []}
       />
       <div ref={mapContainer} style={styles.map} />
     </div>
   );
 }
 
-function createMapChoices(customMaps: HttphandlersGetCustomMapsResponse['customMaps']) {
+function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
+  if (!maps) {
+    return;
+  }
 
   const mapChoices: MapChoice[] = []
-  PROTOMAPS_AVAILABLE_MAP_THEMES.map(theme => {
+  maps.pmTiles.forEach(theme => {
     mapChoices.push({
-      name: `Protomaps - ${theme}`,
-      specification: getProtomapsStyle(theme)
+      name: `Protomaps - ${theme.name}`,
+      specification: getProtomapsStyle(theme.name)
     });
   }); // TODO don't add protomaps choice if no protomaps source
   OPENFREEMAP_STYLES.map(openFreeMapStyle => {
@@ -253,7 +244,7 @@ function createMapChoices(customMaps: HttphandlersGetCustomMapsResponse['customM
       specification: openFreeMapStyle.url,
     })
   })
-  customMaps.map(customMap => {
+  maps.customMaps.map(customMap => {
     mapChoices.push({
       name: `Custom map - ${customMap.name}`,
       specification: {
