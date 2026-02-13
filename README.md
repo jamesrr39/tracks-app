@@ -28,3 +28,7 @@ https://github.com/protomaps/basemaps-assets
 
 https://github.com/danielgtaylor/huma
 https://goa.design/
+
+### Simple style
+
+https://demotiles.maplibre.org/style.json
