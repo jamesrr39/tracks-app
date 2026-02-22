@@ -15,6 +15,7 @@ import { getPMTilesSource } from "../../context/PMTilesContext";
 import { AppInfoContext } from "../../context/AppInfoContext";
 import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
 import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
+import { CoreMap } from "./CoreMap";
 
 const OPENFREEMAP_STYLES = [
   {name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty"},
@@ -107,17 +108,56 @@ function getRoute(
   };
 }
 
+const changeMapTheme = (maplibreMap: maplibregl.Map|null, mapThemes: MapChoice[] | undefined,  selectedThemeName: string) => {
+    if (!maplibreMap || !mapThemes) {
+      return;
+    }
+
+    const selectedTheme = mapThemes.find(theme => theme.name === selectedThemeName);
+    if (!selectedTheme) {
+      throw new Error(`no theme found for selectedThemeName "${selectedThemeName}"`);
+    }
+    console.log('setting style', selectedTheme)
+
+    maplibreMap.getLayersOrder().forEach(layerName => {
+      if (layerName !== ROUTE_LAYER_SOURCE_ID) {
+        maplibreMap.removeLayer(layerName);
+      }
+    })
+    maplibreMap.setStyle((selectedTheme.specification));
+
+  }
+  
+const drawRoute = (maplibreMap: maplibregl.Map|null,  coordinates: number[][], selectedColor: string) => {
+  if (!maplibreMap) {
+    return;
+  }
+
+  if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
+    maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
+    maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
+  }
+
+  const route = getRoute(coordinates, selectedColor);
+  maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+  maplibreMap.addLayer(route.layer);
+};
 
 // FIXME: terrain? https://docs.protomaps.com/basemaps/downloads#terrain
 // attribution: https://github.com/tilezen/joerd/blob/master/docs/attribution.md
 // https://docs.protomaps.com/pmtiles/maplibre#raster-or-terrain-pmtiles
 
+type CustomMarker = {
+  lngLat: maplibregl.LngLat
+}
+
 export function MaplibreGLMap(props: Props) {
   const [routeColor, setRouteColor] = useState(DEFAULT_ROUTE_COLOR);
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map>(null);
+  // const mapContainer = useRef<HTMLDivElement>(null);
+  // const map = useRef<maplibregl.Map>(null);
   const { trackRecords, trackSummary } = props;
   const pmTilesSource = getPMTilesSource(PMTILES_URL);
+  const [customMarkers, setCustomMarkers] = useState<CustomMarker[]>([]);
 
   const coordinates = trackRecords.map((record) => {
     return [record.posLong, record.posLat];
@@ -127,76 +167,54 @@ export function MaplibreGLMap(props: Props) {
 
 
   const mapThemes = useMemo(() => createMapChoices(mapsResponse), [mapsResponse])
+// console.log('MaplibreGLMap', "themes", mapThemes, "mapContainer", mapContainer.current, "map", map.current, "isLoading", isLoading, "error", error, "mapsResponse", mapsResponse)
+//   useEffect(() => {
+//     console.log('map', map.current, mapContainer.current)
+//     if (!mapContainer.current) {
+//       return;
+//     }
 
-  useEffect(() => {
-    if (map.current || !mapContainer.current || !pmTilesSource) {
-      return;
-    }
+//     // we first fetch the header so we can get the center lon, lat of the map.
+//     // pmTilesSource.tiles.getHeader().then((pmtilesHeader) => {
+// console.log('running create map')
 
-    // we first fetch the header so we can get the center lon, lat of the map.
-    pmTilesSource.tiles.getHeader().then((h) => {
-      if (!mapContainer.current) {
-        return;
-      }
+//       const { activityBounds: initialBbox } = trackSummary;
+//       const centerLat = (initialBbox.latMax + initialBbox.latMin) / 2;
+//       const centerLon = (initialBbox.longMax + initialBbox.longMin) / 2;
 
-      const { activityBounds: initialBbox } = trackSummary;
-      const centerLat = (initialBbox.latMax + initialBbox.latMin) / 2;
-      const centerLon = (initialBbox.longMax + initialBbox.longMin) / 2;
+//       const maplibreMap = new maplibregl.Map({
+//         container: mapContainer.current,
+//         zoom: 10,
+//         center: [centerLon, centerLat],
+//             style: 'https://tiles.openfreemap.org/styles/liberty',
+//       });
+//       map.current?.remove();
+//       map.current = maplibreMap;
 
-      const maplibreMap = new maplibregl.Map({
-        container: mapContainer.current,
-        zoom: h.maxZoom - 2,
-        center: [centerLon, centerLat],
-            style: 'https://tiles.openfreemap.org/styles/liberty',
-      });
-      map.current?.remove();
-      map.current = maplibreMap;
+//       maplibreMap.on("load", () => {
+//         const route = getRoute(coordinates, routeColor);
+//         maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+//         maplibreMap.addLayer(route.layer);
 
-      maplibreMap.on("load", () => {
-        const route = getRoute(coordinates, routeColor);
-        maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-        maplibreMap.addLayer(route.layer);
+//         const markers = addMarkers(trackSummary, trackRecords);
+//         markers.forEach(marker =>     marker.addTo(maplibreMap));
+//       });
 
-        addMarkers(maplibreMap, trackSummary, trackRecords);
-      });
+//       maplibreMap.on("click", (event) => {
+//         const {lngLat} = event;
+//         setCustomMarkers(m => {
+//           return m.concat([{lngLat}]);
+//         });
+//       })
+//     // });
+//   }, [map.current, mapContainer.current, mapsResponse]);
 
-      maplibreMap.on("click", (event) => {
-        console.log("click", event.lngLat)
-      })
-    });
-  }, [map, mapContainer, pmTilesSource]);
+  const onNewThemeSelected = (selectedThemeName: string) => {
+    changeMapTheme(map.current, mapThemes, selectedThemeName)
 
-  const changeMapTheme = (selectedThemeName: string) => {
-    const maplibreMap = map.current;
-    if (!maplibreMap || !pmTilesSource || !mapThemes) {
-      return;
-    }
-
-    const selectedTheme = mapThemes.find(theme => theme.name === selectedThemeName);
-    if (!selectedTheme) {
-      throw new Error(`no theme found for selectedThemeName "${selectedThemeName}"`);
-    }
-    console.log('setting style', selectedTheme)
-    maplibreMap.setStyle((selectedTheme.specification));
-
-    changeRouteColor(routeColor);
+    drawRoute(map.current, coordinates, routeColor);
   };
 
-  const changeRouteColor = (selectedColor: string) => {
-    const maplibreMap = map.current;
-    if (!maplibreMap) {
-      return;
-    }
-
-    if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
-      maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
-      maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
-    }
-
-    const route = getRoute(coordinates, selectedColor);
-    maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-    maplibreMap.addLayer(route.layer);
-  };
 
   if (error) {
     return <p>Error</p>
@@ -213,15 +231,23 @@ export function MaplibreGLMap(props: Props) {
   return (
     <div style={styles.mapWrapper}>
       <Controls
-        changeMapTheme={changeMapTheme}
+        changeMapTheme={onNewThemeSelected}
         routeColor={routeColor}
         onRouteColorChange={(value: string) => {
           setRouteColor(value)
-          changeRouteColor(value);
+          drawRoute(map.current, coordinates, value);
         }}
         maps={mapThemes || []}
       />
-      <div ref={mapContainer} style={styles.map} />
+      {customMarkers.length !== 0 && (
+        <>
+          <h3>Custom Markers</h3>
+          <ul>
+          {customMarkers.map((marker, idx) => (<li key={idx}>{marker.lngLat.lat} : {marker.lngLat.lon}</li>))}
+          </ul>
+        </>
+      )}
+      <CoreMap />
     </div>
   );
 }
@@ -251,7 +277,7 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
         sources: {
           "overlay-image": {
             type: 'image',
-            url: `maps/custom-map/${encodeURI(customMap.name)}`,
+            url: `/map/custom-map/${encodeURIComponent(customMap.name)}`,
             coordinates: [
               [customMap.bounds.minLon, customMap.bounds.maxLat],
               [customMap.bounds.maxLon, customMap.bounds.maxLat],
@@ -279,12 +305,14 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
 
 }
 
-const addMarkers = (maplibreMap: maplibregl.Map, trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {
+const addMarkers = (trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {
   const totalDistanceMetres = trackRecords[trackRecords.length - 1].distance;
 
   if (totalDistanceMetres < 1000) {
-    return;
+    return []
   }
+
+  var markers = [];
 
   for (
     let targetDistance = 1000;
@@ -337,6 +365,8 @@ const addMarkers = (maplibreMap: maplibregl.Map, trackSummary: DomainGeoFileSumm
     markerEl.innerHTML = "";
     markerEl.appendChild(iconEl);
 
-    marker.addTo(maplibreMap);
+    markers.push(marker);
   }
+
+  return markers;
 };
