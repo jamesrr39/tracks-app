@@ -1,3 +1,4 @@
+import { Marker } from "maplibre-gl";
 import { HttphandlersCustomMap } from "../../openapi/generated/tracksAppSchemas";
 import { PROTOMAPS_AVAILABLE_MAP_THEMES } from "./MapThemes";
 
@@ -25,6 +26,7 @@ type Props = {
 export type MapChoice = {
     name: string,
     specification: maplibregl.StyleSpecification | string // if string, should be a URL to the style definition
+    markers?: maplibregl.LngLat[]
 }
 
 function Controls({ changeMapTheme, routeColor, onRouteColorChange, maps }: Props) {

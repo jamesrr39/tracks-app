@@ -1,4 +1,4 @@
-import maplibregl, { Marker } from "maplibre-gl";
+import maplibregl, { LayerSpecification, LngLat, Marker, StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
@@ -17,9 +17,9 @@ import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/track
 import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
 
 const OPENFREEMAP_STYLES = [
-  {name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty"},
-  {name: 'Bright', url: "https://tiles.openfreemap.org/styles/bright"},
-  {name: 'Positron', url: "https://tiles.openfreemap.org/styles/positron"},
+  { name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty" },
+  { name: 'Bright', url: "https://tiles.openfreemap.org/styles/bright" },
+  { name: 'Positron', url: "https://tiles.openfreemap.org/styles/positron" },
 ];
 
 const DEFAULT_PROTOMAPS_THEME: ProtomapsMapTheme = "light";
@@ -36,19 +36,19 @@ function getProtomapsStyle(selectedTheme: ProtomapsMapTheme): maplibregl.StyleSp
   console.log('selectedTheme', selectedTheme)
 
   return {
-      version: 8,
-      glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
-      sources: {
-        [PMTILES_SOURCE_NAME]: {
-          type: "vector",
-          url: `pmtiles://${pmTilesSource.url}`,
-          attribution:
-            '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        },
+    version: 8,
+    glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
+    sources: {
+      [PMTILES_SOURCE_NAME]: {
+        type: "vector",
+        url: `pmtiles://${pmTilesSource.url}`,
+        attribution:
+          '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
       },
-      // layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
-      layers: layers(PMTILES_SOURCE_NAME, namedFlavor(selectedTheme), {lang: "en"})
-    }
+    },
+    // layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
+    layers: layers(PMTILES_SOURCE_NAME, namedFlavor(selectedTheme), { lang: "en" })
+  }
 }
 
 const styles = {
@@ -107,10 +107,53 @@ function getRoute(
   };
 }
 
+const changeMapTheme = (maplibreMap: maplibregl.Map | null, mapThemes: MapChoice[] | undefined, selectedThemeName: string) => {
+  if (!maplibreMap || !mapThemes) {
+    return;
+  }
+
+  const selectedTheme = mapThemes.find(theme => theme.name === selectedThemeName);
+  if (!selectedTheme) {
+    throw new Error(`no theme found for selectedThemeName "${selectedThemeName}"`);
+  }
+  console.log('setting style', selectedTheme)
+
+  maplibreMap.getLayersOrder().forEach(layerName => {
+    if (layerName !== ROUTE_LAYER_SOURCE_ID) {
+      maplibreMap.removeLayer(layerName);
+    }
+  })
+  maplibreMap.setStyle((selectedTheme.specification));
+  selectedTheme.markers?.forEach(lngLat => {
+
+    const marker = new Marker();
+    marker.setLngLat(lngLat);
+    marker.addTo(maplibreMap)
+  })
+}
+
+const drawRoute = (maplibreMap: maplibregl.Map | null, coordinates: number[][], selectedColor: string) => {
+  if (!maplibreMap) {
+    return;
+  }
+
+  if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
+    maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
+    maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
+  }
+
+  const route = getRoute(coordinates, selectedColor);
+  maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+  maplibreMap.addLayer(route.layer);
+};
 
 // FIXME: terrain? https://docs.protomaps.com/basemaps/downloads#terrain
 // attribution: https://github.com/tilezen/joerd/blob/master/docs/attribution.md
 // https://docs.protomaps.com/pmtiles/maplibre#raster-or-terrain-pmtiles
+
+type CustomMarker = {
+  lngLat: maplibregl.LngLat
+}
 
 export function MaplibreGLMap(props: Props) {
   const [routeColor, setRouteColor] = useState(DEFAULT_ROUTE_COLOR);
@@ -118,85 +161,65 @@ export function MaplibreGLMap(props: Props) {
   const map = useRef<maplibregl.Map>(null);
   const { trackRecords, trackSummary } = props;
   const pmTilesSource = getPMTilesSource(PMTILES_URL);
+  const [customMarkers, setCustomMarkers] = useState<CustomMarker[]>([]);
 
   const coordinates = trackRecords.map((record) => {
     return [record.posLong, record.posLat];
   });
 
-  const {data: mapsResponse, isLoading, error} = useGetMaps({})
+  const { data: mapsResponse, isLoading, error } = useGetMaps({})
 
 
   const mapThemes = useMemo(() => createMapChoices(mapsResponse), [mapsResponse])
-
+  console.log('MaplibreGLMap', "themes", mapThemes, "mapContainer", mapContainer.current, "map", map.current, "isLoading", isLoading, "error", error, "mapsResponse", mapsResponse)
   useEffect(() => {
-    if (map.current || !mapContainer.current || !pmTilesSource) {
+    console.log('map', map.current, mapContainer.current)
+    if (!mapContainer.current) {
       return;
     }
 
     // we first fetch the header so we can get the center lon, lat of the map.
-    pmTilesSource.tiles.getHeader().then((h) => {
-      if (!mapContainer.current) {
-        return;
-      }
+    // pmTilesSource.tiles.getHeader().then((pmtilesHeader) => {
+    console.log('running create map')
 
-      const { activityBounds: initialBbox } = trackSummary;
-      const centerLat = (initialBbox.latMax + initialBbox.latMin) / 2;
-      const centerLon = (initialBbox.longMax + initialBbox.longMin) / 2;
+    const { activityBounds: initialBbox } = trackSummary;
+    const centerLat = (initialBbox.latMax + initialBbox.latMin) / 2;
+    const centerLon = (initialBbox.longMax + initialBbox.longMin) / 2;
 
-      const maplibreMap = new maplibregl.Map({
-        container: mapContainer.current,
-        zoom: h.maxZoom - 2,
-        center: [centerLon, centerLat],
-            style: 'https://tiles.openfreemap.org/styles/liberty',
-      });
-      map.current?.remove();
-      map.current = maplibreMap;
-
-      maplibreMap.on("load", () => {
-        const route = getRoute(coordinates, routeColor);
-        maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-        maplibreMap.addLayer(route.layer);
-
-        addMarkers(maplibreMap, trackSummary, trackRecords);
-      });
-
-      maplibreMap.on("click", (event) => {
-        console.log("click", event.lngLat)
-      })
+    const maplibreMap = new maplibregl.Map({
+      container: mapContainer.current,
+      zoom: 10,
+      center: [centerLon, centerLat],
+      style: 'https://tiles.openfreemap.org/styles/liberty',
     });
-  }, [map, mapContainer, pmTilesSource]);
+    map.current?.remove();
+    map.current = maplibreMap;
 
-  const changeMapTheme = (selectedThemeName: string) => {
-    const maplibreMap = map.current;
-    if (!maplibreMap || !pmTilesSource || !mapThemes) {
-      return;
-    }
+    maplibreMap.on("load", () => {
+      const route = getRoute(coordinates, routeColor);
+      maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+      maplibreMap.addLayer(route.layer);
 
-    const selectedTheme = mapThemes.find(theme => theme.name === selectedThemeName);
-    if (!selectedTheme) {
-      throw new Error(`no theme found for selectedThemeName "${selectedThemeName}"`);
-    }
-    console.log('setting style', selectedTheme)
-    maplibreMap.setStyle((selectedTheme.specification));
+      const markers = createMarkers(trackSummary, trackRecords);
+      markers.forEach(marker => marker.addTo(maplibreMap));
+    });
 
-    changeRouteColor(routeColor);
+    maplibreMap.on("click", (event) => {
+      const { lngLat } = event;
+      console.log('click:', lngLat)
+      // setCustomMarkers(m => {
+      //   return m.concat([{lngLat}]);
+      // });
+    })
+    // });
+  }, [map.current, mapContainer.current, mapsResponse]);
+
+  const onNewThemeSelected = (selectedThemeName: string) => {
+    changeMapTheme(map.current, mapThemes, selectedThemeName)
+
+    drawRoute(map.current, coordinates, routeColor);
   };
 
-  const changeRouteColor = (selectedColor: string) => {
-    const maplibreMap = map.current;
-    if (!maplibreMap) {
-      return;
-    }
-
-    if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
-      maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
-      maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
-    }
-
-    const route = getRoute(coordinates, selectedColor);
-    maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-    maplibreMap.addLayer(route.layer);
-  };
 
   if (error) {
     return <p>Error</p>
@@ -213,15 +236,25 @@ export function MaplibreGLMap(props: Props) {
   return (
     <div style={styles.mapWrapper}>
       <Controls
-        changeMapTheme={changeMapTheme}
+        changeMapTheme={onNewThemeSelected}
         routeColor={routeColor}
         onRouteColorChange={(value: string) => {
           setRouteColor(value)
-          changeRouteColor(value);
+          drawRoute(map.current, coordinates, value);
         }}
         maps={mapThemes || []}
       />
+      {customMarkers.length !== 0 && (
+        <>
+          <h3>Custom Markers</h3>
+          <ul>
+            {customMarkers.map((marker, idx) => (<li key={idx}>{marker.lngLat.lat} : {marker.lngLat.lng}</li>))}
+          </ul>
+        </>
+      )}
+
       <div ref={mapContainer} style={styles.map} />
+      {/* <CoreMap /> */}
     </div>
   );
 }
@@ -231,7 +264,23 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
     return;
   }
 
+  const includeDebugLayer = true;
+
+  const osmMap = getOSMLayer();
+
+  let debugSpec = {
+    sources: {}, 
+    layers: [] as LayerSpecification[]
+  };
+  if (includeDebugLayer) {
+    debugSpec = osmMap;
+  }
+
   const mapChoices: MapChoice[] = []
+  mapChoices.push({
+    name: "OpenStreetMap raster tiles",
+    specification: osmMap,
+  })
   maps.pmTiles.forEach(theme => {
     mapChoices.push({
       name: `Protomaps - ${theme.name}`,
@@ -248,30 +297,37 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
     mapChoices.push({
       name: `Custom map - ${customMap.name}`,
       specification: {
+        version: 8,
         sources: {
           "overlay-image": {
             type: 'image',
-            url: `maps/custom-map/${encodeURI(customMap.name)}`,
+            url: `/map/custom-map/${encodeURIComponent(customMap.name)}`,
             coordinates: [
               [customMap.bounds.minLon, customMap.bounds.maxLat],
               [customMap.bounds.maxLon, customMap.bounds.maxLat],
               [customMap.bounds.maxLon, customMap.bounds.minLat],
               [customMap.bounds.minLon, customMap.bounds.minLat],
             ]
-          }
+          },
+          ...debugSpec.sources
         },
-        version: 8,
         layers: [
           {
             id: 'overlay',
             type: 'raster',
             source: 'overlay-image',
             paint: {
-              'raster-opacity': 0.8
+              'raster-opacity': 1
             }
-          }
-        ]
-      } // TODO layer as well?
+          },
+          ...debugSpec.layers,
+        ],
+      }, // TODO layer as well?
+      markers: customMap.referencePoints.map(point => {
+        const { location } = point;
+
+        return new LngLat(location.lon, location.lat);
+      })
     })
   })
 
@@ -279,12 +335,44 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
 
 }
 
-const addMarkers = (maplibreMap: maplibregl.Map, trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {
+function getOSMLayer(): StyleSpecification {
+  return {
+    version: 8,
+    sources: {
+      'osm-tiles': {
+        type: 'raster',
+        tiles: [
+          'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        ],
+        tileSize: 256,
+        attribution: '© OpenStreetMap contributors'
+      }
+    },
+    layers: [
+      {
+        id: 'osm-layer',
+        type: 'raster',
+        source: 'osm-tiles',
+        minzoom: 0,
+        maxzoom: 19,
+        paint: {
+          'raster-opacity': 0.5
+        }
+      }
+    ],
+  }
+}
+
+const createMarkers = (trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {
   const totalDistanceMetres = trackRecords[trackRecords.length - 1].distance;
 
   if (totalDistanceMetres < 1000) {
-    return;
+    return []
   }
+
+  var markers = [];
 
   for (
     let targetDistance = 1000;
@@ -337,6 +425,8 @@ const addMarkers = (maplibreMap: maplibregl.Map, trackSummary: DomainGeoFileSumm
     markerEl.innerHTML = "";
     markerEl.appendChild(iconEl);
 
-    marker.addTo(maplibreMap);
+    markers.push(marker);
   }
+
+  return markers;
 };
