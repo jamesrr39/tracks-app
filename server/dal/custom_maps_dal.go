@@ -35,16 +35,16 @@ func NewCustomMapsDALAndScan(basePath string) (*CustomMapsDAL, errorsx.Error) {
 			return nil
 		}
 
+		name := path
+		name = strings.TrimPrefix(name, basePath)
+		name = strings.TrimPrefix(name, string(filepath.Separator))
+		name = strings.TrimSuffix(name, domain.CustomMapMetadataFileSuffix)
+
 		file, err := os.Open(path)
 		if err != nil {
 			return errorsx.Wrap(err, "path", path)
 		}
 		defer file.Close()
-
-		name := path
-		name = strings.TrimPrefix(name, basePath)
-		name = strings.TrimPrefix(name, string(filepath.Separator))
-		name = strings.TrimSuffix(name, domain.CustomMapMetadataFileSuffix)
 
 		metadata := domain.CustomMapMetadata{
 			Name: name,
@@ -66,7 +66,7 @@ func NewCustomMapsDALAndScan(basePath string) (*CustomMapsDAL, errorsx.Error) {
 			return errorsx.Wrap(err, "imgFilePath", imgFilePath)
 		}
 
-		metadata.Bounds = metadata.CalculateMapBounds(img.Bounds())
+		metadata.CalculatedMetadata = metadata.CalculateMapBounds(img.Bounds())
 
 		d.Maps = append(d.Maps, metadata)
 		return nil
@@ -102,4 +102,38 @@ func (m *CustomMapsDAL) GetFile(name string) (io.ReadCloser, error) {
 		return nil, errorsx.Wrap(err)
 	}
 	return f, nil
+}
+
+type DirectoryListingItem struct {
+	Name            string                    `json:"name" required:"true"`
+	CustomMapConfig *domain.CustomMapMetadata `json:"customMapConfig"`
+}
+
+func (m *CustomMapsDAL) GetDirectoryListing() ([]DirectoryListingItem, errorsx.Error) {
+	files := []DirectoryListingItem{}
+	err := filepath.Walk(m.basePath, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return errorsx.Wrap(err, "path", path)
+		}
+
+		switch strings.ToLower(filepath.Ext(path)) {
+		case ".png", ".jpg", ".jpeg":
+			// continue
+		default:
+			return nil
+		}
+
+		name := path
+		name = strings.TrimPrefix(name, m.basePath)
+		name = strings.TrimPrefix(name, string(filepath.Separator))
+		name = strings.TrimSuffix(name, domain.CustomMapMetadataFileSuffix)
+
+		files = append(files, DirectoryListingItem{Name: name})
+		return nil
+	})
+
+	if err != nil {
+		return nil, errorsx.Wrap(err)
+	}
+	return files, nil
 }

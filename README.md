@@ -32,3 +32,5 @@ https://goa.design/
 ### Simple style
 
 https://demotiles.maplibre.org/style.json
+
+https://github.com/tidwall/geodesic

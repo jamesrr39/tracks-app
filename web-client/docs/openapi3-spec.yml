@@ -29,6 +29,17 @@ paths:
                 $ref: '#/components/schemas/HttphandlersGetCustomMapsResponse'
           description: OK
       summary: Get maps
+  /v1/maps/custom-maps/files:
+    get:
+      operationId: getCustomMapsDirectoryListing
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttphandlersBuildGetCustomMapsDirectoryListingResponse'
+          description: OK
+      summary: Get custom maps directory listing
   /v1/tracks:
     get:
       operationId: getAllTrackSummaries
@@ -135,6 +146,15 @@ paths:
       - Tracks
 components:
   schemas:
+    DalDirectoryListingItem:
+      properties:
+        customMapConfig:
+          $ref: '#/components/schemas/DomainCustomMapMetadata'
+        name:
+          type: string
+      required:
+      - name
+      type: object
     DomainActivityBounds:
       properties:
         latMax:
@@ -166,6 +186,21 @@ components:
       - maxLat
       - minLon
       - maxLon
+      type: object
+    DomainCustomMapMetadata:
+      properties:
+        calculatedMetadata:
+          $ref: '#/components/schemas/DomainProcessedCustomImage'
+        name:
+          type: string
+        referencePoints:
+          items:
+            $ref: '#/components/schemas/DomainReferencePoint'
+          type: array
+      required:
+      - name
+      - calculatedMetadata
+      - referencePoints
       type: object
     DomainGPSLocation:
       properties:
@@ -226,6 +261,16 @@ components:
       - x
       - "y"
       type: object
+    DomainProcessedCustomImage:
+      properties:
+        bounds:
+          $ref: '#/components/schemas/DomainBounds'
+        rotation:
+          type: number
+      required:
+      - rotation
+      - bounds
+      type: object
     DomainRecord:
       properties:
         altitude:
@@ -279,6 +324,15 @@ components:
       required:
       - trackSummaries
       type: object
+    HttphandlersBuildGetCustomMapsDirectoryListingResponse:
+      properties:
+        files:
+          items:
+            $ref: '#/components/schemas/DalDirectoryListingItem'
+          type: array
+      required:
+      - files
+      type: object
     HttphandlersBuildGetParsedFitFileResponse:
       properties:
         file:
@@ -311,8 +365,8 @@ components:
       type: object
     HttphandlersCustomMap:
       properties:
-        bounds:
-          $ref: '#/components/schemas/DomainBounds'
+        calculatedMetadata:
+          $ref: '#/components/schemas/DomainProcessedCustomImage'
         name:
           type: string
         referencePoints:
@@ -321,7 +375,7 @@ components:
           type: array
       required:
       - name
-      - bounds
+      - calculatedMetadata
       - referencePoints
       type: object
     HttphandlersGetCustomMapsResponse:

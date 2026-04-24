@@ -3,6 +3,11 @@
  *
  * @version dev
  */
+export type DalDirectoryListingItem = {
+  customMapConfig?: DomainCustomMapMetadata;
+  name: string;
+};
+
 export type DomainActivityBounds = {
   latMax: number;
   latMin: number;
@@ -15,6 +20,12 @@ export type DomainBounds = {
   maxLon: number;
   minLat: number;
   minLon: number;
+};
+
+export type DomainCustomMapMetadata = {
+  calculatedMetadata: DomainProcessedCustomImage;
+  name: string;
+  referencePoints: DomainReferencePoint[];
 };
 
 export type DomainGPSLocation = {
@@ -44,6 +55,11 @@ export type DomainGeoFileSummary = {
 export type DomainPoint = {
   x: number;
   y: number;
+};
+
+export type DomainProcessedCustomImage = {
+  bounds: DomainBounds;
+  rotation: number;
 };
 
 export type DomainRecord = {
@@ -78,6 +94,10 @@ export type HttphandlersBuildGetAllSummariesResponse = {
   trackSummaries: DomainGeoFileSummary[];
 };
 
+export type HttphandlersBuildGetCustomMapsDirectoryListingResponse = {
+  files: DalDirectoryListingItem[];
+};
+
 export type HttphandlersBuildGetParsedFitFileResponse = {
   file: FitFile;
 };
@@ -95,7 +115,7 @@ export type HttphandlersBuildGetTrackSummaryResponse = {
 };
 
 export type HttphandlersCustomMap = {
-  bounds: DomainBounds;
+  calculatedMetadata: DomainProcessedCustomImage;
   name: string;
   referencePoints: DomainReferencePoint[];
 };

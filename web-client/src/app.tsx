@@ -8,6 +8,10 @@ import { AppInfoContext } from "./context/AppInfoContext";
 import { useGetServiceInfo } from "./openapi/generated/tracksAppComponents";
 import Error from "./ui/Error";
 import Loading from "./ui/Loading";
+import CustomMaps from "./ui/map/CustomMaps";
+import SideBySideEditCustomMap from "./ui/map/SideBySideEditCustomMap";
+import HomeScreen from "./ui/HomeScreen";
+import EditCustomMapScreen from "./ui/map/EditCustomMapScreen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,7 +65,9 @@ function LoadedApp() {
         <Router>
           <Route path="/tracks" component={TracksGalleryScreen} />
           <Route path="/tracks/:id" component={TrackDetail} />
-          <Route path="/" component={() => <Redirect to={"/tracks"} />} />
+          <Route path="/maps" component={CustomMaps} />
+          <Route path="/maps/:name" component={EditCustomMapScreen} />
+          <Route path="/" component={HomeScreen} />
           <NotFound default />
         </Router>
       </div>

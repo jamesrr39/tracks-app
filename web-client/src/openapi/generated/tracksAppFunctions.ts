@@ -81,6 +81,44 @@ export const getMapsQuery = (
     fetchGetMaps({ ...variables }, signal),
 ];
 
+export type GetCustomMapsDirectoryListingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GetCustomMapsDirectoryListingVariables =
+  TracksAppContext["fetcherOptions"];
+
+export const fetchGetCustomMapsDirectoryListing = (
+  variables: GetCustomMapsDirectoryListingVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersBuildGetCustomMapsDirectoryListingResponse,
+    GetCustomMapsDirectoryListingError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/v1/maps/custom-maps/files", method: "get", ...variables, signal });
+
+export const getCustomMapsDirectoryListingQuery = (
+  variables: GetCustomMapsDirectoryListingVariables,
+): [
+  reactQuery.QueryKey,
+  ({
+    signal,
+  }: {
+    signal?: AbortSignal;
+  }) => Promise<Schemas.HttphandlersBuildGetCustomMapsDirectoryListingResponse>,
+] => [
+  queryKeyFn({
+    path: "/v1/maps/custom-maps/files",
+    operationId: "getCustomMapsDirectoryListing",
+    variables,
+  }),
+  async ({ signal }: { signal?: AbortSignal }) =>
+    fetchGetCustomMapsDirectoryListing({ ...variables }, signal),
+];
+
 export type GetAllTrackSummariesError = Fetcher.ErrorWrapper<undefined>;
 
 export type GetAllTrackSummariesVariables = TracksAppContext["fetcherOptions"];
@@ -343,6 +381,11 @@ export type QueryOperation =
       path: "/v1/maps";
       operationId: "getMaps";
       variables: GetMapsVariables;
+    }
+  | {
+      path: "/v1/maps/custom-maps/files";
+      operationId: "getCustomMapsDirectoryListing";
+      variables: GetCustomMapsDirectoryListingVariables;
     }
   | {
       path: "/v1/tracks";

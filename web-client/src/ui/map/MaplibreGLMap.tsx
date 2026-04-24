@@ -15,6 +15,7 @@ import { getPMTilesSource } from "../../context/PMTilesContext";
 import { AppInfoContext } from "../../context/AppInfoContext";
 import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
 import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
+import { getOSMLayer } from "./mapstyles";
 
 const OPENFREEMAP_STYLES = [
   { name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty" },
@@ -188,7 +189,7 @@ export function MaplibreGLMap(props: Props) {
 
     const maplibreMap = new maplibregl.Map({
       container: mapContainer.current,
-      zoom: 10,
+      zoom: 13,
       center: [centerLon, centerLat],
       style: 'https://tiles.openfreemap.org/styles/liberty',
     });
@@ -196,6 +197,7 @@ export function MaplibreGLMap(props: Props) {
     map.current = maplibreMap;
 
     maplibreMap.on("load", () => {
+      console.log('maplibre: called load')
       const route = getRoute(coordinates, routeColor);
       maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
       maplibreMap.addLayer(route.layer);
@@ -266,7 +268,7 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
 
   const includeDebugLayer = true;
 
-  const osmMap = getOSMLayer();
+  const osmMap = getOSMLayer({opacity: 0.3});
 
   let debugSpec = {
     sources: {}, 
@@ -335,35 +337,6 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
 
 }
 
-function getOSMLayer(): StyleSpecification {
-  return {
-    version: 8,
-    sources: {
-      'osm-tiles': {
-        type: 'raster',
-        tiles: [
-          'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        ],
-        tileSize: 256,
-        attribution: '© OpenStreetMap contributors'
-      }
-    },
-    layers: [
-      {
-        id: 'osm-layer',
-        type: 'raster',
-        source: 'osm-tiles',
-        minzoom: 0,
-        maxzoom: 19,
-        paint: {
-          'raster-opacity': 0.5
-        }
-      }
-    ],
-  }
-}
 
 const createMarkers = (trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {
   const totalDistanceMetres = trackRecords[trackRecords.length - 1].distance;

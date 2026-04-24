@@ -1,5 +1,12 @@
 import HomeIcon from 'bootstrap-icons/icons/house-door.svg'
 
+const styles = {
+    container: {
+        width: '100%',
+        textAlign: 'left'
+    }
+}
+
 type Props = {
     pathFragments: string[]
 }
@@ -13,7 +20,9 @@ function Breadcrumb({pathFragments}: Props) {
     })
 
     return (
-        <div><img src={HomeIcon}/>{fragments.map(fragment => <><span> / </span><a href={fragment.url}>{fragment.title}</a></>)}</div>
+        <div style={styles.container}>
+            <a href="/"><img src={HomeIcon}/></a>{fragments.map(fragment => <><span> / </span><a href={fragment.url}>{fragment.title}</a></>)}
+        </div>
     )
 }
 

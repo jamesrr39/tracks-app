@@ -103,6 +103,60 @@ export const useGetMaps = <TData = Schemas.HttphandlersGetCustomMapsResponse,>(
   });
 };
 
+export type GetCustomMapsDirectoryListingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GetCustomMapsDirectoryListingVariables =
+  TracksAppContext["fetcherOptions"];
+
+export const fetchGetCustomMapsDirectoryListing = (
+  variables: GetCustomMapsDirectoryListingVariables,
+  signal?: AbortSignal,
+) =>
+  tracksAppFetch<
+    Schemas.HttphandlersBuildGetCustomMapsDirectoryListingResponse,
+    GetCustomMapsDirectoryListingError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/v1/maps/custom-maps/files", method: "get", ...variables, signal });
+
+export const useGetCustomMapsDirectoryListing = <
+  TData = Schemas.HttphandlersBuildGetCustomMapsDirectoryListingResponse,
+>(
+  variables: GetCustomMapsDirectoryListingVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      Schemas.HttphandlersBuildGetCustomMapsDirectoryListingResponse,
+      GetCustomMapsDirectoryListingError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { fetcherOptions, queryOptions, queryKeyFn } =
+    useTracksAppContext(options);
+  return reactQuery.useQuery<
+    Schemas.HttphandlersBuildGetCustomMapsDirectoryListingResponse,
+    GetCustomMapsDirectoryListingError,
+    TData
+  >({
+    queryKey: queryKeyFn({
+      path: "/v1/maps/custom-maps/files",
+      operationId: "getCustomMapsDirectoryListing",
+      variables,
+    }),
+    queryFn: ({ signal }) =>
+      fetchGetCustomMapsDirectoryListing(
+        { ...fetcherOptions, ...variables },
+        signal,
+      ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type GetAllTrackSummariesError = Fetcher.ErrorWrapper<undefined>;
 
 export type GetAllTrackSummariesVariables = TracksAppContext["fetcherOptions"];
@@ -437,6 +491,11 @@ export type QueryOperation =
       path: "/v1/maps";
       operationId: "getMaps";
       variables: GetMapsVariables;
+    }
+  | {
+      path: "/v1/maps/custom-maps/files";
+      operationId: "getCustomMapsDirectoryListing";
+      variables: GetCustomMapsDirectoryListingVariables;
     }
   | {
       path: "/v1/tracks";
