@@ -2,18 +2,23 @@ package httphandlers
 
 import (
 	"context"
-	"io"
-	"log/slog"
+	"image"
+	"image/color"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"net/http"
 	"net/url"
 	"os"
 
+	"github.com/disintegration/imaging"
 	"github.com/go-chi/chi/v5"
 	"github.com/jamesrr39/go-errorsx"
 	openapix "github.com/jamesrr39/go-openapix"
 	"github.com/jamesrr39/goutil/dirtraversal"
 	"github.com/jamesrr39/tracks-app/server/dal"
 	"github.com/jamesrr39/tracks-app/server/domain"
+	"github.com/jamesrr39/tracks-app/server/pkg/slogger"
 	"github.com/swaggest/rest/nethttp"
 )
 
@@ -98,31 +103,40 @@ func BuildGetCustomMap(customMapsDAL *dal.CustomMapsDAL) http.HandlerFunc {
 		}
 
 		if dirtraversal.IsTryingToTraverseUp(decodedName) {
-			errorsx.HTTPJSONError(w, slogger, errorsx.Errorf("attempting to traverse up"), http.StatusForbidden)
+			errorsx.HTTPJSONError(w, slogger.Slogger, errorsx.Errorf("attempting to traverse up"), http.StatusForbidden)
 			return
 		}
-		file, err := customMapsDAL.GetFile(decodedName)
-		if os.IsNotExist(err) {
+
+		metadata, err := customMapsDAL.GetByName(decodedName)
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		file, err := customMapsDAL.GetFile(decodedName)
+		if err != nil {
+			if os.IsNotExist(err) {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer file.Close()
 
-		_, err = io.Copy(w, file)
+		img, _, err := image.Decode(file)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		rotatedImg := imaging.Rotate(img, metadata.CalculatedMetadata.Rotation, color.Alpha{})
+
+		w.Header().Set("Content-Type", "image/png")
+		err = imaging.Encode(w, rotatedImg, imaging.PNG)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
-}
-
-var slogger = SLogger{}
-
-type SLogger struct{}
-
-func (SLogger) Warn(message string, args ...interface{}) {
-	slog.Warn(message, args)
-}
-func (SLogger) Error(message string, args ...interface{}) {
-	slog.Error(message, args)
 }

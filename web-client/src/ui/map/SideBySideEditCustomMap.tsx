@@ -73,15 +73,11 @@ function SideBySideEditCustomMap({ customMap }: Props) {
 
 
     return (
-        <div>
- 
+        <div style={styles.sideBySideContainer}>
+            {/* <img style={styles.imageContainer} src={`/map/custom-map/${encodeURIComponent(customMap.name)}`} /> */}
+            <canvas ref={canvasRef} style={{ ...styles.imageContainer, backgroundImage: `url(/map/custom-map/${encodeURIComponent(customMap.name)})` }} />
+            <div style={styles.mapContainer} ref={mapContainer} />
 
-            <div>
-                {/* <img style={styles.imageContainer} src={`/map/custom-map/${encodeURIComponent(customMap.name)}`} /> */}
-                <canvas ref={canvasRef} style={{ ...styles.imageContainer, backgroundImage: `url(/map/custom-map/${encodeURIComponent(customMap.name)})` }} />
-                <div style={styles.mapContainer} ref={mapContainer} />
-
-            </div>
         </div>
     )
 }

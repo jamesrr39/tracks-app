@@ -64,7 +64,7 @@ export default function EditCustomMapScreen(props: Props) {
     return (
         <>
             <h2>{customMap.name}</h2>
-            <p>{JSON.stringify(customMap.calculatedMetadata.bounds)}</p>
+            <p>{JSON.stringify(customMap.calculatedMetadata, null, "\t")}</p>
             <div>
                 <h3>Reference Points</h3>
                 <ul>
@@ -73,7 +73,7 @@ export default function EditCustomMapScreen(props: Props) {
                     ))}
                 </ul>
             </div>
-            <div style={sideBySideMap ? styles.sideBySideContainer : {}}>
+            <div>
                 <div>
                     <label>
                         <input type="checkbox" checked={sideBySideMap} onChange={(e) => setSideBySideMap(e.currentTarget.checked)} />
