@@ -1,17 +1,28 @@
-import maplibregl, { Marker } from "maplibre-gl";
+import maplibregl, { LayerSpecification, LngLat, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   DomainGeoFileSummary,
   DomainRecord,
 } from "../../openapi/generated/tracksAppSchemas";
-
-import ProtomapLayers from "protomaps-themes-base";
+import { layers, namedFlavor } from '@protomaps/basemaps';
 import { formatShortDuration, getDurationSeconds } from "../../util/time";
 import { binarySearch, BinarySearchResult } from "../../util/binary_search";
-import Controls from "./Controls";
+import { ProtomapsMapTheme } from "./MapThemes";
+import Controls, { MapChoice } from "./Controls";
 import { getPMTilesSource } from "../../context/PMTilesContext";
-import { AppInfoContext } from "../../context/AppInfoContext";
+import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
+import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
+import { getOSMLayer } from "./mapstyles";
+import { useDrawMap } from "./drawMapHook";
+
+const OPENFREEMAP_STYLES = [
+  { name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty" },
+  { name: 'Bright', url: "https://tiles.openfreemap.org/styles/bright" },
+  { name: 'Positron', url: "https://tiles.openfreemap.org/styles/positron" },
+];
+
+const DEFAULT_PROTOMAPS_THEME: ProtomapsMapTheme = "light";
 
 const DEFAULT_ROUTE_COLOR = "#f66151";
 
@@ -19,22 +30,25 @@ const ROUTE_LAYER_SOURCE_ID = "route";
 
 const PMTILES_URL = "/map/pmtiles";
 
-function getProtomapsStyle(selectedTheme: string): maplibregl.StyleSpecification {
+function getProtomapsStyle(selectedTheme: ProtomapsMapTheme): maplibregl.StyleSpecification {
   const pmTilesSource = getPMTilesSource(PMTILES_URL);
 
+  console.log('selectedTheme', selectedTheme)
+
   return {
-      version: 8,
-      glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
-      sources: {
-        [PMTILES_SOURCE_NAME]: {
-          type: "vector",
-          url: `pmtiles://${pmTilesSource.url}`,
-          attribution:
-            '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        },
+    version: 8,
+    glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
+    sources: {
+      [PMTILES_SOURCE_NAME]: {
+        type: "vector",
+        url: `pmtiles://${pmTilesSource.url}`,
+        attribution:
+          '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
       },
-      layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
-    }
+    },
+    // layers: ProtomapLayers(PMTILES_SOURCE_NAME, selectedTheme),
+    layers: layers(PMTILES_SOURCE_NAME, namedFlavor(selectedTheme), { lang: "en" })
+  }
 }
 
 const styles = {
@@ -93,154 +107,226 @@ function getRoute(
   };
 }
 
+const changeMapTheme = (maplibreMap: maplibregl.Map | null, mapThemes: MapChoice[] | undefined, selectedThemeName: string) => {
+  if (!maplibreMap || !mapThemes) {
+    return;
+  }
+
+  const selectedTheme = mapThemes.find(theme => theme.name === selectedThemeName);
+  if (!selectedTheme) {
+    throw new Error(`no theme found for selectedThemeName "${selectedThemeName}"`);
+  }
+  console.log('setting style', selectedTheme)
+
+  maplibreMap.getLayersOrder().forEach(layerName => {
+    if (layerName !== ROUTE_LAYER_SOURCE_ID) {
+      maplibreMap.removeLayer(layerName);
+    }
+  })
+  maplibreMap.setStyle((selectedTheme.specification));
+  selectedTheme.markers?.forEach(lngLat => {
+
+    const marker = new Marker();
+    marker.setLngLat(lngLat);
+    marker.addTo(maplibreMap)
+  })
+}
+
+const drawRoute = (maplibreMap: maplibregl.Map | null, coordinates: number[][], selectedColor: string) => {
+  if (!maplibreMap) {
+    return;
+  }
+
+  if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
+    maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
+    maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
+  }
+
+  const route = getRoute(coordinates, selectedColor);
+  maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+  maplibreMap.addLayer(route.layer);
+};
 
 // FIXME: terrain? https://docs.protomaps.com/basemaps/downloads#terrain
 // attribution: https://github.com/tilezen/joerd/blob/master/docs/attribution.md
 // https://docs.protomaps.com/pmtiles/maplibre#raster-or-terrain-pmtiles
 
-export function MaplibreGLMap(props: Props) {
+type CustomMarker = {
+  lngLat: maplibregl.LngLat
+}
+
+function activityBoundsToLatLng(activityBounds: DomainGeoFileSummary['activityBounds']): maplibregl.LngLatBounds {
+  return new maplibregl.LngLatBounds(
+    new maplibregl.LngLat(activityBounds.longMin, activityBounds.latMin),
+    new maplibregl.LngLat(activityBounds.longMax, activityBounds.latMax),
+  )
+}
+
+export function MaplibreGLMap({ trackRecords, trackSummary }: Props) {
   const [routeColor, setRouteColor] = useState(DEFAULT_ROUTE_COLOR);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map>(null);
-  const { trackRecords, trackSummary } = props;
   const pmTilesSource = getPMTilesSource(PMTILES_URL);
+  const [customMarkers, setCustomMarkers] = useState<CustomMarker[]>([]);
 
   const coordinates = trackRecords.map((record) => {
     return [record.posLong, record.posLat];
   });
 
-  const appInfoContext = useContext(AppInfoContext);
-  console.log('map sources', appInfoContext?.mapOptions.sources)
+  const { data: mapsResponse, isLoading, error } = useGetMaps({})
 
-  useEffect(() => {
-    if (map.current) {
-      return; // stops map from intializing more than once
-    }
 
-    if (!mapContainer.current) {
-      return;
-    }
+  const mapThemes = useMemo(() => createMapChoices(mapsResponse), [mapsResponse])
+  console.log('MaplibreGLMap', "themes", mapThemes, "mapContainer", mapContainer.current, "map", map.current, "isLoading", isLoading, "error", error, "mapsResponse", mapsResponse)
 
-    if (!pmTilesSource) {
-      return;
-    }
-
-    // we first fetch the header so we can get the center lon, lat of the map.
-    pmTilesSource.tiles.getHeader().then((h) => {
-      if (!mapContainer.current) {
-        return;
-      }
-
-      const { activityBounds: initialBbox } = trackSummary;
-      const centerLat = (initialBbox.latMax + initialBbox.latMin) / 2;
-      const centerLon = (initialBbox.longMax + initialBbox.longMin) / 2;
-
-      const maplibreMap = new maplibregl.Map({
-        container: mapContainer.current,
-        zoom: h.maxZoom - 2,
-        center: [centerLon, centerLat],
-            style: 'https://tiles.openfreemap.org/styles/liberty',
-        // style: {
-        //   version: 8,
-        //   glyphs: "/map/pmtiles-basemap-assets/fonts/{fontstack}/{range}.pbf",
-        //   sources: {
-        //     [PMTILES_SOURCE_NAME]: {
-        //       type: "vector",
-        //       url: `pmtiles://${pmTilesSource.url}`,
-        //       attribution:
-        //         '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        //     },
-        //   },
-        //   layers: ProtomapLayers(PMTILES_SOURCE_NAME, DEFAULT_THEME),
-        // },
-      });
-      map.current?.remove();
-      map.current = maplibreMap;
-
-      maplibreMap.on("load", () => {
+  useDrawMap(
+    map, 
+    mapContainer, 
+    activityBoundsToLatLng(trackSummary.activityBounds),
+    {
+      opacity: 1,
+      onLoad: () => {
+        if (!map.current) {
+          return null;
+        }
         const route = getRoute(coordinates, routeColor);
-        maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-        maplibreMap.addLayer(route.layer);
-
-        addMarkers(maplibreMap, trackSummary, trackRecords);
-      });
-    });
-  }, []);
-
-  const changeMapTheme = (selectedTheme: string) => {
-    const maplibreMap = map.current;
-    if (!maplibreMap) {
-      return;
+        map.current.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+        map.current.addLayer(route.layer);
+      }
     }
+  );
 
-    if (!pmTilesSource) {
-      return;
-    }
+  const onNewThemeSelected = (selectedThemeName: string) => {
+    changeMapTheme(map.current, mapThemes, selectedThemeName)
 
-    maplibreMap.setStyle(getProtomapsStyle(selectedTheme));
-
-    changeRouteColor(routeColor);
+    drawRoute(map.current, coordinates, routeColor);
   };
 
-  const changeRouteColor = (selectedColor: string) => {
-    const maplibreMap = map.current;
-    if (!maplibreMap) {
-      return;
-    }
 
-    if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
-      maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
-      maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
-    }
+  if (error) {
+    return <p>Error</p>
+  }
 
-    const route = getRoute(coordinates, selectedColor);
-    maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-    maplibreMap.addLayer(route.layer);
-  };
+  if (isLoading) {
+    return <p>Loading...</p>
+  }
 
-  // const changeMapData = (selectedMapData: MAP_DATA_SOURCE) => {
-  //   const maplibreMap = map.current;
-  //   if (!maplibreMap) {
-  //     return;
-  //   }
-
-  //   if (!pmTilesSource) {
-  //     return;
-  //   }
-
-  //   switch (selectedMapData) {
-  //     case 'protomaps': 
-  //       maplibreMap.setStyle(getProtomapsStyle(DEFAULT_PROTOMAPS_THEME));
-  //       break;
-  //     case 'openfreemaps':
-  //       maplibreMap.setStyle('https://tiles.openfreemap.org/styles/liberty');
-  //       break;
-  //   }
-
-  //   changeRouteColor(routeColor);
-  // }
+  if (!mapsResponse) {
+    return null;
+  }
 
   return (
     <div style={styles.mapWrapper}>
       <Controls
-        changeMapTheme={changeMapTheme}
+        changeMapTheme={onNewThemeSelected}
         routeColor={routeColor}
         onRouteColorChange={(value: string) => {
           setRouteColor(value)
-          changeRouteColor(value);
+          drawRoute(map.current, coordinates, value);
         }}
+        maps={mapThemes || []}
       />
+      {customMarkers.length !== 0 && (
+        <>
+          <h3>Custom Markers</h3>
+          <ul>
+            {customMarkers.map((marker, idx) => (<li key={idx}>{marker.lngLat.lat} : {marker.lngLat.lng}</li>))}
+          </ul>
+        </>
+      )}
+
       <div ref={mapContainer} style={styles.map} />
+      {/* <CoreMap /> */}
     </div>
   );
 }
 
-const addMarkers = (maplibreMap: maplibregl.Map, trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {
+function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
+  if (!maps) {
+    return;
+  }
+
+  const includeDebugLayer = true;
+
+  const osmMap = getOSMLayer({opacity: 0.3});
+
+  let debugSpec = {
+    sources: {}, 
+    layers: [] as LayerSpecification[]
+  };
+  if (includeDebugLayer) {
+    debugSpec = osmMap;
+  }
+
+  const mapChoices: MapChoice[] = []
+  mapChoices.push({
+    name: "OpenStreetMap raster tiles",
+    specification: osmMap,
+  })
+  maps.pmTiles.forEach(theme => {
+    mapChoices.push({
+      name: `Protomaps - ${theme.name}`,
+      specification: getProtomapsStyle(theme.name)
+    });
+  });
+  OPENFREEMAP_STYLES.map(openFreeMapStyle => {
+    mapChoices.push({
+      name: `OpenFreeMap - ${openFreeMapStyle.name}`,
+      specification: openFreeMapStyle.url,
+    })
+  })
+  maps.customMaps.map(customMap => {
+    const {bounds} = customMap.calculatedMetadata;
+    mapChoices.push({
+      name: `Custom map - ${customMap.name}`,
+      specification: {
+        version: 8,
+        sources: {
+          "overlay-image": {
+            type: 'image',
+            url: `/map/custom-map/${encodeURIComponent(customMap.name)}`,
+            coordinates: [
+              [bounds.minLon, bounds.maxLat],
+              [bounds.maxLon, bounds.maxLat],
+              [bounds.maxLon, bounds.minLat],
+              [bounds.minLon, bounds.minLat],
+            ]
+          },
+          ...debugSpec.sources
+        },
+        layers: [
+          {
+            id: 'overlay',
+            type: 'raster',
+            source: 'overlay-image',
+            paint: {
+              'raster-opacity': 1
+            }
+          },
+          ...debugSpec.layers,
+        ],
+      }, // TODO layer as well?
+      markers: customMap.referencePoints.map(point => {
+        const { location } = point;
+
+        return new LngLat(location.lon, location.lat);
+      })
+    })
+  })
+
+  return mapChoices;
+
+}
+
+
+const createMarkers = (trackSummary: DomainGeoFileSummary, trackRecords: DomainRecord[]) => {
   const totalDistanceMetres = trackRecords[trackRecords.length - 1].distance;
 
   if (totalDistanceMetres < 1000) {
-    return;
+    return []
   }
+
+  var markers = [];
 
   for (
     let targetDistance = 1000;
@@ -293,6 +379,8 @@ const addMarkers = (maplibreMap: maplibregl.Map, trackSummary: DomainGeoFileSumm
     markerEl.innerHTML = "";
     markerEl.appendChild(iconEl);
 
-    marker.addTo(maplibreMap);
+    markers.push(marker);
   }
+
+  return markers;
 };
