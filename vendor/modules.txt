@@ -69,7 +69,6 @@ github.com/mdempsky/unconvert
 github.com/pmezard/go-difflib/difflib
 # github.com/rakyll/statik v0.1.2
 ## explicit
-github.com/rakyll/statik/fs
 # github.com/santhosh-tekuri/jsonschema/v3 v3.1.0
 ## explicit; go 1.15
 github.com/santhosh-tekuri/jsonschema/v3

@@ -10,7 +10,6 @@ require (
 	github.com/jamesrr39/go-openapix v0.0.0-20240805224438-613a47dbccba
 	github.com/jamesrr39/goutil v0.0.0-20240329225739-244c41ec945f
 	github.com/jamesrr39/semaphore v0.0.0-20220902154938-76b2cf39e114
-	github.com/rakyll/statik v0.1.2
 	github.com/spf13/afero v1.11.0
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggest/openapi-go v0.2.53

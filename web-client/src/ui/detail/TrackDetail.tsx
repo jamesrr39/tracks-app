@@ -1,6 +1,4 @@
-import { UseQueryResult } from "@tanstack/react-query";
 import {
-  GetTrackRecordsError,
   useGetTrackRecords,
   useGetTrackSummaryByPath,
 } from "../../openapi/generated/tracksAppComponents";
@@ -10,7 +8,6 @@ import Loading from "../Loading";
 import { MaplibreGLMap } from "../map/MaplibreGLMap";
 import {
   DomainGeoFileSummary,
-  HttphandlersBuildGetTrackDetailResponse,
 } from "../../openapi/generated/tracksAppSchemas";
 import TrackChart from "./TrackChart";
 import TrackDetailSummary from "./TrackDetailSummary";

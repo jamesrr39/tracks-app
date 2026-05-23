@@ -1,18 +1,16 @@
-import maplibregl, { LayerSpecification, LngLat, Marker, StyleSpecification } from "maplibre-gl";
+import maplibregl, { LayerSpecification, LngLat, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   DomainGeoFileSummary,
   DomainRecord,
 } from "../../openapi/generated/tracksAppSchemas";
 import { layers, namedFlavor } from '@protomaps/basemaps';
-import ProtomapLayers from "protomaps-themes-base";
 import { formatShortDuration, getDurationSeconds } from "../../util/time";
 import { binarySearch, BinarySearchResult } from "../../util/binary_search";
-import { ProtomapsMapTheme, PROTOMAPS_AVAILABLE_MAP_THEMES } from "./MapThemes";
+import { ProtomapsMapTheme } from "./MapThemes";
 import Controls, { MapChoice } from "./Controls";
 import { getPMTilesSource } from "../../context/PMTilesContext";
-import { AppInfoContext } from "../../context/AppInfoContext";
 import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
 import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
 import { getOSMLayer } from "./mapstyles";
@@ -296,6 +294,7 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
     })
   })
   maps.customMaps.map(customMap => {
+    const {bounds} = customMap.calculatedMetadata;
     mapChoices.push({
       name: `Custom map - ${customMap.name}`,
       specification: {
@@ -305,10 +304,10 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
             type: 'image',
             url: `/map/custom-map/${encodeURIComponent(customMap.name)}`,
             coordinates: [
-              [customMap.bounds.minLon, customMap.bounds.maxLat],
-              [customMap.bounds.maxLon, customMap.bounds.maxLat],
-              [customMap.bounds.maxLon, customMap.bounds.minLat],
-              [customMap.bounds.minLon, customMap.bounds.minLat],
+              [bounds.minLon, bounds.maxLat],
+              [bounds.maxLon, bounds.maxLat],
+              [bounds.maxLon, bounds.minLat],
+              [bounds.minLon, bounds.minLat],
             ]
           },
           ...debugSpec.sources
