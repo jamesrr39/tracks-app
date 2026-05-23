@@ -26,7 +26,7 @@ export default function TracksListing({trackSummaries}: Props) {
   return (
     <div>
       <ul style={styles.list}>
-        {trackSummaries.map((track, idx) => (
+        {trackSummaries.map((track) => (
           <li style={styles.listItem} key={track.hash}>
             {track.activityType}
             <a href={`/tracks/${encodeURIComponent(track.relativeFilePath)}`}>

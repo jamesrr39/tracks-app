@@ -9,12 +9,9 @@ import {
 import ProtomapLayers from "protomaps-themes-base";
 import { formatShortDuration, getDurationSeconds } from "../../util/time";
 import { binarySearch, BinarySearchResult } from "../../util/binary_search";
-import { MapTheme } from "./MapThemes";
 import Controls from "./Controls";
 import { getPMTilesSource } from "../../context/PMTilesContext";
 import { AppInfoContext } from "../../context/AppInfoContext";
-
-const DEFAULT_PROTOMAPS_THEME: MapTheme = "light";
 
 const DEFAULT_ROUTE_COLOR = "#f66151";
 

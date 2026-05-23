@@ -141,7 +141,7 @@ function TrackChart({ trackSummary, trackRecords }: Props) {
             beginAtZero: true,
             title: { text: "Pace" },
             ticks: {
-              callback: (value, idx, ticks) => {
+              callback: (value) => {
                 if (typeof value === "string") {
                   throw new Error("got string value for Pace axis");
                 }
@@ -176,25 +176,6 @@ function calculatePace(
   const paceSecondsPerKm = durationSeconds * ratio;
 
   return paceSecondsPerKm;
-  // return formatShortDuration(paceSecondsPerKm);
-}
-
-function calculateSmoothedPace(
-  trackRecords: DomainRecord[],
-  currentIdx: number
-): number {
-  const currentRecord = trackRecords[currentIdx];
-  if (currentIdx === 0) {
-    return 0;
-  }
-  const prevRecord = trackRecords[currentIdx - 1];
-
-  return (
-    (currentRecord.distance - prevRecord.distance) /
-    ((new Date(currentRecord.timestamp).getTime() -
-      new Date(prevRecord.timestamp).getTime()) /
-      1000)
-  );
 }
 
 export default TrackChart;

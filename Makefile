@@ -10,7 +10,7 @@ help:
 
 .PHONY: bundle_static_assets
 bundle_static_assets:
-	cd client && yarn build
+	cd web-client && yarn build
 
 .PHONY: build_prod
 build_prod: bundle_static_assets
