@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
@@ -61,8 +60,6 @@ func BuildGetTrackSummary(fitDAL *dal.FitDAL) *nethttp.Handler {
 			if err != nil {
 				return status.Wrap(fmt.Errorf("couldn't unescape path: %s", err.Error()), http.StatusBadRequest)
 			}
-
-			slog.Info("===", "input.RelativePath", input.RelativePath, "relativePath", relativePath)
 
 			summary, err := fitDAL.GetSummary(relativePath)
 			if err != nil {
