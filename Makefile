@@ -14,9 +14,9 @@ bundle_static_assets:
 
 .PHONY: build_prod
 build_prod: bundle_static_assets
-	rm -rf build
-	go run vendor/github.com/rakyll/statik/statik.go -src=client/build -dest=build/client
-	go build -tags "purego prod" -o bin/tracks-app cmd/tracks-app-main.go
+	rm -rf server/httphandlers/static_bundle
+	mv web-client/dist server/httphandlers/static_bundle
+	go build -tags 'prod' -o bin/tracks-app cmd/tracks-app-main.go
 
 .PHONY: build_docker_raspberry_pi_3
 build_docker_raspberry_pi_3:
@@ -45,7 +45,7 @@ run_dev_server_local_pm_tiles:
 
 .PHONY: install
 install: build_prod
-	cp bin/tracks-app $(GOBIN)/tracks-app
+	cp bin/tracks-app ${GOBIN}/tracks-app
 
 .PHONY: generate_openapi_typescript
 generate_openapi_typescript:

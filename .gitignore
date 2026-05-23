@@ -1,3 +1,4 @@
 /bin/
 /build/
 /docker/*/bin/
+/server/httphandlers/static_bundle
