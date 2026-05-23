@@ -23,8 +23,6 @@ export default function TrackDetail(props: { params: { id: string } }) {
 
   const { error, isLoading, data } = useGetTrackSummaryByPath(reactQueryOpts);
 
-  const mapFetch = useGetTrackRecords(reactQueryOpts);
-
   if (error) {
     return <Error error={error} />;
   }
@@ -66,36 +64,45 @@ export default function TrackDetail(props: { params: { id: string } }) {
           ))} */}
         </ul>
       </div>
-      <Map fetcherProps={mapFetch} trackSummary={trackSummary} />
+      <Map trackSummary={trackSummary} />
     </>
   );
 }
 
 type MapProps = {
-  fetcherProps: UseQueryResult<
-    HttphandlersBuildGetTrackDetailResponse,
-    GetTrackRecordsError
-  >;
+  // fetcherProps: UseQueryResult<
+  //   HttphandlersBuildGetTrackDetailResponse,
+  //   GetTrackRecordsError
+  // >;
   trackSummary: DomainGeoFileSummary;
 };
 
 const Map = (props: MapProps) => {
-  const { error, isLoading, data } = props.fetcherProps;
-
+  const { error, isLoading, data } = useGetTrackRecords({
+    pathParams: { path: encodeURIComponent(props.trackSummary.relativeFilePath) },
+  });
+  // const { error, isLoading, data } = props.fetcherProps;
+console.log('data', error)
   if (error) {
     return <Error error={error} />;
   }
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return <Loading />;
+  }
+
+  if (!data) {
+    return null;
   }
 
   return (
     <div>
+      <h2>Map</h2>
       <MaplibreGLMap
         trackSummary={props.trackSummary}
         trackRecords={data.records}
       />
+      <h2>Data</h2>
       <TrackChart
         trackSummary={props.trackSummary}
         trackRecords={data.records}
