@@ -7,12 +7,12 @@ var Slogger = SLogger{}
 type SLogger struct{}
 
 func (SLogger) Info(message string, args ...interface{}) {
-	slog.Info(message, args)
+	slog.Info(message, args...)
 }
 
 func (SLogger) Warn(message string, args ...interface{}) {
-	slog.Warn(message, args)
+	slog.Warn(message, args...)
 }
 func (SLogger) Error(message string, args ...interface{}) {
-	slog.Error(message, args)
+	slog.Error(message, args...)
 }
