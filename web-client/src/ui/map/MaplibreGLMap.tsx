@@ -14,6 +14,7 @@ import { getPMTilesSource } from "../../context/PMTilesContext";
 import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
 import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
 import { getOSMLayer } from "./mapstyles";
+import { useDrawMap } from "./drawMapHook";
 
 const OPENFREEMAP_STYLES = [
   { name: 'Liberty', url: "https://tiles.openfreemap.org/styles/liberty" },
@@ -154,11 +155,17 @@ type CustomMarker = {
   lngLat: maplibregl.LngLat
 }
 
-export function MaplibreGLMap(props: Props) {
+function activityBoundsToLatLng(activityBounds: DomainGeoFileSummary['activityBounds']): maplibregl.LngLatBounds {
+  return new maplibregl.LngLatBounds(
+    new maplibregl.LngLat(activityBounds.longMin, activityBounds.latMin),
+    new maplibregl.LngLat(activityBounds.longMax, activityBounds.latMax),
+  )
+}
+
+export function MaplibreGLMap({ trackRecords, trackSummary }: Props) {
   const [routeColor, setRouteColor] = useState(DEFAULT_ROUTE_COLOR);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map>(null);
-  const { trackRecords, trackSummary } = props;
   const pmTilesSource = getPMTilesSource(PMTILES_URL);
   const [customMarkers, setCustomMarkers] = useState<CustomMarker[]>([]);
 
@@ -171,48 +178,23 @@ export function MaplibreGLMap(props: Props) {
 
   const mapThemes = useMemo(() => createMapChoices(mapsResponse), [mapsResponse])
   console.log('MaplibreGLMap', "themes", mapThemes, "mapContainer", mapContainer.current, "map", map.current, "isLoading", isLoading, "error", error, "mapsResponse", mapsResponse)
-  useEffect(() => {
-    console.log('map', map.current, mapContainer.current)
-    if (!mapContainer.current) {
-      return;
+
+  useDrawMap(
+    map, 
+    mapContainer, 
+    activityBoundsToLatLng(trackSummary.activityBounds),
+    {
+      opacity: 1,
+      onLoad: () => {
+        if (!map.current) {
+          return null;
+        }
+        const route = getRoute(coordinates, routeColor);
+        map.current.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
+        map.current.addLayer(route.layer);
+      }
     }
-
-    // we first fetch the header so we can get the center lon, lat of the map.
-    // pmTilesSource.tiles.getHeader().then((pmtilesHeader) => {
-    console.log('running create map')
-
-    const { activityBounds: initialBbox } = trackSummary;
-    const centerLat = (initialBbox.latMax + initialBbox.latMin) / 2;
-    const centerLon = (initialBbox.longMax + initialBbox.longMin) / 2;
-
-    const maplibreMap = new maplibregl.Map({
-      container: mapContainer.current,
-      zoom: 13,
-      center: [centerLon, centerLat],
-      style: 'https://tiles.openfreemap.org/styles/liberty',
-    });
-    map.current?.remove();
-    map.current = maplibreMap;
-
-    maplibreMap.on("load", () => {
-      console.log('maplibre: called load')
-      const route = getRoute(coordinates, routeColor);
-      maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
-      maplibreMap.addLayer(route.layer);
-
-      const markers = createMarkers(trackSummary, trackRecords);
-      markers.forEach(marker => marker.addTo(maplibreMap));
-    });
-
-    maplibreMap.on("click", (event) => {
-      const { lngLat } = event;
-      console.log('click:', lngLat)
-      // setCustomMarkers(m => {
-      //   return m.concat([{lngLat}]);
-      // });
-    })
-    // });
-  }, [map.current, mapContainer.current, mapsResponse]);
+  );
 
   const onNewThemeSelected = (selectedThemeName: string) => {
     changeMapTheme(map.current, mapThemes, selectedThemeName)
@@ -286,7 +268,7 @@ function createMapChoices(maps: HttphandlersGetCustomMapsResponse | undefined) {
       name: `Protomaps - ${theme.name}`,
       specification: getProtomapsStyle(theme.name)
     });
-  }); // TODO don't add protomaps choice if no protomaps source
+  });
   OPENFREEMAP_STYLES.map(openFreeMapStyle => {
     mapChoices.push({
       name: `OpenFreeMap - ${openFreeMapStyle.name}`,
