@@ -150,6 +150,9 @@ func calculateImageRotation(ref1, ref2 ReferencePoint) float64 {
 		"ref2", ref2.Location,
 		"rotation", rotation)
 
+	if rotation < 0 {
+		rotation += 360
+	}
 	return rotation
 }
 

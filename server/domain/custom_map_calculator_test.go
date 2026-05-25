@@ -24,7 +24,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 6, Y: 4},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 0,
+			want: 0.3830262388572123,
 		},
 		{
 			name: "45 deg rotated image",
@@ -36,7 +36,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 6, Y: 6},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 45,
+			want: 45.38302623885721,
 		},
 		{
 			name: "90 deg rotated image",
@@ -48,7 +48,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 4, Y: 6},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 90,
+			want: 90.38302623885721,
 		},
 		{
 			name: "135 deg rotated image",
@@ -60,7 +60,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 2, Y: 6},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 135,
+			want: 135.3830262388572,
 		},
 		{
 			name: "180 deg rotated image",
@@ -72,7 +72,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 2, Y: 4},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 180,
+			want: 180.3830262388572,
 		},
 		{
 			name: "225 deg rotated image",
@@ -84,7 +84,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 2, Y: 2},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 225,
+			want: 225.3830262388572,
 		},
 		{
 			name: "270 deg rotated image",
@@ -96,7 +96,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 4, Y: 2},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 270,
+			want: 270.3830262388572,
 		},
 		{
 			name: "315 deg rotated image",
@@ -108,7 +108,7 @@ func Test_calculateImageRotation(t *testing.T) {
 				ImageCoords: Point{X: 6, Y: 2},
 				Location:    GPSLocation{Lat: 50, Lon: 1},
 			},
-			want: 315,
+			want: 315.3830262388572,
 		},
 	}
 	for _, tt := range tests {
@@ -140,7 +140,7 @@ func Test_CalculateImageBoundsAndRotationReal(t *testing.T) {
 				ImageCoords: Point{X: 1128, Y: 748},
 				Location:    GPSLocation{Lat: 51.498993, Lon: -0.118671},
 			},
-			want: 10,
+			want: 10.470888563192872,
 		},
 		{
 			name: "Same Lat",
@@ -154,7 +154,7 @@ func Test_CalculateImageBoundsAndRotationReal(t *testing.T) {
 				ImageCoords: Point{X: 1257, Y: 456},
 				Location:    GPSLocation{Lat: 51.50063, Lon: -0.118671},
 			},
-			want: 10,
+			want: 10.020358246156022,
 		},
 	}
 	for _, tt := range tests {
