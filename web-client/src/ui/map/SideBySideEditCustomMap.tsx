@@ -15,13 +15,19 @@ const styles = {
     },
     imageContainer: {
         width: '100%',
-        height: 'auto'
+        height: '100vh'
     },
     sideBySideContainer: {
         width: "100%",
         display: 'flex',
         justifyContent: 'space-between',
         flexDirection: 'row'
+    },
+    topBottomContainer: {
+        width: "100%",
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection: 'column'
     }
 }
 
@@ -70,14 +76,12 @@ function SideBySideEditCustomMap({ customMap }: Props) {
     useDrawOnCanvas(canvasRef, `/map/custom-map/${encodeURIComponent(customMap.name)}`);
 
     useDrawMap(mapRef, mapContainer, customMap, {opacity: 1})
-
-
+    
     return (
         <div style={styles.sideBySideContainer}>
             {/* <img style={styles.imageContainer} src={`/map/custom-map/${encodeURIComponent(customMap.name)}`} /> */}
             <canvas ref={canvasRef} style={{ ...styles.imageContainer, backgroundImage: `url(/map/custom-map/${encodeURIComponent(customMap.name)})` }} />
             <div style={styles.mapContainer} ref={mapContainer} />
-
         </div>
     )
 }

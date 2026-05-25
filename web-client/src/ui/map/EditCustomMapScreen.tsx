@@ -1,10 +1,11 @@
 import { useState } from "preact/hooks";
 import { useGetMaps } from "../../openapi/generated/tracksAppComponents";
-import { HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
+import { HttphandlersCustomMap, HttphandlersGetCustomMapsResponse } from "../../openapi/generated/tracksAppSchemas";
 import Error from "../Error";
 import Loading from "../Loading";
 import SideBySideEditCustomMap from "./SideBySideEditCustomMap";
 import OverlayedEditCustomMap from "./OverlayedEditCustomMap";
+import TopBottomEditCustomMap from "./TopBottomEditCustomMap";
 
 type Props = {
     params: {
@@ -12,33 +13,18 @@ type Props = {
     }
 }
 
-
-const styles = {
-    mapContainer: {
-        width: "100%",
-        height: "100vh",
-    },
-    imageContainer: {
-        width: '100%',
-        height: 'auto'
-    },
-    sideBySideContainer: {
-        width: "100%",
-        display: 'flex',
-        justifyContent: 'space-between',
-        flexDirection: 'row'
-    }
-}
-
-
 function extractMapFromList(data: HttphandlersGetCustomMapsResponse | undefined, name: string) {
     const customMap = data?.customMaps.find(listItem => listItem.name === name);
     return customMap;
 }
 
+const MapViews = ["sideBySide", "topBottom", "overlayed"];
+
+type MapView = typeof MapViews[number];
+
 export default function EditCustomMapScreen(props: Props) {
 
-    const [sideBySideMap, setSideBySideMap] = useState(true);
+    const [mapView, setMapView] = useState<MapView>("sideBySide");
 
     const { data, isLoading, error } = useGetMaps({});
 
@@ -75,13 +61,28 @@ export default function EditCustomMapScreen(props: Props) {
             </div>
             <div>
                 <div>
-                    <label>
-                        <input type="checkbox" checked={sideBySideMap} onChange={(e) => setSideBySideMap(e.currentTarget.checked)} />
-                        Show side by side map
-                    </label>
+                    {MapViews.map(view => (
+                        <label key={view} style={{ marginRight: "1em" }}>
+                            <input type="radio" name="mapView" value={view} checked={mapView === view} onChange={(e) => setMapView(e.currentTarget.value as MapView)} />
+                            {view}
+                        </label>
+                    ))}
                 </div>
-                {sideBySideMap ? <SideBySideEditCustomMap customMap={customMap} /> : <OverlayedEditCustomMap customMap={customMap} />}
+                <InnerMap customMap={customMap} mapView={mapView} />
             </div>
         </>
     );
 };
+
+function InnerMap({ customMap, mapView }: { customMap: HttphandlersCustomMap, mapView: MapView }) {
+    switch (mapView) {
+        case "sideBySide":
+            return <SideBySideEditCustomMap customMap={customMap} />;
+        case "overlayed":
+            return <OverlayedEditCustomMap customMap={customMap} />;
+        case "topBottom":
+            return <TopBottomEditCustomMap customMap={customMap} />;
+        default:
+            return null;
+    }
+}

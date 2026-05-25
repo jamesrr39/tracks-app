@@ -13,12 +13,5 @@ type CustomMapMetadata struct {
 }
 
 func (metadata CustomMapMetadata) CalculateMapBounds(img image.Rectangle) ProcessedCustomImage {
-	// imgSize := Point{X: float64(img.Max.X), Y: float64(img.Max.Y)}
-	// imgPt1 := metadata.ReferencePoints[0].ImageCoords
-	// imgPt2 := metadata.ReferencePoints[1].ImageCoords
-	// gpsPt1 := metadata.ReferencePoints[0].Location
-	// gpsPt2 := metadata.ReferencePoints[1].Location
-
 	return CalculateImageBoundsAndRotation(metadata.ReferencePoints[0], metadata.ReferencePoints[1], img)
-	// return CalculateGPSBounds(imgSize, imgPt1, imgPt2, gpsPt1, gpsPt2)
 }

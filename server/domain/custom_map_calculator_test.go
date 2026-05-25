@@ -118,3 +118,49 @@ func Test_calculateImageRotation(t *testing.T) {
 		})
 	}
 }
+
+// using Openstreetmap and https://www.movable-type.co.uk/scripts/latlong.html for picking out coordinates
+func Test_CalculateImageBoundsAndRotationReal(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		ref1 ReferencePoint
+		ref2 ReferencePoint
+		want float64
+	}{
+		{
+			name: "Image of a real map rotated. Rotated 10 deg",
+			ref1: ReferencePoint{
+				// Big Ben
+				ImageCoords: Point{X: 506, Y: 308},
+				Location:    GPSLocation{Lat: 51.500703, Lon: -0.124614},
+			},
+			ref2: ReferencePoint{
+				// St Thomas Hospital
+				ImageCoords: Point{X: 1128, Y: 748},
+				Location:    GPSLocation{Lat: 51.498993, Lon: -0.118671},
+			},
+			want: 10,
+		},
+		{
+			name: "Same Lat",
+			ref1: ReferencePoint{
+				// Big Ben
+				ImageCoords: Point{X: 506, Y: 308},
+				Location:    GPSLocation{Lat: 51.500703, Lon: -0.124614},
+			},
+			ref2: ReferencePoint{
+				// London Eye bus stop
+				ImageCoords: Point{X: 1257, Y: 456},
+				Location:    GPSLocation{Lat: 51.50063, Lon: -0.118671},
+			},
+			want: 10,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := calculateImageRotation(tt.ref1, tt.ref2)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

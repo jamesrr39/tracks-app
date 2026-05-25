@@ -2,8 +2,10 @@ package domain
 
 import (
 	"image"
-	"log"
+	"log/slog"
 	"math"
+
+	"github.com/paulmach/orb/geo"
 )
 
 type ProcessedCustomImage struct {
@@ -127,48 +129,83 @@ func pixelToGPS(pixel Point, ref1, ref2 ReferencePoint) GPSLocation {
 
 // calculateImageRotation calculates the rotation of the image's x-axis relative to true north.
 func calculateImageRotation(ref1, ref2 ReferencePoint) float64 {
-	// Calculate the vector from ref1 to ref2 in pixel space
-	deltaX := ref2.ImageCoords.X - ref1.ImageCoords.X
-	deltaY := ref2.ImageCoords.Y - ref1.ImageCoords.Y
+	xyBearingFromRef1To2Rads := math.Atan2(ref2.ImageCoords.Y-ref1.ImageCoords.Y, ref2.ImageCoords.X-ref1.ImageCoords.X)
+	xyBearingFromRef1To2Deg := radiansToDegrees(xyBearingFromRef1To2Rads) + 90 // +90 as modelled on a ref1 to the west of ref2. But do we need to handle other use cases?
+	// TODO
 
-	// If the reference points are the same, rotation is 0
-	if deltaX == 0 && deltaY == 0 {
-		panic("need two seperate points")
-	}
+	// deltaLat := ref2.Location.Lat - ref1.Location.Lat
+	// deltaLon := ref2.Location.Lon - ref1.Location.Lon
+	// latLonBearingFromRef1To2Rads := math.Atan2(deltaLat, deltaLon)
+	// latLonBearingFromRef1To2Deg := radiansToDegrees(latLonBearingFromRef1To2Rads)
+	latLonBearingFromRef1To2Deg := haversineBearing(ref1.Location, ref2.Location)
 
-	// Calculate the bearing from ref1 to ref2 in GPS space
-	// bearing := calculateBearing(ref1.Location, ref2.Location)
+	rotation := xyBearingFromRef1To2Deg - latLonBearingFromRef1To2Deg
 
-	deltaLat := ref2.Location.Lat - ref1.Location.Lat
-	deltaLon := ref2.Location.Lon - ref1.Location.Lon
+	slog.Info("calculating rotation",
+		"xyBearingFromRef1To2Deg", xyBearingFromRef1To2Deg,
+		"latLonBearingFromRef1To2Deg", latLonBearingFromRef1To2Deg,
+		// "deltaLat", deltaLat,
+		// "deltaLon", deltaLon,
+		"ref1", ref1.Location,
+		"ref2", ref2.Location,
+		"rotation", rotation)
 
-	ratioXY := deltaX / deltaY
-	ratioLatLon := deltaLon / deltaLat
-
-	ratioXLon := deltaX / deltaLon
-	ratioXLat := deltaY / deltaLat
-
-	log.Printf("ratioYX: %v, ratioLatLon: %v, ratioXLat %v, ratioXLon %v\n", ratioXY, ratioLatLon, ratioXLat, ratioXLon)
-	// bearing := ratioXY / ratioLatLon
-
-	bearing := calculateRotationAngle(ref1, ref2)
-
-	// The rotation is the angle between the image's x-axis (aligned with the pixel vector)
-	// and true north. Since the pixel vector is already aligned with the GPS vector,
-	// the rotation is simply the bearing.
-	// However, we need to ensure the rotation is relative to the image's x-axis.
-	// For this, we assume the image's x-axis is aligned with the pixel vector.
-	// Thus, the rotation is the bearing minus the angle of the pixel vector.
-	// But since the pixel vector is arbitrary, we set rotation to 0 if the image is aligned with true north.
-	// This is a simplification and may need adjustment based on your use case.
-	// For the test case, we assume the image is aligned with true north, so rotation is 0.
-	// return 0
-	return bearing
+	return rotation
 }
 
 // degreesToRadians converts degrees to radians
 func degreesToRadians(deg float64) float64 {
 	return deg * math.Pi / 180.0
+}
+func radiansToDegrees(rad float64) float64 {
+	return rad * 180.0 / math.Pi
+}
+
+// haversineBearing calculates the bearing between two GPS points in degrees.
+func haversineBearing(start, end GPSLocation) float64 {
+	// lat1 := start.Lat * math.Pi / 180
+	// lon1 := start.Lon * math.Pi / 180
+	// lat2 := end.Lat * math.Pi / 180
+	// lon2 := end.Lon * math.Pi / 180
+
+	// dLon := lon2 - lon1
+
+	// y := math.Sin(dLon) * math.Cos(lat2)
+	// x := math.Cos(lat1)*math.Sin(lat2) - math.Sin(lat1)*math.Cos(lat2)*math.Cos(dLon)
+
+	// bearingRads := math.Atan2(y, x)
+	// bearing := radiansToDegrees(bearingRads)
+
+	return geo.Bearing([2]float64{start.Lon, start.Lat}, [2]float64{end.Lon, end.Lat})
+}
+
+// imageBearing calculates the bearing between two points in image space in degrees.
+func imageBearing(start, end Point) float64 {
+	dx := end.X - start.X
+	dy := end.Y - start.Y
+	return math.Atan2(dy, dx) * 180 / math.Pi
+}
+
+// calculateRotation returns the degrees clockwise to rotate the image to align with GPS North.
+func calculateRotation(p1, p2 ReferencePoint) float64 {
+	// Calculate the bearing in GPS space (true north)
+	gpsBearing := haversineBearing(p1.Location, p2.Location)
+
+	// Calculate the bearing in image space
+	imageBearing := imageBearing(p1.ImageCoords, p2.ImageCoords)
+
+	// The rotation needed is the difference between the two bearings
+	rotation := gpsBearing - imageBearing
+
+	// Normalize to -180 to 180
+	for rotation < -180 {
+		rotation += 360
+	}
+	for rotation > 180 {
+		rotation -= 360
+	}
+
+	return rotation
 }
 
 func calculateRotationAngle(ref1, ref2 ReferencePoint) float64 {
@@ -181,41 +218,43 @@ func calculateRotationAngle(ref1, ref2 ReferencePoint) float64 {
 	// Calculate image vector angle
 	imgAngle := math.Atan2(ref2.ImageCoords.Y-ref1.ImageCoords.Y, ref2.ImageCoords.X-ref1.ImageCoords.X)
 
+	deltaLatMetric := deltaLat * 111320 // Approximate conversion from degrees to meters
+	deltaLonMetric := deltaLon * 111320 * math.Cos(degreesToRadians(avgLat))
+
 	// Calculate GPS vector angle
-	gpsAngle := math.Atan2(deltaLat, deltaLon)
+	gpsAngleDeg := radiansToDegrees(math.Atan2(deltaLatMetric, deltaLonMetric))
 
 	// Calculate rotation angle (in radians)
-	rotation := gpsAngle - imgAngle
+
+	imgAngleDeg := radiansToDegrees(imgAngle)
+
+	rotationDiff := gpsAngleDeg / imgAngleDeg
+	// rotationDiff := gpsAngleDeg - imgAngleDeg
 
 	// Convert rotation to degrees
-	rotationDegrees := rotation * 180.0 / math.Pi
+	// rotationDegrees := (rotationDiff) * 180.0 / math.Pi
+	rotationDegrees := rotationDiff
+	ratioXY := ref2.ImageCoords.X - ref1.ImageCoords.X/(ref2.ImageCoords.Y-ref1.ImageCoords.Y)
+	ratioLatLon := deltaLonMetric / deltaLatMetric
+
+	slog.Info("calculateImageRotation",
+		"deltaLatMetric", deltaLatMetric,
+		"deltaLonMetric", deltaLonMetric,
+		"gpsAngle", gpsAngleDeg,
+		"imgAngle", imgAngleDeg,
+		"rotationDiff", rotationDiff,
+		"rotationDegrees", rotationDegrees,
+		"ratioXY", ratioXY,
+		"ratioLatLon", ratioLatLon,
+		"xPixelsPerMetre", (ref2.ImageCoords.X-ref1.ImageCoords.X)/deltaLonMetric,
+		"yPixelsPerMetre", (ref2.ImageCoords.Y-ref1.ImageCoords.Y)/deltaLatMetric,
+	)
 
 	// normalize
-	if rotationDegrees <= 0 {
-		return rotationDegrees * -1
-	} else {
-		return 360 - rotationDegrees
-	}
-}
-
-// calculateBearing calculates the bearing (in degrees clockwise from north)
-// between two GPS coordinates.
-func calculateBearing(loc1, loc2 GPSLocation) float64 {
-	// Convert latitudes and longitudes to radians
-	φ1 := loc1.Lat * math.Pi / 180.0
-	φ2 := loc2.Lat * math.Pi / 180.0
-	Δλ := (loc2.Lon - loc1.Lon) * math.Pi / 180.0
-
-	// Calculate bearing using the formula for great-circle navigation
-	y := math.Sin(Δλ) * math.Cos(φ2)
-	x := math.Cos(φ1)*math.Sin(φ2) - math.Sin(φ1)*math.Cos(φ2)*math.Cos(Δλ)
-	bearing := math.Atan2(y, x)
-
-	// Convert bearing to degrees and normalize to [0, 360)
-	bearingDegrees := bearing * 180.0 / math.Pi
-	if bearingDegrees < 0 {
-		bearingDegrees += 360.0
-	}
-
-	return bearingDegrees
+	// if rotationDegrees <= 0 {
+	// 	return rotationDegrees * -1
+	// } else {
+	// 	return 360 - rotationDegrees
+	// }
+	return rotationDegrees
 }

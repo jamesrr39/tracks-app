@@ -64,11 +64,14 @@ github.com/kisielk/errcheck/errcheck
 # github.com/mdempsky/unconvert v0.0.0-20250216222326-4a038b3d31f5
 ## explicit; go 1.23.0
 github.com/mdempsky/unconvert
+# github.com/paulmach/orb v0.13.0
+## explicit; go 1.18
+github.com/paulmach/orb
+github.com/paulmach/orb/geo
+github.com/paulmach/orb/internal/length
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/rakyll/statik v0.1.2
-## explicit
 # github.com/santhosh-tekuri/jsonschema/v3 v3.1.0
 ## explicit; go 1.15
 github.com/santhosh-tekuri/jsonschema/v3
