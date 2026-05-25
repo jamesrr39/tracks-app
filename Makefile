@@ -3,6 +3,7 @@ LOCALENV_DATA_DIR=localenv/data
 OPENAPI_SPEC_OUTDIR=web-client/docs
 VITE_DEV_SERVER_ADDR=http://localhost:5173
 PM_TILES_FILEPATH=localenv/map/pmtiles/v3.pmtiles
+CUSTOM_MAPS_FILEPATH=localenv/map/
 
 .PHONY: help
 help:
