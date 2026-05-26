@@ -106,7 +106,7 @@ function getRoute(
   };
 }
 
-const changeMapTheme = (maplibreMap: maplibregl.Map | null, mapThemes: MapChoice[] | undefined, selectedThemeName: string) => {
+const changeMapTheme = (maplibreMap: maplibregl.Map | null, mapThemes: MapChoice[] | undefined, selectedThemeName: string, options?: {onRedrawn: () => void}) => {
   if (!maplibreMap || !mapThemes) {
     return;
   }
@@ -118,24 +118,31 @@ const changeMapTheme = (maplibreMap: maplibregl.Map | null, mapThemes: MapChoice
   console.log('setting style', selectedTheme)
 
   maplibreMap.getLayersOrder().forEach(layerName => {
-    if (layerName !== ROUTE_LAYER_SOURCE_ID) {
       maplibreMap.removeLayer(layerName);
-    }
   })
-  maplibreMap.setStyle((selectedTheme.specification));
-  selectedTheme.markers?.forEach(lngLat => {
 
-    const marker = new Marker();
-    marker.setLngLat(lngLat);
-    marker.addTo(maplibreMap)
-  })
+  maplibreMap.setStyle((selectedTheme.specification));
+
+  // setStyle = asynchronous.
+  // For any actions after this, we wait until the map is finished with updates (.once('idle') 
+  maplibreMap.once('idle', () => {
+    selectedTheme.markers?.forEach(lngLat => {
+
+      const marker = new Marker();
+
+      marker.setLngLat(lngLat).addTo(maplibreMap);
+    });
+    options?.onRedrawn();
+  });
 }
 
 const drawRoute = (maplibreMap: maplibregl.Map | null, coordinates: number[][], selectedColor: string) => {
   if (!maplibreMap) {
+    console.log('drawRoute: no maplibreMap')
     return;
   }
 
+  console.log('drawRoute: drawing route');
   if (maplibreMap.getLayer(ROUTE_LAYER_SOURCE_ID)) {
     maplibreMap.removeLayer(ROUTE_LAYER_SOURCE_ID);
     maplibreMap.removeSource(ROUTE_LAYER_SOURCE_ID);
@@ -144,6 +151,7 @@ const drawRoute = (maplibreMap: maplibregl.Map | null, coordinates: number[][], 
   const route = getRoute(coordinates, selectedColor);
   maplibreMap.addSource(ROUTE_LAYER_SOURCE_ID, route.source);
   maplibreMap.addLayer(route.layer);
+  console.log('route layer added')
 };
 
 // FIXME: terrain? https://docs.protomaps.com/basemaps/downloads#terrain
@@ -224,9 +232,12 @@ export function MaplibreGLMap({ trackRecords, trackSummary }: Props) {
   );
 
   const onNewThemeSelected = (selectedThemeName: string) => {
-    changeMapTheme(map.current, mapThemes, selectedThemeName)
-
-    drawRoute(map.current, coordinates, routeColor);
+    if (!map.current) {
+      return;
+    }
+    changeMapTheme(map.current, mapThemes, selectedThemeName, {
+      onRedrawn: () => drawRoute(map.current, coordinates, routeColor)
+    })
   };
 
   useUpdateCustomMarkers(map.current, customMarkers, showCustomMarkers);
