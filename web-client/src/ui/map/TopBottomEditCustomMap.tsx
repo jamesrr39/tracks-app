@@ -2,7 +2,7 @@ import maplibregl, {  } from "maplibre-gl";
 import { useEffect, useRef } from "preact/hooks";
 import { HttphandlersCustomMap } from "../../openapi/generated/tracksAppSchemas";
 import React from "preact/compat";
-import { useDrawMap } from "./drawMapHook";
+import { useDrawMap } from "./hooks/drawMapHook";
 
 type Props = {
     customMap: HttphandlersCustomMap

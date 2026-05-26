@@ -1,6 +1,5 @@
-import { LngLat, StyleSpecification } from "maplibre-gl";
+import { StyleSpecification } from "maplibre-gl";
 import { HttphandlersCustomMap } from "../../openapi/generated/tracksAppSchemas";
-import { MapChoice } from "./Controls";
 
 export const OVERLAY_IMAGE_SOURCE = "overlay-image"
 export const OVERLAY_IMAGE_LAYER_NAME = 'overlay';
@@ -39,17 +38,18 @@ export function getOSMLayer(slabProps: SlabProps): StyleSpecification {
 }
 
 export function createCustomMapSlab(customMap: HttphandlersCustomMap): StyleSpecification {
-    return {
+  const {bounds} = customMap.calculatedMetadata;
+  return {
         version: 8,
         sources: {
           [OVERLAY_IMAGE_SOURCE]: {
             type: 'image',
             url: `/map/custom-map/${encodeURIComponent(customMap.name)}`,
             coordinates: [
-              [customMap.bounds.minLon, customMap.bounds.maxLat],
-              [customMap.bounds.maxLon, customMap.bounds.maxLat],
-              [customMap.bounds.maxLon, customMap.bounds.minLat],
-              [customMap.bounds.minLon, customMap.bounds.minLat],
+              [bounds.minLon, bounds.maxLat],
+              [bounds.maxLon, bounds.maxLat],
+              [bounds.maxLon, bounds.minLat],
+              [bounds.minLon, bounds.minLat],
             ]
           },
         },

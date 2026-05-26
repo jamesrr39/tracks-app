@@ -78,8 +78,7 @@ const Map = (props: MapProps) => {
   const { error, isLoading, data } = useGetTrackRecords({
     pathParams: { path: encodeURIComponent(props.trackSummary.relativeFilePath) },
   });
-  // const { error, isLoading, data } = props.fetcherProps;
-console.log('data', error)
+
   if (error) {
     return <Error error={error} />;
   }

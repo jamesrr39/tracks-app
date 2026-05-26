@@ -19,8 +19,9 @@ type Props = {
     changeMapTheme: (value: string) => void
     routeColor: string
     onRouteColorChange: (value: string) => void,
-    // customMaps: HttphandlersCustomMap[]
     maps: MapChoice[]
+    showCustomMarkers: boolean
+    setShowCustomMarkers: (newState: boolean) => void
 }
 
 export type MapChoice = {
@@ -29,7 +30,7 @@ export type MapChoice = {
     markers?: maplibregl.LngLat[]
 }
 
-function Controls({ changeMapTheme, routeColor, onRouteColorChange, maps }: Props) {
+function Controls({ changeMapTheme, routeColor, onRouteColorChange, maps, showCustomMarkers, setShowCustomMarkers }: Props) {
     return (
         <div className="row">
             <div className="col-sm-6 row">
@@ -44,16 +45,11 @@ function Controls({ changeMapTheme, routeColor, onRouteColorChange, maps }: Prop
                             changeMapTheme(value);
                         }}
                     >
-                        {maps.map(map => <option value={map.name}>{map.name}</option>)}
-                        {/* {PROTOMAPS_AVAILABLE_MAP_THEMES.map((theme) => (
-                            <option value={theme}>Protomaps: {theme}</option>
+                        {maps.map((map, idx) => (
+                            <option value={map.name} key={idx}>
+                                {map.name}
+                            </option>
                         ))}
-                        {OPENFREEMAP_STYLE_URLS.map((theme) => (
-                            <option value={theme}>OpenFreeMap: {theme}</option>
-                        ))}
-                        {maps.map(customMap => (
-                            <option value={customMap.name}>Custom map: {customMap.name}</option>
-                        ))} */}
                     </select>
                 </label>
             </div>
@@ -70,6 +66,16 @@ function Controls({ changeMapTheme, routeColor, onRouteColorChange, maps }: Prop
                             onRouteColorChange(value);
                         }}
                     />
+                </label>
+            </div>
+            <div>
+                <label>
+                    <input 
+                        type="checkbox" 
+                        defaultChecked={showCustomMarkers} 
+                        onChange={(event) => setShowCustomMarkers(event.currentTarget.checked)}
+                    />
+                    Show custom markers
                 </label>
             </div>
         </div>

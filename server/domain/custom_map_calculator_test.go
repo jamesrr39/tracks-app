@@ -6,6 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Note bearing as decimals most likely due to Haversine bearing giving a bearing with a small decimal component
+
 func Test_calculateImageRotation(t *testing.T) {
 	tests := []struct {
 		name string // description of this test case

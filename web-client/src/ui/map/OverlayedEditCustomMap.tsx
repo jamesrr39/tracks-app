@@ -2,7 +2,7 @@ import maplibregl, {  } from "maplibre-gl";
 import { useRef, useState } from "preact/hooks";
 import { HttphandlersCustomMap } from "../../openapi/generated/tracksAppSchemas";
 import { createCustomMapSlab, OVERLAY_IMAGE_LAYER_NAME, OVERLAY_IMAGE_SOURCE } from "./mapstyles";
-import { useDrawMap } from "./drawMapHook";
+import { useDrawMap } from "./hooks/drawMapHook";
 
 
 type Props = {
