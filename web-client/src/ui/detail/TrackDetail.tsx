@@ -44,11 +44,9 @@ export default function TrackDetail(props: { params: { id: string } }) {
       <div>
         <h1>{name}</h1>
       </div>
-      {device && (
         <div>
-          <p>Recorded with {device}</p>
+          <p>Recorded {device && `with ${device}`} at {trackSummary.startTime/* TODO: show time at time zone the activity started in */}</p>
         </div>
-      )}
       <div style={{borderBottom: '1px solid #DEDDDA'}}>
       <TrackDetailSummary trackSummary={trackSummary} />
       </div>
